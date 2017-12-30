@@ -1,0 +1,22 @@
+# ignore all
+*
+
+# allow any
+!client/
+!client/*
+!server/
+!server/*
+!nginx/
+!nginx/conf.d/
+!*.conf
+!*.json
+!*.js
+!*.sh
+!*.scss
+!.gitignore
+!.babelrc
+!*.md
+
+# ignore
+package-lock.json
+.DS_Store
