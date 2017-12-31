@@ -2,12 +2,15 @@ let ws = undefined
 import config from "./beluga.config"
 
 if (typeof window != "undefined") {
-	ws = new WebSocket(`ws://${config.domain}:${config.websocket_port}`)
+	const http = location.href.match(/https?/)[0]
+	const protocol = (http == "https") ? "wss" : "ws"
+	ws = new WebSocket(`${protocol}://${config.domain}:${config.websocket_port}`)
 	ws.onerror = (e) => {
 		console.log("onerror", e)
 	}
 	ws.onclose = (e) => {
 		console.log("onclose", e)
+		alert("切断されました")
 	}
 	ws.onopen = (e) => {
 		console.log("onopen", e)

@@ -23,6 +23,7 @@ export default class HeaderView extends Component {
 		const timeline = this.props.timeline;
 		return (
 			<div>
+				<p>コード:<a href="https://github.com/belugafm/beluga">https://github.com/belugafm/beluga</a></p>
 				<p>オンライン:{this.online}</p>
 			</div>
 		);

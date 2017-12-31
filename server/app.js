@@ -7,12 +7,34 @@ const dev = process.env.NODE_ENV !== "production"
 const app = next({ dev })
 const handle = app.getRequestHandler()
 
+// ━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━［ WebSocket ］━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━
+import websocket from "./websocket"
+websocket
+	.register(require("fastify-ws"), {
+		"library": "uws"
+	})
+	.after(() => {
+		websocket.ws
+			.on("connection", client => {							// ユーザーが接続するたびに呼ばれる
+				broadcast("online", websocket.ws.clients.length)		// 全員に通知
+				client.on("close", _ => {							// そのユーザーが離脱した場合に呼ばれる
+					broadcast("online", websocket.ws.clients.length)	// 全員に通知
+				})
+			})
+	})
+websocket.listen(8080, (error) => {
+	if (error) {
+		throw error
+	}
+	console.log("WebSocket running on http://localhost:8080")
+})
+
 // WebSocketのブロードキャスト用関数
 const broadcast = (name, data) => {
-	if(fastify.ws == undefined){
+	if (websocket.ws == undefined) {
 		return
 	}
-	fastify.ws.clients.forEach(client => {
+	websocket.ws.clients.forEach(client => {
 		client.send(JSON.stringify({
 			[name]: data
 		}))
@@ -28,8 +50,12 @@ mongodb.MongoClient
 			client: db
 		})
 		fastify.post("/api/v1/status/update", (req, res) => {
-			if (req.body.text.length > 3000){
+			if (req.body.text.length > 3000) {
 				res.send({ "success": false, "error": "本文は3000文字以内で入力してください" })
+				return
+			}
+			if (req.body.user_name.length > 30) {
+				res.send({ "success": false, "error": "ユーザー名は30文字以内で入力してください" })
 				return
 			}
 			const db = fastify.mongo.db
@@ -46,9 +72,9 @@ mongodb.MongoClient
 				}).catch(error => {
 					success = false
 				}).then(document => {
-					if (fastify.ws){
+					if (fastify.ws) {
 						res.send({ success, "connection": fastify.ws.clients.length })
-					}else{
+					} else {
 						res.send({ success })
 					}
 				})
@@ -70,22 +96,6 @@ mongodb.MongoClient
 					res.send({ success, statuses })
 				})
 		})
-
-		// ━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━［ WebSocket ］━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━
-		fastify
-			.register(require("fastify-ws"), {
-				"library": "uws"
-			})
-			.after(() => {
-				fastify.ws
-					.on("connection", client => {							// ユーザーが接続するたびに呼ばれる
-						broadcast("online", fastify.ws.clients.length)		// 全員に通知
-						client.on("close", _ => {							// そのユーザーが離脱した場合に呼ばれる
-							broadcast("online", fastify.ws.clients.length)	// 全員に通知
-						})
-					})
-			})
-
 
 		// ━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━［ Client ］━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━
 		fastify.register(require("fastify-static"), {
@@ -114,16 +124,12 @@ mongodb.MongoClient
 					handle(req.req, res.res)
 				})
 
-				fastify.get("/css/style.css", (req, res) => {
-					res.sendFile("/css/style.css")
-				})
-
 			})
 
 		fastify.listen(3000, (error) => {
-			if (error){
+			if (error) {
 				throw error
-			} 
+			}
 			console.log("Beluga running on http://localhost:3000")
 		})
 	})

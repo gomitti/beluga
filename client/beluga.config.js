@@ -1,5 +1,5 @@
 export default {
 	// "domain": "new.beluga.fm",
 	"domain": "localhost",
-	"websocket_port": 3000
+	"websocket_port": 8080
 }
