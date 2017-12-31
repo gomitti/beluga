@@ -1,11 +1,11 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import { Provider, observer } from "mobx-react";
-import Head from "next/head"
 import { useStrict, observable, action } from "mobx";
 import TimelineStore from "../stores/timeline";
 import TimelineView from "../views/timeline";
 import HeaderView from "../views/header";
 import PostboxView from "../views/postbox";
+import Head from "../views/head"
 import StatusStore from "../stores/status";
 
 // mobxの状態をaction内でのみ変更可能にする
@@ -42,12 +42,7 @@ export default class App extends Component {
 	render() {
 		return (
 			<div>
-				<Head>
-					<meta name="viewport" content="width=device-width, initial-scale=1" />
-					<meta charSet="utf-8" />
-					<link rel="stylesheet" href="/css/style.css" />
-					<title>test</title>
-				</Head>
+				<Head title="test" />
 				<HeaderView />
 				<PostboxView />
 				{this.timelines.map(timeline =>

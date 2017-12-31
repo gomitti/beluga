@@ -24,6 +24,7 @@ export default class HeaderView extends Component {
 		return (
 			<div>
 				<p>コード:<a href="https://github.com/belugafm/beluga">https://github.com/belugafm/beluga</a></p>
+				<p><a href="/signup">新規登録</a></p>
 				<p>オンライン:{this.online}</p>
 			</div>
 		);

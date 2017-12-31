@@ -2,6 +2,7 @@ const fastify = require("fastify")()
 const next = require("next")
 const mongodb = require("mongodb")
 import * as mongo from "./mongo"
+import * as beluga from "./api"
 
 const dev = process.env.NODE_ENV !== "production"
 const app = next({ dev })
@@ -49,35 +50,15 @@ mongodb.MongoClient
 		fastify.register(require("fastify-mongodb"), {
 			client: db
 		})
-		fastify.post("/api/v1/status/update", (req, res) => {
-			if (req.body.text.length > 3000) {
-				res.send({ "success": false, "error": "本文は3000文字以内で入力してください" })
-				return
+		const api_version = "v1"
+		fastify.post(`/api/${api_version}/status/update`, async (req, res) => {
+			try {
+				const result = await beluga.v1.status.update(fastify.mongo.db, req.body)
+				broadcast("status_updated", {})
+				res.send({"success": true})
+			} catch (error) {
+				res.send({ "success": false, "error": error.toString()})
 			}
-			if (req.body.user_name.length > 30) {
-				res.send({ "success": false, "error": "ユーザー名は30文字以内で入力してください" })
-				return
-			}
-			const db = fastify.mongo.db
-			const collection = db.collection("statuses")
-			let success = false
-			collection
-				.insertOne({
-					"text": req.body.text,
-					"user_name": req.body.user_name,
-					"created_at": new Date().getTime()
-				}).then(document => {
-					success = true
-					broadcast("status_updated", {})
-				}).catch(error => {
-					success = false
-				}).then(document => {
-					if (fastify.ws) {
-						res.send({ success, "connection": fastify.ws.clients.length })
-					} else {
-						res.send({ success })
-					}
-				})
 		})
 		fastify.post("/api/v1/statuses/hashtag", (req, res) => {
 			const db = fastify.mongo.db
@@ -95,6 +76,16 @@ mongodb.MongoClient
 				}).then(document => {
 					res.send({ success, statuses })
 				})
+		})
+		fastify.post(`/api/${api_version}/user/signup`, async (req, res) => {
+			const ip_address = req.headers["x-real-ip"]
+			const params = Object.assign({ ip_address }, req.body)
+			try {
+				const result = await beluga.v1.user.signup(fastify.mongo.db, params)
+				res.send({ "success": true })
+			} catch (error) {
+				res.send({ "success": false, "error": error.toString() })
+			}
 		})
 
 		// ━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━［ Client ］━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━─━
@@ -116,6 +107,9 @@ mongodb.MongoClient
 						}).then(document => {
 							app.render(req.req, res.res, "/", { statuses })
 						})
+				})
+				fastify.next("/signup", (app, req, res) => {
+					app.render(req.req, res.res, "/signup", {})
 				})
 
 				// Nextは.jsを動的に生成するため、最初の1回はここで生成する

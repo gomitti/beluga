@@ -6,6 +6,7 @@
 !client/*
 !server/
 !server/*
+!server/api/*
 !nginx/
 !nginx/conf.d/
 !*.conf
