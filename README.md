@@ -65,8 +65,6 @@ npm install --save fastify-ws
 ## 稼働
 
 ```bash
-npm run build_server
-npm run build_client
-npm run build_scss
-env NODE_ENV=production forever start server/app.js
+sh ./build.sh
+env NODE_ENV=production forever start www/app.js
 ```
