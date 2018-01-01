@@ -27,7 +27,6 @@
     "fastify": "^0.37.0",
     "fastify-mongodb": "^0.3.0",
     "fastify-react": "^1.0.0",
-    "fastify-static": "^0.5.0",
     "fastify-ws": "^0.4.0",
     "fs": "0.0.1-security",
     "mobx": "^3.4.1",

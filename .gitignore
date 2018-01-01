@@ -4,9 +4,13 @@
 # allow any
 !client/
 !client/*
+!client/pages/*
+!client/views/*
 !server/
 !server/*
 !server/api/*
+!server/api/v1/*
+!server/routes/*
 !nginx/
 !nginx/conf.d/
 !*.conf

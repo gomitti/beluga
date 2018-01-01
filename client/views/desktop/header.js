@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { observer } from "mobx-react";
 import { observable, action } from "mobx";
-import ws from "../websocket"
+import ws from "../../websocket"
 
 @observer
 export default class HeaderView extends Component {
@@ -25,6 +25,7 @@ export default class HeaderView extends Component {
 			<div>
 				<p>コード:<a href="https://github.com/belugafm/beluga">https://github.com/belugafm/beluga</a></p>
 				<p><a href="/signup">新規登録</a></p>
+				<p><a href="/login">ログイン</a></p>
 				<p>オンライン:{this.online}</p>
 			</div>
 		);

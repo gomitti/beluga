@@ -1,12 +1,12 @@
 import { Component } from "react";
 import { Provider, observer } from "mobx-react";
 import { useStrict, observable, action } from "mobx";
-import TimelineStore from "../stores/timeline";
-import TimelineView from "../views/timeline";
-import HeaderView from "../views/header";
-import PostboxView from "../views/postbox";
-import Head from "../views/head"
-import StatusStore from "../stores/status";
+import TimelineView from "../../views/desktop/timeline";
+import HeaderView from "../../views/desktop/header";
+import PostboxView from "../../views/desktop/postbox";
+import Head from "../../views/desktop/head"
+import TimelineStore from "../../stores/timeline";
+import StatusStore from "../../stores/status";
 
 // mobxの状態をaction内でのみ変更可能にする
 useStrict(true)
@@ -42,7 +42,7 @@ export default class App extends Component {
 	render() {
 		return (
 			<div>
-				<Head title="test" />
+				<Head title="Beluga" />
 				<HeaderView />
 				<PostboxView />
 				{this.timelines.map(timeline =>
