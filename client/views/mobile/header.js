@@ -20,11 +20,19 @@ export default class HeaderView extends Component {
 		})
 	}
 	render() {
-		const timeline = this.props.timeline;
 		return (
 			<div>
-				<p>コード:<a href="https://github.com/belugafm/beluga" target="_blank">https://github.com/belugafm/beluga</a></p>
-				<p><a href="/signup">新規登録</a></p>
+				<p><a href="/">トップ</a> / <a href="/signup">新規登録</a> / <a href="/login">ログイン</a></p>
+				<p><a href="/server/create">サーバーの作成</a> / {(() => {
+					if (this.props.server) {
+						return <a href={`/hashtag/${this.props.server.name}/create`}>ルームの作成</a>
+					}
+				})()}</p>
+				{(() => {
+					if (this.props.logged_in) {
+						return <p>ログイン中:@{this.props.logged_in.name}</p>
+					}
+				})()}
 				<p>オンライン:{this.online}</p>
 			</div>
 		);

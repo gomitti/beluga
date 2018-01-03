@@ -8,9 +8,10 @@ if (typeof window != "undefined") {
 		constructor(){
 			this.listeners = []
 			this.ws = null
-			this.reconnect_interval = 1000
+			this.initial_reconnect_interval = 1000
 			this.max_reconnect_interval = 30000
 			this.reconnect_decay = 1.5
+			this.reconnect_interval = this.initial_reconnect_interval
 			this.timer_id = 0
 			this.initWebSocket()
 		}
@@ -34,6 +35,7 @@ if (typeof window != "undefined") {
 			}
 			this.ws.onopen = (e) => {
 				console.log("onopen", e)
+				this.reconnect_interval = this.initial_reconnect_interval
 			}
 			this.ws.onerror = (e) => {
 				console.log("onerror", e)

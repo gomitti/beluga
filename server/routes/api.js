@@ -1,6 +1,38 @@
+import { sha256 } from "js-sha256"
 import * as beluga from "../api"
 
 module.exports = (fastify, options, next) => {
+	// fastify.addHook("preHandler")はどうやらfastify.postした数だけ呼ばれるみたいなのでhookは使わない
+	fastify.decorate("authenticate_session", async (req, res) => {
+		const session = await fastify.session.start(req, res)
+		const true_csrf_token = sha256(session.id)
+		if (req.body.csrf_token !== true_csrf_token) {
+			throw new Error("ページの有効期限が切れました。ページを更新してください。")
+		}
+		return session
+	})
+	fastify.decorate("parse_bool", value => {
+		if (typeof value === "boolean") {
+			return value
+		}
+		if (typeof value === "string") {
+			if (value === "false") {
+				return false
+			}
+			if (value === "true") {
+				return true
+			}
+		}
+		if (typeof value === "number") {
+			if (value === 0) {
+				return false
+			}
+			if (value === 1) {
+				return true
+			}
+		}
+		return false
+	})
 	const websocket = options.websocket
 	fastify.decorate("websocket_broadcast", (name, data) => {
 		if (websocket.ws == undefined) {
@@ -13,15 +45,6 @@ module.exports = (fastify, options, next) => {
 		})
 	})
 	const api_version = "v1"
-	fastify.post(`/api/${api_version}/status/update`, async (req, res) => {
-		try {
-			const result = await beluga.v1.status.update(fastify.mongo.db, req.body)
-			fastify.websocket_broadcast("status_updated", {})
-			res.send({ "success": true })
-		} catch (error) {
-			res.send({ "success": false, "error": error.toString() })
-		}
-	})
 	fastify.post("/api/v1/statuses/hashtag", (req, res) => {
 		const db = fastify.mongo.db
 		const collection = db.collection("statuses")
@@ -39,26 +62,10 @@ module.exports = (fastify, options, next) => {
 				res.send({ success, statuses })
 			})
 	})
-	fastify.post(`/api/${api_version}/user/signup`, async (req, res) => {
-		const ip_address = req.headers["x-real-ip"]
-		const params = Object.assign({ ip_address }, req.body)
-		try {
-			const result = await beluga.v1.user.signup(fastify.mongo.db, params)
-			res.send({ "success": true })
-		} catch (error) {
-			res.send({ "success": false, "error": error.toString() })
-		}
-	})
-	fastify.post(`/api/${api_version}/user/signin`, async (req, res) => {
-		try {
-			const success = await beluga.v1.user.signin(fastify.mongo.db, req.body)
-			if (success !== true) {
-				throw new Error("パスワードが間違っています")
-			}
-			res.send({ "success": true })
-		} catch (error) {
-			res.send({ "success": false, "error": error.toString() })
-		}
-	})
+	fastify.register(require("./api/account"))
+	fastify.register(require("./api/status"))
+	fastify.register(require("./api/server"))
+	fastify.register(require("./api/hashtag"))
+	fastify.register(require("./api/timeline"))
 	next()
 }

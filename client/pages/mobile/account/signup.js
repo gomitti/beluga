@@ -1,6 +1,6 @@
 import { Component } from "react";
-import Head from "../../views/desktop/head"
-import { request } from "../../api"
+import Head from "../../../views/mobile/head"
+import { request } from "../../../api"
 
 export default class App extends Component {
 	signup() {

@@ -31,7 +31,7 @@ export default class TimelineView extends Component {
 			<div>
 				<p>新着通知:<input type="checkbox" ref="notificationCheckbox" onChange={e => this.toggleNotification(e)} /></p >
 				{timeline.filteredStatuses.map((status) =>
-					<StatusView status={status} />
+					<StatusView status={status} key={status.id} />
 				)}
 			</div>
 		);

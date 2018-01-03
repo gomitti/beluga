@@ -1,25 +1,42 @@
 const mongodb = require("mongodb")
-const fastify = require("fastify")()
+const app = require("fastify")()
 const websocket = require("./websocket")
 import * as mongo from "./mongo"
+import config from "./beluga.config"
 
 mongodb.MongoClient
 	.connect(mongo.url)
 	.then(client => {
 		const db = client.db(mongo.name)
-		fastify.register(require("fastify-mongodb"), {
+		app.register(require("fastify-mongodb"), {
 			client: db
 		})
-
-		fastify.register(require("./routes/api"), { websocket })
-
-		fastify
-			.register(require("fastify-react"))
+		app.register(require("fastify-cookie"))
+		app.register(require("./session"), {
+			"secret": config.auth.session.cookie_secret,
+			"cookie_name": config.auth.session.cookie_name,
+			"timezone_offset": config.auth.session.timezone_offset,
+			"cookie_options": {
+				"http_only": true,
+				"same_site": true,
+				"secure": config.auth.session.secure,
+				"max_age": config.auth.session.max_age
+			}
+		})
+		app.register(require("./routes/api"), { websocket })
+		app.register(require("fastify-react"))
 			.after(() => {
-				fastify.register(require("./routes/client"))
+				app.decorate("device_type", req => {
+					var ua = req.headers["user-agent"];
+					if (ua.match(/mobile/i)) {
+						return "mobile"
+					}
+					return "desktop"
+				})
+				app.register(require("./routes/client"))
 			})
 
-		fastify.listen(3000, (error) => {
+		app.listen(3000, (error) => {
 			if (error) {
 				throw error
 			}

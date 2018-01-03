@@ -24,17 +24,21 @@
   "dependencies": {
     "axios": "^0.17.1",
     "bcrypt": "^1.0.3",
+    "cookie-signature": "^1.0.6",
     "fastify": "^0.37.0",
+    "fastify-cookie": "^1.2.0",
     "fastify-mongodb": "^0.3.0",
     "fastify-react": "^1.0.0",
     "fastify-ws": "^0.4.0",
     "fs": "0.0.1-security",
+    "js-sha256": "^0.9.0",
     "mobx": "^3.4.1",
     "mobx-react": "^4.3.5",
     "mongodb": "^3.0.1",
     "next": "^4.2.1",
     "react": "^16.2.0",
-    "react-dom": "^16.2.0"
+    "react-dom": "^16.2.0",
+    "uid-safe": "^2.1.5"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

@@ -38,20 +38,17 @@ export default class TimelineStore {
 	@action.bound
 	loadNewStatuses() {
 		let params = Object.assign({
-
+			"trim_user": false
 		}, this.query)
 		request
-			.post(this.endpoint, params)
+			.get(this.endpoint, { "params": params })
 			.then(res => {
 				const data = res.data
-				const top_status = this.statuses[0]
-				for(const _status of data.statuses){
-					const status = new StatusStore()
-					status.text = _status.text
-					status.userName = _status.user_name
-					status.createdAt = _status.created_at
-					if (status.createdAt > top_status.createdAt){
-						this.prepend(status)
+				const base_created_at = this.statuses[0].created_at
+				for (const status of data.statuses) {
+					const store = new StatusStore(status)
+					if (status.created_at > base_created_at) {
+						this.prepend(store)
 					}
 				}
 				this.splice(20)

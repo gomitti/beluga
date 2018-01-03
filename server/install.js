@@ -4,15 +4,36 @@ const MongoClient = require("mongodb").MongoClient
 
 
 // ユーザー名の予約語を登録
-async function register_reserved_names(db){
+async function register_reserved_user_names(db) {
 	const collection = db.collection("users")
 	const reserved_names = [
 		"admin", "beluga"
 	]
 	for (const name of reserved_names) {
 		try {
-			const existing = await collection.find({ name }).toArray()
-			if (existing.length > 0) {
+			const existing = await collection.findOne({ name })
+			if (existing !== null) {
+				continue
+			}
+			const result = await collection.insertOne({
+				"name": name
+			})
+		} catch (error) {
+			console.log(error)
+		}
+	}
+}
+
+// サーバー名の予約語を登録
+async function register_reserved_server_names(db) {
+	const collection = db.collection("servers")
+	const reserved_names = [
+		"create"
+	]
+	for (const name of reserved_names) {
+		try {
+			const existing = await collection.findOne({ name })
+			if (existing !== null) {
 				continue
 			}
 			const result = await collection.insertOne({
@@ -30,7 +51,8 @@ async function register_reserved_names(db){
 		const client = await MongoClient.connect(mongo.url)
 		console.log("MongoDBへ接続")
 		const db = client.db(mongo.name)
-		await register_reserved_names(db)
+		await register_reserved_user_names(db)
+		await register_reserved_server_names(db)
 		client.close()
 	} catch (error) {
 		console.log(error)

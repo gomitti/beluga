@@ -10,7 +10,7 @@ export default class StatusView extends Component {
 		const status = this.props.status;
 		return (
 			<div>
-				<p className="name">{status.userName}</p>
+				<p className="name">@{status.user.name}</p>
 				<p className="body">{status.text}</p>
 			</div>
 		);

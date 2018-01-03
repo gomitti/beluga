@@ -1,28 +1,4 @@
-# ignore all
-*
-
-# allow any
-!client/
-!client/*
-!client/pages/*
-!client/views/*
-!server/
-!server/*
-!server/api/*
-!server/api/v1/*
-!server/routes/*
-!nginx/
-!nginx/conf.d/
-!*.conf
-!*.json
-!*.js
-!*.sh
-!*.scss
-!*.mp3
-!.gitignore
-!.babelrc
-!*.md
-
-# ignore
+/www/
+/node_modules/
 package-lock.json
 .DS_Store

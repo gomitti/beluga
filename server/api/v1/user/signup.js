@@ -20,7 +20,7 @@ export default async (db, params) => {
 		throw new Error(`ユーザー名は${config.user.max_name_length}文字を超えてはいけません`)
 	}
 	if (params.name.match(config.user.name_regexp) === null) {
-		throw new Error(`ユーザー名には半角英数字と_のみ使用できます`)
+		throw new Error(`ユーザー名に使用できない文字が含まれています`)
 	}
 	if (params.raw_password.length == 0) {
 		throw new Error("パスワードを入力してください")
@@ -29,7 +29,7 @@ export default async (db, params) => {
 		throw new Error(`パスワードは${72 - config.auth.salt.length}文字を超えてはいけません`)
 	}
 	if (params.raw_password.match(config.auth.password_regexp) === null) {
-		throw new Error(`パスワードには半角英数字と記号のみ使用できます`)
+		throw new Error(`パスワードに使用できない文字が含まれています`)
 	}
 	let password_hash = null
 	try {
@@ -39,28 +39,28 @@ export default async (db, params) => {
 	}
 	const collection = db.collection("users")
 
-	const multipost = await collection.find({ "_ip_address": params.ip_address }).toArray()
-	if (multipost.length > 0) {
-		throw new Error(`アカウントの連続作成はできません`)
+	const multipost = await collection.findOne({ "_ip_address": params.ip_address })
+	if (multipost !== null) {
+		throw new Error("アカウントの連続作成はできません")
 	}
 
-	const existing = await collection.find({ "name": params.name }).toArray()
-	if (existing.length > 0) {
-		throw new Error(`@${params.name}はすでに存在するため違うユーザー名に変更してください`)
+	const existing = await collection.findOne({ "name": params.name })
+	if (existing !== null) {
+		throw new Error(`@${params.name}はすでに存在するため、違うユーザー名に変更してください`)
 	}
 
 	const result = await collection.insertOne({
 		"name": params.name,
-		"screen_name": "",
+		"display_name": "",
 		"location": "",
 		"description": "",
 		"statuses_count": 0,
 		"tags": [],
 		"following": [],
 		"followers": [],
-		"created_at": new Date().getTime(),
+		"created_at": Date.now(),
 		"_ip_address": params.ip_address,
 		"_password_hash": password_hash
 	})
-	return true
+	return result.ops[0]
 }
