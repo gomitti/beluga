@@ -1,4 +1,6 @@
 /www/
 /node_modules/
+/server/config/beluga.js
+/server/config/storage.js
 package-lock.json
 .DS_Store

@@ -42,7 +42,21 @@ sudo apt install libssl-dev
 git clone https://github.com/uNetworking/uWebSockets
 cd uWebSockets
 make
-sudoe make install
+sudo make install
+```
+
+### GraphicsMagick
+
+#### macOS
+
+```
+brew install graphicsmagick
+```
+
+#### Ubuntu
+
+```
+sudo apt install graphicsmagick
 ```
 
 ### node_modules

@@ -1,5 +1,5 @@
 import { ObjectID } from "mongodb"
-import config from "../../../beluga.config"
+import config from "../../../config/beluga"
 
 export default async (db, params) => {
 	if (!!params.id == false && !!params.name == false) {

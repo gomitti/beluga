@@ -1,4 +1,4 @@
-import * as beluga from "../../api"
+import beluga from "../../api"
 import { hash } from "bcrypt/bcrypt";
 
 module.exports = (fastify, options, next) => {

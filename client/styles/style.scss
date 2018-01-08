@@ -1,14 +1,26 @@
 @import "button";
+@import "define";
 
-
+body {
+	font-size: 16px;
+	font-family: $font_family;
+}
 p {
 	line-height: 16px;
 }
+a {
+	text-decoration: none;
+	color: $link_color;
+}
 .name {
-	font-size: 12px;
+	font-size: 14px;
 }
 .body {
 	font-size: 16px;
+	line-height: 19px;
+	word-break: break-all;
+	word-wrap: break-word;
+	overflow: hidden;
 }
 textarea {
 	font-size: 16px;

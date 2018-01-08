@@ -29,7 +29,7 @@ export default class App extends Component {
 	}
 
 	componentWillMount() {
-		const timeline = new TimelineStore("/timeline/hashtag", { "id": this.props.hashtag.id })
+		const timeline = new TimelineStore("/timeline/hashtag", { "id": this.props.hashtag.id }, { "hashtag": this.props.hashtag })
 		for (const status of this.props.statuses) {
 			const store = new StatusStore(status)
 			timeline.append(store)

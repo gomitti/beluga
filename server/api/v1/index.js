@@ -3,4 +3,6 @@ import user from "./user"
 import server from "./server"
 import hashtag from "./hashtag"
 import timeline from "./timeline"
-export { status, user, server, hashtag, timeline }
+import media from "./media"
+import account from "./account"
+export default { status, user, server, hashtag, timeline, media, account }

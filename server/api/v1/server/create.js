@@ -1,5 +1,5 @@
 import { ObjectID } from "mongodb"
-import config from "../../../beluga.config"
+import config from "../../../config/beluga"
 
 export default async (db, params) => {
 	if (typeof params.name !== "string") {
@@ -26,7 +26,11 @@ export default async (db, params) => {
 	}
 
 	if (typeof params.user_id === "string") {
-		params.user_id = ObjectID(params.user_id)
+		try {
+			params.user_id = ObjectID(params.user_id)
+		} catch (error) {
+			throw new Error("ログインしてください")
+		}
 	}
 	if (!(params.user_id instanceof ObjectID)) {
 		throw new Error("ログインしてください")
@@ -52,5 +56,8 @@ export default async (db, params) => {
 		"created_at": Date.now(),
 		"created_by": params.user_id
 	})
-	return result.ops[0]
+	const server = result.ops[0]
+	server.id = server._id
+	delete server._id
+	return server
 }

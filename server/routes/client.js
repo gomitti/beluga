@@ -1,5 +1,5 @@
 import { sha256 } from "js-sha256"
-import * as beluga from "../api"
+import beluga from "../api"
 const next = require("next")
 const dev = process.env.NODE_ENV !== "production"
 const handle = next({ dev }).getRequestHandler()

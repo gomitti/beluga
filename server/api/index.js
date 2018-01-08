@@ -1,2 +1,2 @@
-import * as v1 from "./v1"
-export { v1 }
+import v1 from "./v1"
+export default { v1 }

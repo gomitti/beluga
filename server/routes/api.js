@@ -1,12 +1,13 @@
 import { sha256 } from "js-sha256"
-import * as beluga from "../api"
+import beluga from "../api"
 
 module.exports = (fastify, options, next) => {
 	// fastify.addHook("preHandler")はどうやらfastify.postした数だけ呼ばれるみたいなのでhookは使わない
-	fastify.decorate("authenticate_session", async (req, res) => {
+	fastify.decorate("authenticate_session", async (req, res, _csrf_token) => {
 		const session = await fastify.session.start(req, res)
 		const true_csrf_token = sha256(session.id)
-		if (req.body.csrf_token !== true_csrf_token) {
+		const csrf_token = _csrf_token ? _csrf_token : req.body.csrf_token
+		if (csrf_token !== true_csrf_token) {
 			throw new Error("ページの有効期限が切れました。ページを更新してください。")
 		}
 		return session
@@ -34,14 +35,14 @@ module.exports = (fastify, options, next) => {
 		return false
 	})
 	const websocket = options.websocket
-	fastify.decorate("websocket_broadcast", (name, data) => {
+	fastify.decorate("websocket_broadcast", (event, data) => {
 		if (websocket.ws == undefined) {
 			return
 		}
 		websocket.ws.clients.forEach(client => {
-			client.send(JSON.stringify({
-				[name]: data
-			}))
+			client.send(JSON.stringify(Object.assign({
+				[event]: true
+			}, data)))
 		})
 	})
 	const api_version = "v1"
@@ -63,9 +64,10 @@ module.exports = (fastify, options, next) => {
 			})
 	})
 	fastify.register(require("./api/account"))
+	fastify.register(require("./api/hashtag"))
+	fastify.register(require("./api/media"))
 	fastify.register(require("./api/status"))
 	fastify.register(require("./api/server"))
-	fastify.register(require("./api/hashtag"))
 	fastify.register(require("./api/timeline"))
 	next()
 }

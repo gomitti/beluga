@@ -1,6 +1,5 @@
 import { ObjectID } from "mongodb"
-import * as assert from "../../../assert"
-import config from "../../../beluga.config"
+import config from "../../../config/beluga"
 import user_show from "../user/show"
 
 export default async (db, params) => {
@@ -8,11 +7,16 @@ export default async (db, params) => {
 		"count": 20,
 		"since_id": null,
 		"max_id": null,
-		"trim_user": true
+		"trim_user": true,
+		"sort": -1
 	}, params)
 
 	if (typeof params.id === "string") {
-		params.id = ObjectID(params.id)
+		try {
+			params.id = ObjectID(params.id)
+		} catch (error) {
+			throw new Error("idが不正です")
+		}
 	}
 	if (!(params.id instanceof ObjectID)) {
 		throw new Error("idが不正です")
@@ -20,7 +24,11 @@ export default async (db, params) => {
 
 	if (!!params.since_id) {
 		if (typeof params.since_id === "string") {
-			params.since_id = ObjectID(params.since_id)
+			try {
+				params.since_id = ObjectID(params.since_id)
+			} catch (error) {
+				throw new Error("since_idが不正です")
+			}
 		}
 		if (!(params.since_id instanceof ObjectID)) {
 			throw new Error("since_idが不正です")
@@ -31,10 +39,14 @@ export default async (db, params) => {
 
 	if (!!params.max_id) {
 		if (typeof params.max_id === "string") {
-			params.max_id = ObjectID(params.max_id)
+			try {
+				params.max_id = ObjectID(params.max_id)
+			} catch (error) {
+				throw new Error("max_idが不正です")
+			}
 		}
 		if (!(params.max_id instanceof ObjectID)) {
-			throw new Error("since_idが不正です")
+			throw new Error("max_idが不正です")
 		}
 	} else {
 		params.max_id = null
@@ -47,25 +59,36 @@ export default async (db, params) => {
 		params.count = config.timeline.max_count
 	}
 
+	if (typeof params.sort !== "number") {
+		throw new Error("sortが不正です")
+	}
+	if(params.sort !== 1 && params.sort !== -1){
+		throw new Error("sortが不正です")
+	}
+
 	params.trim_user = !!params.trim_user
 
 	let query = {
 		"hashtag_id": params.id
 	}
 	if (params.since_id) {
-		query.since_id = params.since_id
+		query._id = { "$gt": params.since_id }
 	}
 	if (params.max_id) {
-		query.max_id = params.max_id
+		query._id = { "$lt": params.max_id }
 	}
 
 	const collection = db.collection("statuses")
 	const result = await collection.find(query, {
-		"sort": { "_id": -1 },
+		"sort": { "_id": params.sort },
 		"limit": params.count
 	}).toArray()
 
 	if (params.trim_user) {
+		for (const status of result) {
+			status.id = status._id
+			delete status._id
+		}
 		return result
 	}
 
@@ -76,6 +99,8 @@ export default async (db, params) => {
 			continue
 		}
 		status.user = user
+		status.id = status._id
+		delete status._id
 		statuses.push(status)
 	}
 

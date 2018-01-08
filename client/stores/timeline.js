@@ -6,9 +6,19 @@ export default class TimelineStore {
 	// 取得済みの全ての投稿
 	@observable statuses = [];
 
-	constructor(endpoint, query) {
+	constructor(endpoint, query, model) {
 		this.endpoint = endpoint
 		this.query = query
+		this.model = model
+	}
+
+	statusBelongsTo(status){
+		if(!!status.hashtag && !!this.model.hashtag){
+			if(status.hashtag.id === this.model.hashtag.id){
+				return true
+			}
+		}
+		return false
 	}
 
 	// ミュートなどでフィルタリングした投稿
@@ -20,6 +30,12 @@ export default class TimelineStore {
 	// 新しい投稿を追加
 	@action.bound
 	prepend(status) {
+		if(status instanceof Array){
+			for(let i = status.length - 1;i >= 0;i--){
+				this.statuses.unshift(status[i])
+			}
+			return
+		}
 		this.statuses.unshift(status)
 	}
 
@@ -36,24 +52,25 @@ export default class TimelineStore {
 	}
 
 	@action.bound
-	loadNewStatuses() {
-		let params = Object.assign({
+	async loadNewStatuses() {
+		const params = {
 			"trim_user": false
-		}, this.query)
-		request
-			.get(this.endpoint, { "params": params })
-			.then(res => {
-				const data = res.data
-				const base_created_at = this.statuses[0].created_at
-				for (const status of data.statuses) {
-					const store = new StatusStore(status)
-					if (status.created_at > base_created_at) {
-						this.prepend(store)
-					}
-				}
-				this.splice(20)
-			}).catch(error => {
-
-			})
+		}
+		if (this.statuses.length > 0) {
+			params.since_id = this.statuses[0].id
+		}
+		const query = Object.assign(params, this.query)
+		try {
+			const res = await request.get(this.endpoint, { "params": query })
+			const data = res.data
+			const stores = []
+			for (const status of data.statuses) {
+				const store = new StatusStore(status)
+				stores.push(store)
+			}
+			this.prepend(stores)
+		} catch (error) {
+			
+		}
 	}
 }

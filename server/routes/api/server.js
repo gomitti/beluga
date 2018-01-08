@@ -1,4 +1,4 @@
-import * as beluga from "../../api"
+import beluga from "../../api"
 
 module.exports = (fastify, options, next) => {
 	let api_version = "v1"

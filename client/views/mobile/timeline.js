@@ -11,15 +11,17 @@ export default class TimelineView extends Component {
 	componentDidMount() {
 		ws.addEventListener("message", (e) => {
 			const data = JSON.parse(e.data)
-			if (data.status_updated){
-				this.props.timeline.loadNewStatuses()
-				if (this.notification_enabled){
-					notification.push("新しい投稿があります", {
-						"body": ""
-					})
+			if (data.status_updated) {
+				const { status } = data
+				const { timeline } = this.props
+				if (timeline.statusBelongsTo(status)) {
+					timeline.loadNewStatuses()
 				}
 			}
 		})
+		setInterval(() => {
+			this.props.timeline.loadNewStatuses()
+		}, 30000)
 	}
 	toggleNotification(e){
 		const checkbox = this.refs.notificationCheckbox

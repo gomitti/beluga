@@ -1,16 +1,24 @@
 import { ObjectID } from "mongodb"
-import config from "../../../beluga.config"
+import config from "../../../config/beluga"
 
 export default async (db, params) => {
 	if (typeof params.server_id === "string") {
-		params.server_id = ObjectID(params.server_id)
+		try {
+			params.server_id = ObjectID(params.server_id)
+		} catch (error) {
+			throw new Error("サーバーを指定してください")
+		}
 	}
 	if (!(params.server_id instanceof ObjectID)) {
 		throw new Error("サーバーを指定してください")
 	}
 
 	if (typeof params.user_id === "string") {
-		params.user_id = ObjectID(params.user_id)
+		try {
+			params.user_id = ObjectID(params.user_id)
+		} catch (error) {
+			throw new Error("ログインしてください")
+		}
 	}
 	if (!(params.user_id instanceof ObjectID)) {
 		throw new Error("ログインしてください")

@@ -4,7 +4,7 @@ jest.unmock("../../server/mongo")
 
 const uid = require("uid-safe").sync
 const MongoClient = require("mongodb").MongoClient
-import * as mongo from "../../server/mongo"
+import mongo from "../../server/mongo"
 import Session from "../../server/session/session"
 import Store from "../../server/session/store"
 
@@ -14,19 +14,19 @@ describe("Session", () => {
 	const max_cache_capacity = 10
 	beforeEach(async () => {
 		const client = await MongoClient.connect(mongo.url)
-		db = client.db(mongo.test_name)
+		db = client.db(mongo.database.test)
 		store = new Store(db, {
 			max_cache_capacity
 		})
 	})
 	afterEach(async () => {
 		const collection = db.collection("sessions")
-		collection.deleteMany({})
+		await collection.deleteMany({})
 	})
-	test(`database should be test`, async () => {
-		expect(db.s.databaseName).toBe(mongo.test_name)
+	test(`database should be test`, () => {
+		expect(db.s.databaseName).toBe(mongo.database.test)
 	})
-	test(`max_cache_capacity should be ${max_cache_capacity}`, async () => {
+	test(`max_cache_capacity should be ${max_cache_capacity}`, () => {
 		expect(store.options.max_cache_capacity).toBe(max_cache_capacity)
 	})
 	test(`Cache size should be ${max_cache_capacity}`, async () => {

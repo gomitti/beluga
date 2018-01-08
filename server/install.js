@@ -1,5 +1,5 @@
 import "babel-polyfill"
-import * as mongo from "./mongo"
+import mongo from "./mongo"
 const MongoClient = require("mongodb").MongoClient
 
 
@@ -15,9 +15,7 @@ async function register_reserved_user_names(db) {
 			if (existing !== null) {
 				continue
 			}
-			const result = await collection.insertOne({
-				"name": name
-			})
+			const result = await collection.insertOne({	name })
 		} catch (error) {
 			console.log(error)
 		}
@@ -36,9 +34,7 @@ async function register_reserved_server_names(db) {
 			if (existing !== null) {
 				continue
 			}
-			const result = await collection.insertOne({
-				"name": name
-			})
+			const result = await collection.insertOne({ name })
 		} catch (error) {
 			console.log(error)
 		}
@@ -50,9 +46,15 @@ async function register_reserved_server_names(db) {
 	try {
 		const client = await MongoClient.connect(mongo.url)
 		console.log("MongoDBへ接続")
-		const db = client.db(mongo.name)
+		const db = client.db(mongo.database.production)
 		await register_reserved_user_names(db)
 		await register_reserved_server_names(db)
+
+		// インデックスを張る
+		db.collection("statuses").createIndex({ "hashtag_id": -1 })
+		db.collection("statuses").createIndex({ "recipient_id": -1 })
+		db.collection("statuses").createIndex({ "user_id": -1 })
+
 		client.close()
 	} catch (error) {
 		console.log(error)

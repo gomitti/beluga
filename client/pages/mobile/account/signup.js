@@ -3,6 +3,11 @@ import Head from "../../../views/mobile/head"
 import { request } from "../../../api"
 
 export default class App extends Component {
+
+	static async getInitialProps({ query }) {
+		return { ...query }
+	}
+
 	signup() {
 		const name = this.refs.name.value
 		const password = this.refs.password.value
@@ -21,12 +26,15 @@ export default class App extends Component {
 		}
 		request
 			.post("/user/signup", {
-				name, "raw_password": password
+				name, 
+				"raw_password": password,
+				"csrf_token": this.props.csrf_token
 			})
 			.then(res => {
 				const data = res.data
 				if (data.success == false) {
 					alert(data.error)
+					this.pending = false
 					return
 				}
 				location.href = "/"

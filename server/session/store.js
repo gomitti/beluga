@@ -49,7 +49,7 @@ export default class Store {
 			}
 			assert.checkIsNumber(session.expires)
 		} catch (error) {
-			console.log(error)
+			// console.log(error)
 			throw new Error("セッションを保存できません")
 		}
 		const _ = await this.get(session.encrypted_id)

@@ -1,17 +1,10 @@
 import * as assert from "../../../assert"
-import config from "../../../beluga.config"
+import config from "../../../config/beluga"
 const bcrypt = require("bcrypt");
 
 export default async (db, params) => {
-	try {
-		assert.checkKeyExists("name", params)
-		assert.checkKeyExists("ip_address", params)
-		assert.checkKeyExists("raw_password", params)
-		assert.checkIsString(params.name)
-		assert.checkIsString(params.ip_address)
-		assert.checkIsString(params.raw_password)
-	} catch (error) {
-		throw new Error("サーバーで問題が発生しました")
+	if (assert.isString(params.name) === false) {
+		throw new Error("ユーザー名を入力してください")
 	}
 	if (params.name.length == 0) {
 		throw new Error("ユーザー名を入力してください")
@@ -22,6 +15,10 @@ export default async (db, params) => {
 	if (params.name.match(config.user.name_regexp) === null) {
 		throw new Error(`ユーザー名に使用できない文字が含まれています`)
 	}
+
+	if (assert.isString(params.raw_password) === false) {
+		throw new Error("パスワードを入力してください")
+	}
 	if (params.raw_password.length == 0) {
 		throw new Error("パスワードを入力してください")
 	}
@@ -31,6 +28,11 @@ export default async (db, params) => {
 	if (params.raw_password.match(config.auth.password_regexp) === null) {
 		throw new Error(`パスワードに使用できない文字が含まれています`)
 	}
+
+	if (assert.isString(params.ip_address) === false) {
+		throw new Error("サーバーで問題が発生しました")
+	}
+
 	let password_hash = null
 	try {
 		password_hash = await bcrypt.hash(params.raw_password + config.auth.salt, config.auth.bcrypt_salt_round);
@@ -62,5 +64,8 @@ export default async (db, params) => {
 		"_ip_address": params.ip_address,
 		"_password_hash": password_hash
 	})
-	return result.ops[0]
+	const user = result.ops[0]
+	user.id = user._id
+	delete user._id
+	return user
 }

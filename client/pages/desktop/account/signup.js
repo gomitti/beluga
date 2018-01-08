@@ -5,7 +5,7 @@ import { request } from "../../../api"
 export default class App extends Component {
 
 	static async getInitialProps({ query }) {
-		return { "csrf_token": query.csrf_token }
+		return { ...query }
 	}
 
 	signup() {
@@ -41,6 +41,7 @@ export default class App extends Component {
 				const data = res.data
 				if (data.success == false) {
 					alert(data.error)
+					this.pending = false
 					return
 				}
 				location.href = "/"

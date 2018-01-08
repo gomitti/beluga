@@ -5,10 +5,11 @@ import { request } from "../../../api"
 export default class App extends Component {
 
 	static async getInitialProps({ query }) {
-		return { "csrf_token": query.csrf_token }
+		return { ...query }
 	}
 
-	signin() {
+	signin(e) {
+		e.preventDefault()
 		if (this.pending === true) {
 			return
 		}
@@ -35,6 +36,7 @@ export default class App extends Component {
 				const data = res.data
 				if (data.success == false) {
 					alert(data.error)
+					this.pending = false
 					return
 				}
 				location.href = "/"
@@ -46,7 +48,7 @@ export default class App extends Component {
 	}
 	render() {
 		return (
-			<div>
+			<form onSubmit={e => this.signin(e)} method="POST">
 				<Head title="ログイン"></Head>
 				<div>
 					<p>ユーザー名</p>
@@ -56,8 +58,8 @@ export default class App extends Component {
 					<p>パスワード</p>
 					<p><input type="password" ref="password" /></p>
 				</div>
-				<div><button className="button" onClick={e => this.signin()}>ログイン</button></div>
-			</div>
+				<div><button className="button" onClick={e => this.signin(e)}>ログイン</button></div>
+			</form>
 		);
 	}
 }

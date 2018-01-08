@@ -1,4 +1,4 @@
-import * as beluga from "../../api"
+import beluga from "../../api"
 
 module.exports = (fastify, options, next) => {
 	fastify.next("/hashtag/:server_name/create", async (app, req, res) => {

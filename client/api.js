@@ -1,5 +1,6 @@
 import config from "./beluga.config"
 let request = undefined
+let upload = undefined
 
 if (typeof window != "undefined") {
 	const _axios = require("axios")
@@ -12,7 +13,6 @@ if (typeof window != "undefined") {
 		},
 		responseType: "json"
 	})
-
 }
 
 export { request }

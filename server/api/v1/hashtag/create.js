@@ -1,5 +1,5 @@
 import { ObjectID } from "mongodb"
-import config from "../../../beluga.config"
+import config from "../../../config/beluga"
 
 export default async (db, params) => {
 	if (typeof params.tagname !== "string"){
@@ -9,13 +9,21 @@ export default async (db, params) => {
 		throw new Error(`ハッシュタグは${config.hashtag.max_tagname_length}文字を超えてはいけません`)
 	}
 	if (typeof params.user_id === "string") {
-		params.user_id = ObjectID(params.user_id)
+		try {
+			params.user_id = ObjectID(params.user_id)
+		} catch (error) {
+			throw new Error("ログインしてください")
+		}
 	}
 	if (!(params.user_id instanceof ObjectID)) {
 		throw new Error("ログインしてください")
 	}
 	if (typeof params.server_id === "string") {
-		params.server_id = ObjectID(params.server_id)
+		try {
+			params.server_id = ObjectID(params.server_id)
+		} catch (error) {
+			throw new Error("サーバーを指定してください")
+		}
 	}
 	if (!(params.server_id instanceof ObjectID)) {
 		throw new Error("サーバーを指定してください")
@@ -36,5 +44,8 @@ export default async (db, params) => {
 		"created_at": Date.now(),
 		"created_by": params.user_id
 	})
-	return result.ops[0]
+	const hashtag = result.ops[0]
+	hashtag.id = hashtag._id
+	delete hashtag._id
+	return hashtag
 }

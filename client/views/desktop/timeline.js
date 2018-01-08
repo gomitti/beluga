@@ -5,23 +5,35 @@ import StatusStore from "../../stores/status"
 import { request } from "../../api"
 import ws from "../../websocket"
 import * as notification from "../../notification"
+import { setInterval } from "timers";
 
 @observer
 export default class TimelineView extends Component {
 	componentDidMount() {
 		ws.addEventListener("message", (e) => {
 			const data = JSON.parse(e.data)
-			if (data.status_updated){
-				this.props.timeline.loadNewStatuses()
-				if (this.notification_enabled){
-					notification.push("新しい投稿があります", {
-						"body": ""
-					})
+			if (data.status_updated) {
+				const { status } = data
+				const { timeline } = this.props
+				if (timeline.statusBelongsTo(status)) {
+					timeline.loadNewStatuses()
+					if (this.notification_enabled) {
+						let text = status.text
+						if(text.length > 140){
+							text = text.slice(0, 140)
+						}
+						notification.push("新しい投稿があります", {
+							"body": `@${status.user.name}: ${text}`
+						})
+					}
 				}
 			}
 		})
+		setInterval(() => {
+			this.props.timeline.loadNewStatuses()
+		}, 30000)
 	}
-	toggleNotification(e){
+	toggleNotification(e) {
 		const checkbox = this.refs.notificationCheckbox
 		this.notification_enabled = checkbox.checked
 	}

@@ -1,13 +1,13 @@
 const mongodb = require("mongodb")
 const app = require("fastify")()
 const websocket = require("./websocket")
-import * as mongo from "./mongo"
-import config from "./beluga.config"
+import mongo from "./mongo"
+import config from "./config/beluga"
 
 mongodb.MongoClient
 	.connect(mongo.url)
 	.then(client => {
-		const db = client.db(mongo.name)
+		const db = client.db(mongo.database.production)
 		app.register(require("fastify-mongodb"), {
 			client: db
 		})
@@ -36,18 +36,16 @@ mongodb.MongoClient
 				app.register(require("./routes/client"))
 			})
 
-		app.listen(3000, (error) => {
+		app.listen(config.port.app, (error) => {
 			if (error) {
 				throw error
 			}
-			console.log("Beluga running on http://localhost:3000")
 		})
 
-		websocket.listen(8080, (error) => {
+		websocket.listen(config.port.websocket, (error) => {
 			if (error) {
 				throw error
 			}
-			console.log("WebSocket server running on http://localhost:8080")
 		})
 	})
 	.catch(error => {

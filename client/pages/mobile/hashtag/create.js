@@ -6,7 +6,7 @@ import config from "../../../beluga.config"
 export default class App extends Component {
 
 	static async getInitialProps({ query }) {
-		return { "csrf_token": query.csrf_token, "server": query.server }
+		return { ...query }
 	}
 
 	create() {
@@ -30,6 +30,7 @@ export default class App extends Component {
 				const data = res.data
 				if (data.success == false) {
 					alert(data.error)
+					this.pending = false
 					return
 				}
 				location.href = `/server/${this.props.server.name}/${tagname}`

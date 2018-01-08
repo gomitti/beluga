@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { request } from "../../api"
+import { request, upload } from "../../api"
 
 export default class PostboxView extends Component {
 	post() {
@@ -9,7 +9,7 @@ export default class PostboxView extends Component {
 		this.pending = true
 		const textarea = this.refs.textarea
 		const text = textarea.value
-		if(text.length == 0){
+		if (text.length == 0) {
 			alert("本文を入力してください")
 			this.pending = false
 			return
@@ -18,14 +18,19 @@ export default class PostboxView extends Component {
 			text,
 			"csrf_token": this.props.csrf_token
 		}
-		if(this.props.hashtag){
+		// ルームへの投稿
+		if (this.props.hashtag) {
 			query.hashtag_id = this.props.hashtag.id
+		}
+		// ユーザーのホームへの投稿
+		if (this.props.recipient) {
+			query.recipient_id = this.props.recipient.id
 		}
 		request
 			.post("/status/update", query)
 			.then(res => {
 				const data = res.data
-				if(data.success == false){
+				if (data.success == false) {
 					alert(data.error)
 					return
 				}
@@ -86,8 +91,41 @@ export default class PostboxView extends Component {
 		}
 	}
 
+	onFileChange(e) {
+		const files = e.target.files
+		console.log(files)
+		const reader = new FileReader()
+		reader.onload = (e) => {
+			request
+				.post("/media/image/upload", {
+					"data": reader.result,
+					"csrf_token": this.props.csrf_token
+				})
+				.then(res => {
+					const data = res.data
+					if (data.error) {
+						alert(data.error)
+					}
+					const url = data.urls.medium ? data.urls.medium : data.urls.original
+					if(this.refs.textarea.value.length == 0){
+						this.refs.textarea.value = url
+					}else{
+						this.refs.textarea.value = this.refs.textarea.value + "\n" + url
+					}
+				})
+				.catch(error => {
+					alert(error)
+				})
+				.then(_ => {
+				})
+		}
+		for (const file of files) {
+			reader.readAsDataURL(file)
+		}
+	}
+
 	render() {
-		if (!this.props.logged_in){
+		if (!this.props.logged_in) {
 			return (
 				<div>投稿するにはログインしてください</div>
 			)
@@ -96,6 +134,7 @@ export default class PostboxView extends Component {
 			<div>
 				<div><textarea ref="textarea" onKeyUp={e => this.onKeyUp(e)} onKeyDown={e => this.onKeyDown(e)} /></div>
 				<div><button className="button" onClick={e => this.post()}>投稿する</button></div>
+				<input type="file" ref="file" accept="image/*, video/*" onChange={e => this.onFileChange(e)} multiple />
 			</div>
 		);
 	}

@@ -1,6 +1,5 @@
 import { ObjectID } from "mongodb"
-import * as assert from "../../../assert"
-import config from "../../../beluga.config"
+import config from "../../../config/beluga"
 
 export default async (db, params) => {
 	if (typeof params.text !== "string") {
@@ -14,7 +13,11 @@ export default async (db, params) => {
 	}
 
 	if (typeof params.user_id === "string") {
-		params.user_id = ObjectID(params.user_id)
+		try {
+			params.user_id = ObjectID(params.user_id)
+		} catch (error) {
+			throw new Error("ログインしてください")
+		}
 	}
 	if (!(params.user_id instanceof ObjectID)) {
 		throw new Error("ログインしてください")
@@ -24,17 +27,45 @@ export default async (db, params) => {
 		"text": params.text,
 		"user_id": params.user_id,
 		"likes_count": 0,
+		"favorites_count": 0,
 		"created_at": Date.now()
 	}
 
+	// ルームへの投稿
 	if (typeof params.hashtag_id === "string") {
-		params.hashtag_id = ObjectID(params.hashtag_id)
+		try {
+			params.hashtag_id = ObjectID(params.hashtag_id)
+		} catch (error) {
+			params.hashtag_id = null
+		}
 	}
 	if (params.hashtag_id instanceof ObjectID) {
 		query.hashtag_id = params.hashtag_id
 	}
+	
+	// ユーザーのホームへの投稿
+	if (typeof params.recipient_id === "string") {
+		try {
+			params.recipient_id = ObjectID(params.recipient_id)
+		} catch (error) {
+			params.recipient_id = null
+		}
+	}
+	if (params.recipient_id instanceof ObjectID) {
+		query.recipient_id = params.recipient_id
+	}
+
+	if (!!query.recipient_id && !!query.hashtag_id) {
+		throw new Error("投稿先が重複しています")
+	}
+	if (!query.recipient_id && !query.hashtag_id) {
+		throw new Error("投稿先を指定してください")
+	}
 
 	const collection = db.collection("statuses")
 	const result = await collection.insertOne(query)
-	return result.ops[0]
+	const status = result.ops[0]
+	status.id = status._id
+	delete status._id
+	return status
 }
