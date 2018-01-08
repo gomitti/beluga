@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component } from "react"
 import Head from "../../../views/desktop/head"
 import { request } from "../../../api"
 import config from "../../../beluga.config"

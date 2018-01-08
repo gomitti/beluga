@@ -1,7 +1,7 @@
 let ws = undefined
 import config from "./beluga.config"
 
-if (typeof window != "undefined") {
+if (typeof window !== "undefined") {
 	const http = location.href.match(/https?/)[0]
 	const protocol = (http == "https") ? "wss" : "ws"
 	class WebSocketClient{

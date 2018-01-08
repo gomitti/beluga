@@ -1,5 +1,6 @@
 import { ObjectID } from "mongodb"
 import * as assert from "../assert"
+import logger from "../logger"
 
 export default class Store {
 	constructor(db, options) {
@@ -44,12 +45,16 @@ export default class Store {
 			assert.checkIsString(session.encrypted_id)
 			if (session.user_id !== null) {
 				if (!(session.user_id instanceof ObjectID) ){
-					throw new Error()
+					throw new Error("不正なユーザーIDです")
 				}
 			}
 			assert.checkIsNumber(session.expires)
 		} catch (error) {
-			// console.log(error)
+			logger.log({
+				"level": "error",
+				"message": "Failed to save session",
+				"error": error.toString(),
+			})
 			throw new Error("セッションを保存できません")
 		}
 		const _ = await this.get(session.encrypted_id)

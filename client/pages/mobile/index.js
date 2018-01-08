@@ -1,12 +1,12 @@
-import { Component } from "react";
-import { Provider, observer } from "mobx-react";
-import { useStrict, observable, action } from "mobx";
-import TimelineView from "../../views/mobile/timeline";
-import HeaderView from "../../views/mobile/header";
-import PostboxView from "../../views/mobile/postbox";
+import { Component } from "react"
+import { Provider, observer } from "mobx-react"
+import { useStrict, observable, action } from "mobx"
+import TimelineView from "../../views/mobile/timeline"
+import HeaderView from "../../views/mobile/header"
+import PostboxView from "../../views/mobile/postbox"
 import Head from "../../views/mobile/head"
-import TimelineStore from "../../stores/timeline";
-import StatusStore from "../../stores/status";
+import TimelineStore from "../../stores/timeline"
+import StatusStore from "../../stores/status"
 
 // mobxの状態をaction内でのみ変更可能にする
 useStrict(true)

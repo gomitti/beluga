@@ -1,5 +1,6 @@
 import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
+import update from "./update"
 import path from "path"
 import Ftp from "jsftp"
 const uid = require("uid-safe").sync
@@ -17,59 +18,35 @@ const ftp_mkdir = async (ftp, directory) => {
 	})
 }
 
-const gm_draw = async (output_filename, width, height, color_code) => {
+const gm_draw = async (width, height, color_code) => {
 	return new Promise((resolve, reject) => {
 		gm(width, height, color_code)
-			.write(output_filename, function (error) {
+			.toBuffer("PNG", function (error, data) {
 				if (error) {
 					return reject(error)
 				}
-				return resolve()
+				return resolve(data)
 			})
 	})
 }
 
 export default async (db, user, server) => {
+	if (!user) {
+		throw new Error("ユーザーが見つかりません")
+	}
 	if (!(user.id instanceof ObjectID)) {
-		throw new Error()
+		throw new Error("ユーザーが見つかりません")
 	}
 
-	const tmp_dirname = path.join(config.tmp.path, "tmp")
-	const tmp_filename = path.join(tmp_dirname, uid(30))
-	try {
-		fs.mkdirSync(tmp_dirname)
-	} catch (error) {
-
+	const size = config.profile.image.size
+	const colors = config.profile.image.default.colors
+	let random_color = colors[Math.floor(Math.random() * colors.length)]
+	if (random_color.indexOf("#") !== 0) {
+		random_color = "#" + random_color
 	}
-	if (fs.existsSync(tmp_filename)){
-		throw new Error("サーバーで問題が発生しました。やり直してください。")
+	if (!!random_color.match(/^#[0-9A-Fa-f]+$/) === false) {
+		throw new Error("サーバーで問題が発生しました")
 	}
-	const base_size = config.profile.image.size
-	const color = "#88F"
-	await gm_draw(tmp_filename, base_size, base_size, color)
-
-	return
-
-
-	const ftp = new Ftp({
-		host: server.host,
-		port: server.port,
-		user: server.user,
-		pass: server.password
-	})
-	let directory = "media"
-	try {
-		await ftp_mkdir(ftp, directory)
-	} catch (error) {
-		console.log(error)
-	}
-	directory = path.join(directory, uid(20))
-	console.log(directory)
-	try {
-		await ftp_mkdir(ftp, directory)
-	} catch (error) {
-		console.error(error);
-	}
-	await ftp.raw("quit")
-	return true
+	const data = await gm_draw(size, size, random_color)
+	return update(db, { data, "ext": "png" }, user, server)
 }

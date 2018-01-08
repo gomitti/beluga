@@ -1,22 +1,11 @@
 import beluga from "../../api"
 import storage from "../../config/storage"
 import config from "../../config/beluga"
-const fileType = require('file-type');
-const path = require('path');
+import logger from "../../logger"
+const fileType = require("file-type");
+const path = require("path");
 const uid = require("uid-safe").sync
 const fs = require("fs")
-const winston = require("winston")
-
-const logger = winston.createLogger({
-	"level": "info",
-	"format": winston.format.json(),
-	"transports": [
-		new winston.transports.File({
-			"filename": path.join(config.log.path, "error.log"), 
-			"level": "error"
-		})
-	]
-})
 
 module.exports = (fastify, options, next) => {
 	let api_version = "v1"
@@ -44,20 +33,11 @@ module.exports = (fastify, options, next) => {
 			}
 
 			const server = storage.servers[0]
-			const result = await beluga.v1.media.image.upload(fastify.mongo.db, data, {
+			const urls = await beluga.v1.media.image.upload(fastify.mongo.db, data, {
 				"ext": type.ext
 			}, user, server)
 
-			const protocol = server.https ? "https" : "http"
-
-			const urls = {
-				"original": `${protocol}://${server.url_prefix}.${server.domain}/${result.original}`,
-				"square": `${protocol}://${server.url_prefix}.${server.domain}/${result.square}`,
-				"small": result.small ? `${protocol}://${server.url_prefix}.${server.domain}/${result.small}` : null,
-				"medium": result.medium ? `${protocol}://${server.url_prefix}.${server.domain}/${result.medium}` : null,
-			}
-
-			res.send({ "success": false, urls })
+			res.send({ "success": true, urls })
 		} catch (error) {
 			logger.log({
 				"level": "error",

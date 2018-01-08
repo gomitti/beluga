@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from "react"
 import { request } from "../../api"
 
 export default class PostboxView extends Component {

@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component } from "react"
 import { Provider, observer } from "mobx-react";
 import { useStrict, observable, action } from "mobx";
 import TimelineView from "../../views/desktop/timeline";

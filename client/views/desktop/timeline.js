@@ -1,11 +1,11 @@
-import React, { Component } from "react";
-import { inject, observer } from "mobx-react";
+import React, { Component } from "react"
+import { inject, observer } from "mobx-react"
 import StatusView from "./status"
 import StatusStore from "../../stores/status"
 import { request } from "../../api"
 import ws from "../../websocket"
 import * as notification from "../../notification"
-import { setInterval } from "timers";
+import { setInterval } from "timers"
 
 @observer
 export default class TimelineView extends Component {
@@ -40,12 +40,13 @@ export default class TimelineView extends Component {
 	render() {
 		const timeline = this.props.timeline;
 		return (
-			<div>
-				<p>新着通知:<input type="checkbox" ref="notificationCheckbox" onChange={e => this.toggleNotification(e)} /></p >
+			<div className="timeline">
+				<p className="notification">新着通知:<input type="checkbox" ref="notificationCheckbox" onChange={e => this.toggleNotification(e)} /></p >
+				<div className="vertical"></div>
 				{timeline.filteredStatuses.map((status) =>
 					<StatusView status={status} key={status.id} />
 				)}
 			</div>
-		);
+		)
 	}
 }

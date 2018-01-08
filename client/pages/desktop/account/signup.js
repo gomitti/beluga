@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { Component } from "react"
 import Head from "../../../views/desktop/head"
 import { request } from "../../../api"
 
@@ -32,7 +32,7 @@ export default class App extends Component {
 			return
 		}
 		request
-			.post("/user/signup", {
+			.post("/account/signup", {
 				name, 
 				"raw_password": password,
 				"csrf_token": this.props.csrf_token

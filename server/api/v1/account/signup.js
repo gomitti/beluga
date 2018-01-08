@@ -1,5 +1,6 @@
 import * as assert from "../../../assert"
 import config from "../../../config/beluga"
+import storage from "../../../config/storage"
 const bcrypt = require("bcrypt");
 
 export default async (db, params) => {
@@ -64,8 +65,5 @@ export default async (db, params) => {
 		"_ip_address": params.ip_address,
 		"_password_hash": password_hash
 	})
-	const user = result.ops[0]
-	user.id = user._id
-	delete user._id
-	return user
+	return result.ops[0]
 }

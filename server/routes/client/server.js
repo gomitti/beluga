@@ -1,5 +1,5 @@
 import beluga from "../../api"
-import { hash } from "bcrypt/bcrypt";
+import { hash } from "bcrypt/bcrypt"
 
 module.exports = (fastify, options, next) => {
 	fastify.next("/server/create", async (app, req, res) => {

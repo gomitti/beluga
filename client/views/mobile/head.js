@@ -1,5 +1,6 @@
-import { Component } from "react";
+import { Component } from "react"
 import Head from "next/head"
+import config from "../../beluga.config"
 
 export default class HeadView extends Component {
 	render() {
@@ -7,7 +8,7 @@ export default class HeadView extends Component {
 			<Head>
 				<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
 				<meta charSet="utf-8" />
-				<link rel="stylesheet" href="/css/style.css" />
+				<link rel="stylesheet" href={`/css/style.css?${config.version}`} />
 				<title>{this.props.title}</title>
 			</Head>
 		);

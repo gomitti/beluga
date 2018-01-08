@@ -1,11 +1,11 @@
 import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
+import logger from "../../../../logger"
 const path = require("path")
 const Ftp = require("jsftp")
 const uid = require("uid-safe").sync
 const fs = require("fs")
 const gm = require("gm")
-const winston = require("winston")
 
 const ftp_mkdir = async (ftp, directory) => {
 	return new Promise((resolve, reject) => {
@@ -84,17 +84,6 @@ export default async (db, original_data, params, user, server) => {
 		throw new Error()
 	}
 
-	const logger = winston.createLogger({
-		"level": "info",
-		"format": winston.format.json(),
-		"transports": [
-			new winston.transports.File({
-				"filename": path.join(config.log.path, "error.log"), 
-				"level": "error"
-			})
-		]
-	})
-
 	original_data = await gm_noprofile(original_data)	// Exifを消す
 	const original_shape = await gm_filesize(original_data)
 	const max_size = Math.max(original_shape.width, original_shape.height)
@@ -166,29 +155,32 @@ export default async (db, original_data, params, user, server) => {
 	} catch (error) {
 		logger.log({
 			"level": "error",
-			error
+			"error": error.toString()
 		})
+		throw new Error("サーバーで問題が発生しました")
 	}
 
 	const suffix = `${original_shape.width}-${original_shape.height}`
 	let original_filename = `${suffix}.${params.ext}`
 	let square_filename = `${suffix}.square.${params.ext}`
-	let medium_filename = medium_data ? `${suffix}.medium.${params.ext}` : null
-	let small_filename = small_data ? `${suffix}.small.${params.ext}` : null
+	let medium_filename = `${suffix}.medium.${params.ext}`
+	let small_filename = `${suffix}.small.${params.ext}`
 
 	try {
 		await ftp_put(ftp, original_data, path.join(directory, original_filename))
 		await ftp_put(ftp, square_data, path.join(directory, square_filename))
-		if (medium_filename) {
+		if (medium_data) {
 			await ftp_put(ftp, medium_data, path.join(directory, medium_filename))
 		}
-		if (small_filename) {
+		if (small_data) {
 			await ftp_put(ftp, small_data, path.join(directory, small_filename))
 		}
 	} catch (error) {
 		logger.log({
 			"level": "error",
-			error
+			"error": error.toString(),
+			directory,
+			user,
 		})
 		throw new Error("サーバーで問題が発生しました")
 	}
@@ -197,14 +189,18 @@ export default async (db, original_data, params, user, server) => {
 	const result = await collection.insertOne({
 		"user_id": user.id,
 		"host": server.host,
-		directory,
-		"size": original_data.length
+		"directory": directory,
+		"size": original_data.length,
+		"created_at": Date.now()
 	})
 
+	const protocol = server.https ? "https" : "http"
+	const base_url = `${protocol}://${server.url_prefix}.${server.domain}`
+
 	return {
-		"original": path.join(directory, original_filename),
-		"square": path.join(directory, square_filename),
-		"small": small_filename ? path.join(directory, small_filename) : null,
-		"medium": medium_filename ? path.join(directory, medium_filename) : null
+		"original": `${base_url}/${path.join(directory, original_filename)}`,
+		"square": `${base_url}/${path.join(directory, square_filename)}`,
+		"small": `${base_url}/${path.join(directory, small_filename)}`,
+		"medium": `${base_url}/${path.join(directory, medium_filename)}`,
 	}
 }

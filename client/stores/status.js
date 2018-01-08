@@ -1,4 +1,4 @@
-import { observable, action, computed } from "mobx";
+import { observable, action, computed } from "mobx"
 import { request } from "../api"
 
 export default class StatusStore {

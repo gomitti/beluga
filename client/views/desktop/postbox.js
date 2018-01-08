@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { request, upload } from "../../api"
+import React, { Component } from "react"
+import { request } from "../../api"
 
 export default class PostboxView extends Component {
 	post() {
@@ -94,32 +94,33 @@ export default class PostboxView extends Component {
 	onFileChange(e) {
 		const files = e.target.files
 		console.log(files)
-		const reader = new FileReader()
-		reader.onload = (e) => {
-			request
-				.post("/media/image/upload", {
-					"data": reader.result,
-					"csrf_token": this.props.csrf_token
-				})
-				.then(res => {
-					const data = res.data
-					if (data.error) {
-						alert(data.error)
-					}
-					const url = data.urls.medium ? data.urls.medium : data.urls.original
-					if(this.refs.textarea.value.length == 0){
-						this.refs.textarea.value = url
-					}else{
-						this.refs.textarea.value = this.refs.textarea.value + "\n" + url
-					}
-				})
-				.catch(error => {
-					alert(error)
-				})
-				.then(_ => {
-				})
-		}
 		for (const file of files) {
+			const reader = new FileReader()
+			reader.onload = (e) => {
+				request
+					.post("/media/image/upload", {
+						"data": reader.result,
+						"csrf_token": this.props.csrf_token
+					})
+					.then(res => {
+						const data = res.data
+						if (data.error) {
+							alert(data.error)
+							return
+						}
+						const url = data.urls.original
+						if(this.refs.textarea.value.length == 0){
+							this.refs.textarea.value = url
+						}else{
+							this.refs.textarea.value = this.refs.textarea.value + "\n" + url
+						}
+					})
+					.catch(error => {
+						alert(error)
+					})
+					.then(_ => {
+					})
+			}
 			reader.readAsDataURL(file)
 		}
 	}
