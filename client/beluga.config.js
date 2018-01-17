@@ -8,10 +8,9 @@ export default {
 	"status": {
 		"image": {
 			"max_size": {
-				"desktop": 400,
-				"mobile": 400
+				"desktop": 250,
+				"mobile": 200
 			}
 		}
-	},
-	"version": "0.1.2"
+	}
 }

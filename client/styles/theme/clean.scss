@@ -1,0 +1,35 @@
+@import "../reset";
+@import "../clean/define";
+@import "../clean/button";
+@import "../clean/navigationbar";
+@import "../clean/timeline";
+@import "../clean/server";
+@import "../clean/status";
+@import "../clean/postbox";
+@import "../clean/form";
+@import "../clean/hashtags";
+
+.lucida, .lucida:hover {
+    font-family: 'lucida grande', tahoma, verdana, arial, 'hiragino kaku gothic pro', meiryo, 'ms pgothic', sans-serif;
+}
+.verdana, .verdana:hover {
+    font-family: "Verdana", tahoma, arial;
+}
+body, .meiryo {
+    font-family: Verdana,"Hiragino Kaku Gothic Pro", Meiryo, "MS PGothic", sans-serif;
+}
+#app {
+	z-index: 1;
+	position: relative;
+	overflow: hidden;
+}
+#content {
+	z-index: 2;
+	margin-top: 72px;
+	> .inside {
+		padding: 10px;
+	}
+}
+body {
+	background-color: #f4f4f4;
+}

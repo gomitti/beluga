@@ -45,7 +45,7 @@ export default async (db, params) => {
 
 	const multipost = await collection.findOne({ "created_by": params.user_id })
 	if (multipost !== null) {
-		throw new Error("サーバーを複数作成することはできません")
+		// throw new Error("サーバーを複数作成することはできません")
 	}
 
 	const result = await collection.insertOne({

@@ -1,5 +1,4 @@
 import { sha256 } from "js-sha256"
-import beluga from "../api"
 
 module.exports = (fastify, options, next) => {
 	// fastify.addHook("preHandler")はどうやらfastify.postした数だけ呼ばれるみたいなのでhookは使わない
@@ -34,17 +33,6 @@ module.exports = (fastify, options, next) => {
 		}
 		return false
 	})
-	const websocket = options.websocket
-	fastify.decorate("websocket_broadcast", (event, data) => {
-		if (websocket.ws == undefined) {
-			return
-		}
-		websocket.ws.clients.forEach(client => {
-			client.send(JSON.stringify(Object.assign({
-				[event]: true
-			}, data)))
-		})
-	})
 	const api_version = "v1"
 	fastify.post("/api/v1/statuses/hashtag", (req, res) => {
 		const db = fastify.mongo.db
@@ -69,5 +57,6 @@ module.exports = (fastify, options, next) => {
 	fastify.register(require("./api/status"))
 	fastify.register(require("./api/server"))
 	fastify.register(require("./api/timeline"))
+	fastify.register(require("./api/like"))
 	next()
 }

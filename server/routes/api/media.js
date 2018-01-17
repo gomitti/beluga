@@ -1,4 +1,4 @@
-import beluga from "../../api"
+import api from "../../api"
 import storage from "../../config/storage"
 import config from "../../config/beluga"
 import logger from "../../logger"
@@ -16,7 +16,7 @@ module.exports = (fastify, options, next) => {
 				throw new Error("ログインしてください")
 			}
 
-			const user = await beluga.v1.user.show(fastify.mongo.db, { "id": session.user_id })
+			const user = await api.v1.user.show(fastify.mongo.db, { "id": session.user_id })
 			if (!user) {
 				throw new Error("不正なユーザーです")
 			}
@@ -33,7 +33,7 @@ module.exports = (fastify, options, next) => {
 			}
 
 			const server = storage.servers[0]
-			const urls = await beluga.v1.media.image.upload(fastify.mongo.db, data, {
+			const urls = await api.v1.media.image.upload(fastify.mongo.db, data, {
 				"ext": type.ext
 			}, user, server)
 

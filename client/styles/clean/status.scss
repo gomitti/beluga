@@ -1,0 +1,167 @@
+@import "../clean/define";
+
+.status {
+	position: relative;
+	z-index: 0;
+	> .inside {
+		min-height: 65px;
+		padding: 6px 16px 4px 16px;
+		padding-left: 6px;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		position: relative;
+	}
+	a {
+		color: $link_color;
+		text-decoration: none;
+	}
+	a:hover {
+		text-decoration: underline;
+		color: $link_color;
+	}
+}
+.status-left {
+	width: 62px;
+	height: 62px;
+	margin-top: -6px;
+	z-index: 1;
+	flex: 0 0 auto;
+	> .avatar {
+		position: relative;
+		> img {
+			border-radius: 50%;
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 45px;
+			height: 45px;
+			background-color: white;
+			border: 8px solid white;
+		}
+	}
+}
+.status-right {
+	flex: 1 1 auto;
+	z-index: 2;
+}
+.status-header {
+	position: relative;
+	z-index: 1;
+	overflow: hidden;
+	> .inside {
+		> .link {
+			text-decoration: none;
+			> .display-name {
+				color: rgb(20, 20, 20);
+				font-size: 14px;
+				font-weight: bold;
+				padding-right: 5px;
+			}
+			> .name {
+				color: rgb(120, 120, 120);
+				font-size: 14px;
+			}
+		}
+		> .link:hover {
+			> .display-name {
+				color: $link_color;
+				text-decoration: underline;
+			}
+		}
+		> .time {
+			position: absolute;
+			top: 3px;
+			right: 0;
+			font-size: 11px;
+			color: rgb(120, 120, 120);
+			text-decoration: none;
+		}
+		> .time:hover {
+			text-decoration: underline;
+			color: black;
+		}
+	}
+}
+.status-content {
+	margin: 5px 0;
+	> .body {
+		font-size: 15px;
+		line-height: 18px;
+		word-break: break-all;
+		word-wrap: break-word;
+		overflow: hidden;
+		> p {
+			a {
+				font-weight: bold;
+			}
+			a:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+}
+.status-footer {
+	height: 15px;
+	margin-bottom: 8px;
+	> .belonging {
+		font-size: 14px;
+		color: rgb(200,200,200);
+		margin-right: 10px;
+	}
+	> .time {
+		text-decoration: none;
+		font-size: 12px;
+		color: rgb(200,200,200);
+	}
+}
+.status:hover {
+	.status-footer {
+		> .belonging {
+			color: black;
+		}
+		> .time {
+			color: black;
+		}
+	}
+}
+.status-action {
+	position: absolute;
+	z-index: 4;
+	display: none;
+	background-color: white;
+	border: 1px solid rgba(0, 0, 0, 0);
+	transition: border-color 100ms ease-in 0s;
+	border-radius: 12px;
+	overflow: hidden;
+	right: 15px;
+	bottom: 3px;
+	height: 28px;
+	> .inside {
+		padding: 0 5px;
+		> button {
+			width: 28px;
+			height: 28px;
+			background: white;
+			margin-right: 2px;
+		}
+		> button:hover {
+
+		}
+	}
+}
+.status:hover {
+	.status-action {
+		display: block;
+	}
+}
+.status-likes {
+	> p {
+		background-image: url("/asset/clean/star.png");
+		width: 15px;
+		height: 15px;
+		background-size: 100% 100%;
+		display: inline-block;
+		margin: 0 2px 3px 0px;
+	}
+}

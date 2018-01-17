@@ -23,6 +23,9 @@ export default async (db, params) => {
 	if (params.raw_password.length == 0) {
 		throw new Error("パスワードを入力してください")
 	}
+	if (params.raw_password.length < config.auth.min_password_length) {
+		throw new Error(`パスワードを${config.auth.min_password_length}文字以上で入力してください`)
+	}
 	if (params.raw_password.length + config.auth.salt.length > 72) {	// bcryptは72文字以降を切り捨てる
 		throw new Error(`パスワードは${72 - config.auth.salt.length}文字を超えてはいけません`)
 	}
@@ -58,9 +61,6 @@ export default async (db, params) => {
 		"location": "",
 		"description": "",
 		"statuses_count": 0,
-		"tags": [],
-		"following": [],
-		"followers": [],
 		"created_at": Date.now(),
 		"_ip_address": params.ip_address,
 		"_password_hash": password_hash

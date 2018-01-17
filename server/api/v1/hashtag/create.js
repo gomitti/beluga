@@ -33,7 +33,7 @@ export default async (db, params) => {
 
 	const existing = await collection.findOne({ "tagname": params.tagname, "server_id": params.server_id })
 	if (existing !== null) {
-		throw new Error(`#${params.name}はすでに存在するため、違うハッシュタグに変更してください`)
+		throw new Error(`#${params.tagname}はすでに存在するため、違うハッシュタグに変更してください`)
 	}
 
 	const result = await collection.insertOne({

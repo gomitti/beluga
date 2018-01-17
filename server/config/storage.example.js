@@ -11,7 +11,7 @@ export default {
 			"url_prefix": "static1",	// ユーザーがファイルにアクセする時のURL
 			"domain": domain,			// http://${url_prefix}.${domain}/
 			"available": true,
-			"https:": false
+			"https": false
 		}
 	]
 }

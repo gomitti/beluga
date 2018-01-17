@@ -22,13 +22,18 @@ export default async (db, params) => {
 	if (!(params.user_id instanceof ObjectID)) {
 		throw new Error("ログインしてください")
 	}
+	
+	if(!(typeof params.ip_address === "string")){
+		throw new Error("サーバーで問題が発生しました")
+	}
 
 	const query = {
 		"text": params.text,
 		"user_id": params.user_id,
 		"likes_count": 0,
 		"favorites_count": 0,
-		"created_at": Date.now()
+		"created_at": Date.now(),
+		"_ip_address": params.ip_address
 	}
 
 	// ルームへの投稿
@@ -55,7 +60,19 @@ export default async (db, params) => {
 		query.recipient_id = params.recipient_id
 	}
 
-	if (!!query.recipient_id && !!query.hashtag_id) {
+	// サーバーの全投稿を表示するTLのためにサーバーIDも記録する
+	if (typeof params.server_id === "string") {
+		try {
+			params.server_id = ObjectID(params.server_id)
+		} catch (error) {
+			params.server_id = null
+		}
+	}
+	if (params.server_id instanceof ObjectID) {
+		query.server_id = params.server_id
+	}
+
+	if (query.recipient_id && query.hashtag_id) {
 		throw new Error("投稿先が重複しています")
 	}
 	if (!query.recipient_id && !query.hashtag_id) {
@@ -63,9 +80,28 @@ export default async (db, params) => {
 	}
 
 	const collection = db.collection("statuses")
+
+	// 最初の投稿は本人以外にできないようにする
+	if(query.recipient_id){
+		const status = await collection.findOne({
+			"recipient_id": params.recipient_id,
+			"server_id": params.server_id
+		})
+		if (status === null){
+			if (params.user_id.equals(params.recipient_id) === false){
+				throw new Error("最初の投稿は本人以外にはできません")
+			}
+		}
+	}
+
+
 	const result = await collection.insertOne(query)
 	const status = result.ops[0]
 	status.id = status._id
-	delete status._id
+	for (const key in status) {
+		if (key.indexOf("_") == 0) {
+			delete status[key]
+		}
+	}
 	return status
 }

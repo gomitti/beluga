@@ -30,7 +30,7 @@ const gm_draw = async (width, height, color_code) => {
 	})
 }
 
-export default async (db, user, server) => {
+export default async (db, user, storage) => {
 	if (!user) {
 		throw new Error("ユーザーが見つかりません")
 	}
@@ -38,8 +38,8 @@ export default async (db, user, server) => {
 		throw new Error("ユーザーが見つかりません")
 	}
 
-	const size = config.profile.image.size
-	const colors = config.profile.image.default.colors
+	const size = config.user.profile.image.size
+	const colors = config.colors
 	let random_color = colors[Math.floor(Math.random() * colors.length)]
 	if (random_color.indexOf("#") !== 0) {
 		random_color = "#" + random_color
@@ -48,5 +48,5 @@ export default async (db, user, server) => {
 		throw new Error("サーバーで問題が発生しました")
 	}
 	const data = await gm_draw(size, size, random_color)
-	return update(db, { data, "ext": "png" }, user, server)
+	return update(db, { data, "ext": "png" }, user, storage)
 }

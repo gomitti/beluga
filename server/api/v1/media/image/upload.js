@@ -83,6 +83,9 @@ export default async (db, original_data, params, user, server) => {
 	if (!(user.id instanceof ObjectID)) {
 		throw new Error()
 	}
+	if (original_data.length > config.media.image.max_filesize) {
+		throw new Error("ファイルサイズが大きすぎます")
+	}
 
 	original_data = await gm_noprofile(original_data)	// Exifを消す
 	const original_shape = await gm_filesize(original_data)

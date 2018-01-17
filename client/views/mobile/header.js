@@ -14,7 +14,7 @@ export default class HeaderView extends Component {
 	componentDidMount() {
 		ws.addEventListener("message", (e) => {
 			const data = JSON.parse(e.data)
-			if(data.online){
+			if (data.online_changed){
 				this.setOnline(data.count)
 			}
 		})

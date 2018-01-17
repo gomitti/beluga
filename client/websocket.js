@@ -1,9 +1,15 @@
-let ws = undefined
 import config from "./beluga.config"
+import path from "path"
+let ws = undefined
 
 if (typeof window !== "undefined") {
+	const components = location.href.split("/")
+	let endpoint = ""
+	for(let i = 3;i < components.length;i++){
+		endpoint = path.join(endpoint, components[i])
+	}
 	const http = location.href.match(/https?/)[0]
-	const protocol = (http == "https") ? "wss" : "ws"
+	const protocol = (http === "https") ? "wss" : "ws"
 	class WebSocketClient{
 		constructor(){
 			this.listeners = []
@@ -21,7 +27,7 @@ if (typeof window !== "undefined") {
 					this.ws.removeEventListener(listener.name, listener.callback)
 				}
 			}
-			const url = `${protocol}://${config.domain}:${config.websocket_port}`
+			const url = `${protocol}://${config.domain}:${config.websocket_port}/${endpoint}`
 			console.log(`connecting ${url}`)
 			this.ws = new WebSocket(url)
 			this.ws.onerror = (e) => {

@@ -1,4 +1,4 @@
-import beluga from "../../api"
+import api from "../../api"
 import model from "../../model"
 import storage from "../../config/storage"
 
@@ -33,12 +33,12 @@ module.exports = (fastify, options, next) => {
 	fastify.post(`/api/${api_version}/account/avatar/reset`, async (req, res) => {
 		try {
 			let session = await fastify.authenticate_session(req, res)
-			const user = await beluga.v1.user.show(fastify.mongo.db, { "id": session.user_id })
+			const user = await api.v1.user.show(fastify.mongo.db, { "id": session.user_id })
 			if (!user) {
 				throw new Error("ログインしてください")
 			}
 			const server = storage.servers[0]
-			const url = await beluga.v1.account.avatar.reset(fastify.mongo.db, user, server)
+			const url = await api.v1.account.avatar.reset(fastify.mongo.db, user, server)
 			res.send({ "user": true, "profile_image_url": url })
 		} catch (error) {
 			res.send({ "success": false, "error": error.toString() })

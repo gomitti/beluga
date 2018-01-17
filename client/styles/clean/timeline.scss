@@ -1,0 +1,136 @@
+.column-container {
+	margin: 10px auto 0 auto;
+	overflow: hidden;
+	justify-content: center;
+	display: flex;
+	> .column {
+		flex: 0 0 auto;
+	}
+	> .column.left {
+		width: 220px;
+		height: 100%;
+		flex: 0 1 auto;
+	}
+	> .column.timeline {
+		width: 540px;
+		height: 100%;
+		flex: 0 0.75 auto;
+	}
+	> .column.server {
+		width: 285px;
+		flex: 0 1 auto;
+
+	}
+}
+.timeline.world {
+	> .column-container {
+		> .column.timeline {
+			width: 450px;
+		}
+	}
+}
+.timeline.hashtags {
+	> .column-container {
+		> .column.left {
+			width: 260px;
+			flex: 0 1 auto;
+		}
+		> .column.timeline {
+			width: 450px;
+			flex: 0 1 auto;
+		}
+	}
+	.timeline-container {
+		> .header {
+			display: none;
+		}
+		> .content {
+			padding-top: 8px;
+			> .vertical {
+				top: 50px;
+			}
+		}
+	}
+}
+.side-menu {
+	background-color: white;
+	> .group {
+		border-top: 0.15em solid #f4f4f4;
+		padding: 12px 16px;
+		> .title {
+			font-size: 13px;
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+		.menu-link {
+			text-decoration: none;
+			color: rgb(160, 160, 160);
+			transition: background-color 30ms ease-in 0s;
+			transition: color 30ms ease-in 0s;
+			display: block;
+			padding: 4px 10px;
+			font-size: 14px;
+			border-radius: 4px;
+			margin-top: 2px;
+			font-weight: bold;
+		}
+		.menu-link:hover {
+			text-decoration: none;
+			color: black;
+			background-color: rgb(247, 247, 247);
+		}
+	}
+	> .group:first-child {
+		margin-top: 0;
+		> .title:first-child {
+			margin-top: 0px;
+		}
+	}
+	> .group:last-child {
+		padding-bottom: 16px;
+	}
+}
+.timeline-container {
+	position: relative;
+	padding-bottom: 16px;
+	> .header {
+		padding: 0 16px;
+		margin-bottom: 6px;
+		> .inside {
+			padding: 16px 0;
+			border-bottom: 2px solid #f4f4f4;
+			position: relative;
+			> .header-title {
+				font-size: 18px;
+				line-height: 18px;
+				font-weight: bold;
+			}
+			> .header-options {
+				position: absolute;
+				right: 0;
+				top: 0;
+				text-align: right;
+			}
+		}
+	}
+	> .content {
+		> .vertical {
+			position: absolute;
+			top: 100px;
+			bottom: 35px;
+			left: 36px;
+			border-left: 0.15em solid #dcdcdc;
+		}
+	}
+}
+.column {
+	margin-left: 10px;
+	>.inside.round {
+		border-radius: 6px;
+		background-color: white;
+		box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+	}
+}
+.column:first-child {
+	margin-left: 0;
+}

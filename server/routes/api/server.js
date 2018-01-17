@@ -1,6 +1,26 @@
-import beluga from "../../api"
+import model from "../../model"
+import memcached from "../../memcached"
 
 module.exports = (fastify, options, next) => {
+	// オンラインのユーザーを取得
+	fastify.decorate("members", async (server, logged_in) => {
+		const online_user_ids = fastify.online.users(server)
+		const member = []
+		let including_me = false
+		for (const user_id of online_user_ids) {
+			const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
+			if (user) {
+				member.push(user)
+				if (logged_in && user.id.equals(logged_in.id)) {
+					including_me = true
+				}
+			}
+		}
+		if (logged_in && including_me === false) {
+			member.push(logged_in)
+		}
+		return member
+	})
 	let api_version = "v1"
 	fastify.post(`/api/${api_version}/server/create`, async (req, res) => {
 		try {
@@ -8,22 +28,22 @@ module.exports = (fastify, options, next) => {
 			if (!!session.user_id === false) {
 				throw new Error("ログインしてください")
 			}
-			const params = Object.assign({}, req.body, { "user_id": session.user_id })
-			const server = await beluga.v1.server.create(fastify.mongo.db, params)
-
-			// ルームを作成する
-			const query = { "tagname": "public", "server_id": server._id, "user_id": session.user_id }
-			try {
-				const hashtag = await beluga.v1.hashtag.create(fastify.mongo.db, query)
-			} catch (error) {
-				// ロールバック
-				const result = await beluga.v1.server.destroy(fastify.mongo.db, {
-					"server_id": server._id,
-					"user_id": session.user_id
-				})
-				throw new Error("サーバーで問題が発生しました")
-			}
+			const params = Object.assign({ "user_id": session.user_id }, req.body)
+			const server = await model.v1.server.create(fastify.mongo.db, params)
 			res.send({ "success": true, server })
+		} catch (error) {
+			res.send({ "success": false, "error": error.toString() })
+		}
+	})
+	fastify.post(`/api/${api_version}/server/members`, async (req, res) => {
+		try {
+			const session = await fastify.authenticate_session(req, res)
+			if (!!session.user_id === false) {
+				throw new Error("ログインしてください")
+			}
+			const server = await memcached.v1.server.show(fastify.mongo.db, { "name": req.body.name })
+			const members = await fastify.members(server, null)
+			res.send({ "success": true, members })
 		} catch (error) {
 			res.send({ "success": false, "error": error.toString() })
 		}

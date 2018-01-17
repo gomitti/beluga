@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build_server": "node_modules/.bin/babel server -d www",
-    "build_client": "node_modules/.bin/next build client;mkdir www/sounds/;cp client/sounds/* www/sounds/",
-    "build_scss": "node_modules/.bin/node-sass client/styles/style.scss www/css/style.css",
+    "build_client": "node_modules/.bin/next build client;cp -r client/sounds www/sounds;cp -r client/asset www/asset",
+    "build_scss": "node_modules/.bin/node-sass client/styles/style.scss www/css/style.css --output-style compressed;node_modules/.bin/node-sass client/styles/theme/clean.scss www/css/theme/clean.css --output-style compressed;node_modules/.bin/node-sass client/styles/colors.scss www/css/colors.css --output-style compressed;",
+    "watch_scss": "node_modules/.bin/node-sass client/styles/theme/clean.scss www/css/theme/clean.css --watch  --output-style compressed",
     "start": "env NODE_ENV=production node www/app.js",
     "initial_settings": "node_modules/.bin/babel-node server/install.js",
     "benchmark": "node_modules/.bin/babel-node server/benchmark.js",

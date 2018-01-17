@@ -6,7 +6,7 @@ import mongo from "../../../../../server/mongo"
 import fetch from "../../../../../server/api/v1/timeline/hashtag"
 import update from "../../../../../server/api/v1/status/update"
 
-describe("Fetch", () => {
+describe("Fetch hashtag timeline", () => {
 	let db
 	let statuses = []
 	beforeAll(async () => {

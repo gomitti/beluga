@@ -1,24 +1,30 @@
 import { observable, action, computed } from "mobx"
 import { request } from "../api"
 import StatusStore from "./status"
+import ws from "../websocket"
 
 export default class TimelineStore {
 	// 取得済みの全ての投稿
 	@observable statuses = [];
 
-	constructor(endpoint, query, model) {
+	constructor(endpoint, request_query, params) {
 		this.endpoint = endpoint
-		this.query = query
-		this.model = model
-	}
-
-	statusBelongsTo(status){
-		if(!!status.hashtag && !!this.model.hashtag){
-			if(status.hashtag.id === this.model.hashtag.id){
-				return true
-			}
+		this.query = request_query
+		this.params = params
+		if (ws) {		// サーバーサイドではやる意味がない
+			ws.addEventListener("message", (e) => {
+				const data = JSON.parse(e.data)
+				if (data.status_updated) {
+					const { status } = data
+					if (this.statusBelongsTo(status)) {
+						this.update()
+					}
+				}
+			})
+			setInterval(() => {
+				this.update()
+			}, 30000)
 		}
-		return false
 	}
 
 	// ミュートなどでフィルタリングした投稿
@@ -30,8 +36,8 @@ export default class TimelineStore {
 	// 新しい投稿を追加
 	@action.bound
 	prepend(status) {
-		if(status instanceof Array){
-			for(let i = status.length - 1;i >= 0;i--){
+		if (status instanceof Array) {
+			for (let i = status.length - 1; i >= 0; i--) {
 				this.statuses.unshift(status[i])
 			}
 			return
@@ -42,6 +48,12 @@ export default class TimelineStore {
 	// 古い投稿を追加
 	@action.bound
 	append(status) {
+		if (status instanceof Array) {
+			for (let i = 0; i < status.length; i++) {
+				this.statuses.push(status[i])
+			}
+			return
+		}
 		this.statuses.push(status)
 	}
 
@@ -51,10 +63,18 @@ export default class TimelineStore {
 		this.statuses = this.statuses.splice(0, n)
 	}
 
+	// 新しい投稿を読み込む
 	@action.bound
-	async loadNewStatuses() {
+	async update() {
+		if (this.pending) {
+			return
+		}
+		this.pending = true
 		const params = {
-			"trim_user": false
+			"trim_user": false,
+			"trim_server": false,
+			"trim_hashtag": false,
+			"trim_recipient": false,
 		}
 		if (this.statuses.length > 0) {
 			params.since_id = this.statuses[0].id
@@ -70,7 +90,8 @@ export default class TimelineStore {
 			}
 			this.prepend(stores)
 		} catch (error) {
-			
+
 		}
+		this.pending = false
 	}
 }

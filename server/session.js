@@ -30,6 +30,23 @@ const session = (fastify, options, next) => {
 		store.clean()
 	}, 3600 * 1000)
 
+	const get_session_by = async encrypted_session_id => {
+		if (typeof encrypted_session_id !== "string") {
+			return null
+		}
+		const session = await store.get(encrypted_session_id)
+		if (session === null) {
+			return null
+		}
+		const session_id = signature.unsign(`${session.id}.${encrypted_session_id}`, secret)
+		if (session_id === false) {
+			return null
+		}
+		if (session_id !== session.id) {
+			return null
+		}
+		return session
+	}
 	const start_session = async (request, reply) => {
 		const url = request.req.url
 		if (url.indexOf(_cookie_options.path || "/") !== 0) {
@@ -75,12 +92,12 @@ const session = (fastify, options, next) => {
 	}
 	const get_cookie_options = () => {
 		return {
-			path: _cookie_options.path || "/",
-			httpOnly: _cookie_options.http_only !== undefined ? _cookie_options.http_only : true,
-			secure: _cookie_options.secure !== undefined ? _cookie_options.secure : true,
-			expires: get_expires(_cookie_options),
-			sameSite: _cookie_options.same_site || true,
-			domain: _cookie_options.domain || null
+			"path": typeof _cookie_options.path !== "undefined" ? _cookie_options.path : "/",
+			"httpOnly": typeof _cookie_options.http_only !== "undefined" ? _cookie_options.http_only : true,
+			"secure": typeof _cookie_options.secure !== "undefined" ? _cookie_options.secure : true,
+			"expires": get_expires(_cookie_options),
+			"sameSite": typeof _cookie_options.same_site !== "undefined" ? _cookie_options.same_site : false,
+			"domain": typeof _cookie_options.domain !== "undefined" ? _cookie_options.domain : null
 		}
 	}
 	const get_expires = () => {
@@ -88,7 +105,7 @@ const session = (fastify, options, next) => {
 		if (_cookie_options.expires) {
 			expires = _cookie_options.expires
 		} else if (_cookie_options.max_age) {
-			expires = Date.now() + (_cookie_options.max_age + timezone_offset) * 1000	// Date.now()はミリ秒
+			expires = new Date(Date.now() + (_cookie_options.max_age + timezone_offset) * 1000)	// Date.now()はミリ秒
 		}
 		return expires
 	}
@@ -106,6 +123,12 @@ const session = (fastify, options, next) => {
 		}
 		async start(request, reply) {
 			return await start_session(request, reply)
+		}
+		async get(encrypted_id) {
+			if (typeof encrypted_id !== "string") {
+				return null
+			}
+			return await get_session_by(encrypted_id)
 		}
 	}
 	fastify.decorate("session", new SessionManager())

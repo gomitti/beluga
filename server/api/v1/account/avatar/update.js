@@ -66,7 +66,7 @@ const gm_crop = async (data, width, height, x, y) => {
 	})
 }
 
-export default async (db, params, user, server) => {
+export default async (db, params, user, storage) => {
 	if (!user) {
 		throw new Error("ユーザーが見つかりません")
 	}
@@ -80,17 +80,23 @@ export default async (db, params, user, server) => {
 		throw new Error("画像が正方形ではありません")
 	}
 
-	if (shape.width > config.profile.image.size) {
-		data = await gm_resize(data, config.profile.image.size, config.profile.image.size)
+	if (shape.width > config.user.profile.image.size) {
+		data = await gm_resize(data, config.user.profile.image.size, config.user.profile.image.size)
 	}
 
 	const ftp = new Ftp({
-		"host": server.host,
-		"port": server.port,
-		"user": server.user,
-		"pass": server.password
+		"host": storage.host,
+		"port": storage.port,
+		"user": storage.user,
+		"pass": storage.password
 	})
 	let directory = "profile"
+	try {
+		await ftp_mkdir(ftp, directory)
+	} catch (error) {
+
+	}
+	directory = path.join(directory, "avatar")
 	try {
 		await ftp_mkdir(ftp, directory)
 	} catch (error) {
@@ -116,8 +122,8 @@ export default async (db, params, user, server) => {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
-	const protocol = server.https ? "https" : "http"
-	const url = `${protocol}://${server.url_prefix}.${server.domain}/${directory}/${filename}`
+	const protocol = storage.https ? "https" : "http"
+	const url = `${protocol}://${storage.url_prefix}.${storage.domain}/${directory}/${filename}`
 
 	let collection = db.collection("users")
 	let result = await collection.update({ "_id": user.id }, {
@@ -127,7 +133,7 @@ export default async (db, params, user, server) => {
 	collection = db.collection("profile_images")
 	result = await collection.insertOne({
 		"user_id": user.id,
-		"host": server.host,
+		"host": storage.host,
 		directory,
 		filename,
 		"created_at": Date.now()

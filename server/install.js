@@ -51,9 +51,11 @@ async function register_reserved_server_names(db) {
 		await register_reserved_server_names(db)
 
 		// インデックスを張る
-		db.collection("statuses").createIndex({ "hashtag_id": -1 })
-		db.collection("statuses").createIndex({ "recipient_id": -1 })
-		db.collection("statuses").createIndex({ "user_id": -1 })
+		db.collection("statuses").createIndex({ "hashtag_id": -1, "_id": -1 })
+		db.collection("statuses").createIndex({ "server_id": -1, "_id": -1 })
+		db.collection("statuses").createIndex({ "user_id": -1, "_id": -1 })
+		db.collection("statuses").createIndex({ "recipient_id": -1, "server_id": -1, "_id": -1 })
+		db.collection("likes").createIndex({ "status_id": -1, "user_id": -1 })
 
 		client.close()
 	} catch (error) {

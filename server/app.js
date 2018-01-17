@@ -1,6 +1,7 @@
 const mongodb = require("mongodb")
 const app = require("fastify")()
-const websocket = require("./websocket")
+const plugin = require("fastify-plugin")
+import  { websocket, bridge } from "./websocket"
 import mongo from "./mongo"
 import config from "./config/beluga"
 
@@ -17,13 +18,14 @@ mongodb.MongoClient
 			"cookie_name": config.auth.session.cookie_name,
 			"timezone_offset": config.auth.session.timezone_offset,
 			"cookie_options": {
-				"http_only": true,
-				"same_site": true,
+				"http_only": false,
+				"same_site": false,
 				"secure": config.auth.session.secure,
 				"max_age": config.auth.session.max_age
 			}
 		})
-		app.register(require("./routes/api"), { websocket })
+		app.register(bridge)
+		app.register(require("./routes/api"))
 		app.register(require("fastify-react"))
 			.after(() => {
 				app.decorate("device_type", req => {
@@ -42,6 +44,17 @@ mongodb.MongoClient
 			}
 		})
 
+		websocket.register(plugin((fastify, options, next) => {
+			fastify.decorate("session", {
+				"get": async cookie => {
+					if (typeof cookie !== "object") {
+						return null
+					}
+					return await app.session.get(cookie[config.auth.session.cookie_name])
+				}
+			})
+			next()
+		}))
 		websocket.listen(config.port.websocket, (error) => {
 			if (error) {
 				throw error

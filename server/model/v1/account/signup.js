@@ -1,9 +1,9 @@
-import beluga from "../../../api"
+import api from "../../../api"
 import storage from "../../../config/storage"
 import logger from "../../../logger"
 
 export default async (db, params) => {
-	const user = await beluga.v1.account.signup(db, params)
+	const user = await api.v1.account.signup(db, params)
 	user.id = user._id
 	for (const key in user) {
 		if (key.indexOf("_") == 0) {
@@ -12,7 +12,7 @@ export default async (db, params) => {
 	}
 	const server = storage.servers[0]
 	try {
-		await beluga.v1.account.avatar.reset(db, user, server)
+		await api.v1.account.avatar.reset(db, user, server)
 	} catch (error) {
 		logger.log({
 			"level": "error",

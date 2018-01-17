@@ -5,7 +5,7 @@ const MongoClient = require("mongodb").MongoClient
 import mongo from "../../../../../server/mongo"
 import update from "../../../../../server/api/v1/status/update"
 
-describe("Update", () => {
+describe("Update a status", () => {
 	let db
 	beforeEach(async () => {
 		const client = await MongoClient.connect(mongo.url)

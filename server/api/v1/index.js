@@ -5,4 +5,5 @@ import hashtag from "./hashtag"
 import timeline from "./timeline"
 import media from "./media"
 import account from "./account"
-export default { status, user, server, hashtag, timeline, media, account }
+import like from "./like"
+export default { status, user, server, hashtag, timeline, media, account, like }

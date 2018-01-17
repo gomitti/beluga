@@ -23,7 +23,7 @@ button {
 	height: 28px;
 	line-height: 14px;
 	text-align: center;
-	font-family: 'lucida grande', tahoma, verdana, arial, 'hiragino kaku gothic pro', meiryo, 'ms pgothic', sans-serif;
+	font-family: "lucida grande", tahoma, verdana, arial, "hiragino kaku gothic pro", meiryo, "ms pgothic", sans-serif;
 	background-clip: padding-box;
 	border: 0;
 	cursor: pointer;
@@ -33,7 +33,7 @@ button {
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fcfbf7), color-stop(100%,#edece8));
 	background: -webkit-linear-gradient(top,  #fcfbf7 0%,#edece8 100%);
 	background: linear-gradient(to bottom,  #fcfbf7 0%,#edece8 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfbf7', endColorstr='#edece8',GradientType=0 );
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcfbf7", endColorstr="#edece8", GradientType=0);
 	border:1px solid #a4a4a4;
 	text-shadow: 0 1px 0 #FFF;
 	box-shadow: 0px 1px 0px #a4a4a4, 0px 2px 6px rgba(0,0,0,0.1), inset 0px -1px 0px rgba(255,255,255,0.4), inset 0px 0px 2px rgba(255,255,255,0.6);
@@ -50,7 +50,7 @@ button {
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fcfbf9), color-stop(100%,#f2f1ed));
 	background: -webkit-linear-gradient(top,  #fcfbf9 0%,#f2f1ed 100%);
 	background: linear-gradient(to bottom,  #fcfbf9 0%,#f2f1ed 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfbf9', endColorstr='#f2f1ed',GradientType=0 );
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#fcfbf9", endColorstr="#f2f1ed",GradientType=0 );
 }
 .button-plain {
 	color: #333;
