@@ -36,6 +36,20 @@ brew install libuv
 sudo apt install libssl-dev
 ```
 
+### ffmpeg
+
+#### macOS
+
+```bash
+brew install ffmpeg
+```
+
+#### Ubuntu
+
+```bash
+sudo apt install ffmpeg
+```
+
 #### コンパイル
 
 ```
@@ -79,6 +93,6 @@ npm install --save fastify-ws
 ## 稼働
 
 ```bash
-sh ./build.sh
+npm run build
 env NODE_ENV=production forever start www/app.js
 ```

@@ -36,7 +36,38 @@ export default class PostboxView extends Component {
 				this.pending = false
 			})
 	}
-
+	onFileChange(e) {
+		const files = e.target.files
+		for (const file of files) {
+			const reader = new FileReader()
+			reader.onload = (e) => {
+				const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
+				request
+					.post(endpoint, {
+						"data": reader.result
+					})
+					.then(res => {
+						const data = res.data
+						if (data.error) {
+							alert(data.error)
+							return
+						}
+						const url = data.urls.original
+						if (this.refs.textarea.value.length == 0) {
+							this.refs.textarea.value = url
+						} else {
+							this.refs.textarea.value = this.refs.textarea.value + "\n" + url
+						}
+					})
+					.catch(error => {
+						alert(error)
+					})
+					.then(_ => {
+					})
+			}
+			reader.readAsDataURL(file)
+		}
+	}
 	render() {
 		if (!this.props.logged_in) {
 			return (
@@ -46,7 +77,10 @@ export default class PostboxView extends Component {
 		return (
 			<div>
 				<div><textarea ref="textarea" /></div>
-				<div><button className="button" onClick={e => this.post()}>投稿する</button></div>
+				<div>
+					<input type="file" ref="file" accept="image/*, video/*" onChange={e => this.onFileChange(e)} multiple />
+					<button className="button" onTouchStart={e => this.post()}>投稿する</button>
+					</div>
 			</div>
 		);
 	}

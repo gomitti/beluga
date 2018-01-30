@@ -29,15 +29,23 @@ module.exports = (fastify, options, next) => {
 		}
 	})
 	fastify.decorate("theme", req => {
-		var ua = req.headers["user-agent"];
+		const ua = req.headers["user-agent"];
 		if (ua.match(/mobile/i)) {
 			return "common"
 		}
-		return "clean"
+		return "default"
+	})
+	fastify.decorate("platform", req => {
+		const ua = req.headers["user-agent"];
+		if (ua.match(/mac/i)) {
+			return "mac"
+		}
+		return "win"
 	})
 	fastify.register(require("./client/account"))
 	fastify.register(require("./client/server"))
 	fastify.register(require("./client/hashtag"))
+	fastify.register(require("./client/settings"))
 	fastify.register(require("./client/color"))
 
 	fastify.next("/", async (app, req, res) => {

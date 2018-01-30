@@ -42,21 +42,31 @@ module.exports = (fastify, options, next) => {
 				return fastify.error(app, req, res, 404)
 			}
 
-			const statuses = await model.v1.timeline.server(fastify.mongo.db, Object.assign({
+			const params = Object.assign({
 				"server_id": server.id,
 				"trim_user": false,
+				"trim_favorited_by": false,
 				"trim_server": false,
 				"trim_hashtag": false,
 				"trim_recipient": false
-			}, req.body))
+			}, req.body)
+			if(session.user_id){
+				params.user_id = session.user_id
+			}
+			const statuses = await model.v1.timeline.server(fastify.mongo.db, params)
 
 			const hashtags = await api.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
+
+			let media = []
+			if (session.user_id) {
+				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+			}
 
 			server.members = await fastify.members(server, logged_in)
 			fastify.websocket_broadcast("members_changed", { "members": server.members, "id": server.id })
 
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/server/hashtags`, {
-				csrf_token, server, statuses, logged_in, hashtags
+				csrf_token, server, statuses, logged_in, hashtags, media, "platform": fastify.platform(req)
 			})
 		} catch (error) {
 			console.log(error)
@@ -82,18 +92,30 @@ module.exports = (fastify, options, next) => {
 			if (hashtag === null) {
 				return fastify.error(app, req, res, 404)
 			}
-			const statuses = await model.v1.timeline.hashtag(fastify.mongo.db, Object.assign({
+
+			const params = Object.assign({
 				"id": hashtag.id,
 				"trim_user": false,
-			}, req.body))
+				"trim_favorited_by": false,
+			}, req.body)
+			if (session.user_id) {
+				params.user_id = session.user_id
+			}
+			const statuses = await model.v1.timeline.hashtag(fastify.mongo.db, params)
 
 			const hashtags = await api.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
+
+			let media = []
+			if(session.user_id){
+				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+			}
 
 			server.members = await fastify.members(server, logged_in)
 			fastify.websocket_broadcast("members_changed", { "members": server.members, "id": server.id })
 
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/server/hashtag`, {
-				csrf_token, server, hashtag, statuses, logged_in, hashtags
+				csrf_token, server, hashtag, statuses, logged_in, hashtags, media,
+				"platform": fastify.platform(req)
 			})
 		} catch (error) {
 			console.log(error)
@@ -125,9 +147,15 @@ module.exports = (fastify, options, next) => {
 				"user_id": user.id,
 				"server_id": server.id,
 				"trim_user": false,
+				"trim_favorited_by": false,
 			}, req.body))
 
 			const hashtags = await api.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
+
+			let media = []
+			if (session.user_id) {
+				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+			}
 
 			// ホームの最初の投稿は本人以外にはできなくする
 			if (statuses.length === 0) {
@@ -140,7 +168,8 @@ module.exports = (fastify, options, next) => {
 			fastify.websocket_broadcast("members_changed", { "members": server.members, "id": server.id })
 
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/server/home`, {
-				csrf_token, server, user, statuses, logged_in, hashtags
+				csrf_token, server, user, statuses, logged_in, hashtags, media, 
+				"platform": fastify.platform(req)
 			})
 		} catch (error) {
 			console.log(error)
@@ -161,27 +190,42 @@ module.exports = (fastify, options, next) => {
 			}
 			let home_statuses = null
 			if (session.user_id) {
-				home_statuses = await model.v1.timeline.home(fastify.mongo.db, Object.assign({
+				const params = Object.assign({
 					"user_id": session.user_id,
 					"server_id": server.id,
 					"trim_user": false,
-				}, req.body))
+					"trim_favorited_by": false,
+				}, req.body)
+				if (session.user_id) {
+					params.user_id = session.user_id
+				}
+				home_statuses = await model.v1.timeline.home(fastify.mongo.db, params)
 			}
-			const server_statuses = await model.v1.timeline.server(fastify.mongo.db, Object.assign({
+			const params = Object.assign({
 				"server_id": server.id,
 				"trim_user": false,
 				"trim_server": false,
 				"trim_hashtag": false,
+				"trim_favorited_by": false,
 				"trim_recipient": false
-			}, req.body))
+			}, req.body)
+			if (session.user_id) {
+				params.user_id = session.user_id
+			}
+			const server_statuses = await model.v1.timeline.server(fastify.mongo.db, params)
 
 			const hashtags = await api.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
+
+			let media = []
+			if (session.user_id) {
+				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+			}
 
 			server.members = await fastify.members(server, logged_in)
 			fastify.websocket_broadcast("members_changed", { "members": server.members, "id": server.id })
 
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/world`, {
-				csrf_token, server, logged_in, hashtags,
+				csrf_token, server, logged_in, hashtags, media, "platform": fastify.platform(req),
 				"statuses": {
 					"home": home_statuses,
 					"server": server_statuses

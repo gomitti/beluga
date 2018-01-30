@@ -11,7 +11,11 @@ module.exports = (fastify, options, next) => {
 				throw new Error("ログインしてください")
 			}
 			const ip_address = req.headers["x-real-ip"]
-			const params = Object.assign({ "user_id": session.user_id, ip_address }, req.body)
+
+			const ua = req.headers["user-agent"];
+			const from_mobile = ua.match(/mobile/i) ? true : false
+
+			const params = Object.assign({ "user_id": session.user_id, ip_address, from_mobile }, req.body)
 			const status = await model.v1.status.update(fastify.mongo.db, params)
 			if (!!status.hashtag_id) {
 				const hashtag = await api.v1.hashtag.show(fastify.mongo.db, { "id": status.hashtag_id })
@@ -31,7 +35,7 @@ module.exports = (fastify, options, next) => {
 				throw new Error("ログインしてください")
 			}
 			const params = Object.assign({ "user_id": session.user_id }, req.body)
-			const result = await model.v1.status.destroy(fastify.mongo.db, params)
+			await model.v1.status.destroy(fastify.mongo.db, params)
 			fastify.websocket_broadcast("status_deleted", { "id": params.id })
 			res.send({ "success": true, "id": params.id })
 		} catch (error) {

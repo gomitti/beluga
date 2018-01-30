@@ -12,5 +12,10 @@ export default {
 				"mobile": 200
 			}
 		}
+	},
+	"emoji": {
+		"history": {
+			"capacity": 20
+		}
 	}
 }

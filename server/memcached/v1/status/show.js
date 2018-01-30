@@ -2,7 +2,25 @@ import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
 import api from "../../../api"
 
-export let cache = {}
+let cache = {}
+
+const delete_cache_by_key = key => {
+	if (typeof key !== "string") {
+		return
+	}
+	if (key in cache) {
+		delete cache[key]
+	}
+}
+
+export const delete_status_in_cache = status => {
+	if (typeof status.id === "string") {
+		return delete_cache_by_key(status.id)
+	}
+	if(status.id instanceof ObjectID) {
+		return delete_cache_by_key(status.id.toHexString())
+	}
+}
 
 export default async (db, params) => {
 	if (typeof params.id === "string") {

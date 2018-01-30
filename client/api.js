@@ -14,13 +14,13 @@ class Request {
 			responseType: "json"
 		})
 	}
-	post(endpoint, query) {
+	post(endpoint, query, config) {
 		query = Object.assign({ "csrf_token": this.csrf_token }, query)
-		return this.request.post(endpoint, query)
+		return this.request.post(endpoint, query, config)
 	}
-	get(endpoint, query) {
+	get(endpoint, query, config) {
 		query = Object.assign({ "csrf_token": this.csrf_token }, query)
-		return this.request.get(endpoint, query)
+		return this.request.get(endpoint, query, config)
 	}
 }
 

@@ -6,4 +6,6 @@ import timeline from "./timeline"
 import media from "./media"
 import account from "./account"
 import like from "./like"
-export default { status, user, server, hashtag, timeline, media, account, like }
+import favorite from "./favorite"
+import reaction from "./reaction"
+export default { status, user, server, hashtag, timeline, media, account, like, reaction, favorite }

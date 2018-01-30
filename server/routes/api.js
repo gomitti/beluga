@@ -33,24 +33,24 @@ module.exports = (fastify, options, next) => {
 		}
 		return false
 	})
-	const api_version = "v1"
-	fastify.post("/api/v1/statuses/hashtag", (req, res) => {
-		const db = fastify.mongo.db
-		const collection = db.collection("statuses")
-		let success = false
-		let statuses = []
-		collection
-			.find({}, { sort: { "created_at": -1 }, limit: 30 })
-			.toArray()
-			.then(documents => {
-				statuses = documents
-				success = true
-			}).catch(error => {
-				success = false
-			}).then(document => {
-				res.send({ success, statuses })
-			})
-	})
+	// const api_version = "v1"
+	// fastify.post("/api/v1/statuses/hashtag", (req, res) => {
+	// 	const db = fastify.mongo.db
+	// 	const collection = db.collection("statuses")
+	// 	let success = false
+	// 	let statuses = []
+	// 	collection
+	// 		.find({}, { sort: { "created_at": -1 }, limit: 30 })
+	// 		.toArray()
+	// 		.then(documents => {
+	// 			statuses = documents
+	// 			success = true
+	// 		}).catch(error => {
+	// 			success = false
+	// 		}).then(document => {
+	// 			res.send({ success, statuses })
+	// 		})
+	// })
 	fastify.register(require("./api/account"))
 	fastify.register(require("./api/hashtag"))
 	fastify.register(require("./api/media"))
@@ -58,5 +58,7 @@ module.exports = (fastify, options, next) => {
 	fastify.register(require("./api/server"))
 	fastify.register(require("./api/timeline"))
 	fastify.register(require("./api/like"))
+	fastify.register(require("./api/favorite"))
+	fastify.register(require("./api/reaction"))
 	next()
 }

@@ -1,10 +1,13 @@
 import { observable, action, computed } from "mobx"
 import { request } from "../api"
 import LikesStore from "./status/likes"
+import FavoritesStore from "./status/favorites"
+import ReactionsStore from "./status/reactions"
 import ws from "../websocket"
 
 export default class StatusStore {
 	@observable deleted = false
+	@observable favorited = false
 
 	constructor(status) {
 		for (const key in status) {
@@ -14,7 +17,10 @@ export default class StatusStore {
 			this[key] = status[key]
 		}
 		this.likes = observable(new LikesStore(status))
-		if (ws) {		// サーバーサイドではやる意味がない
+		this.favorites = observable(new FavoritesStore(status, this))
+		this.reactions = observable(new ReactionsStore(status))
+		this.favorited = !!status.favorited
+		if (ws) {
 			ws.addEventListener("message", (e) => {
 				const data = JSON.parse(e.data)
 				if (data.status_deleted) {
@@ -26,7 +32,6 @@ export default class StatusStore {
 			})
 		}
 	}
-
 	@action.bound
 	destroy() {
 		if (window.confirm("削除しますか？")){
@@ -44,9 +49,12 @@ export default class StatusStore {
 				})
 		}
 	}
-
 	@action.bound
 	setDeleted(deleted) {
 		this.deleted = deleted
+	}
+	@action.bound
+	setFavorited(favorited) {
+		this.favorited = favorited
 	}
 }

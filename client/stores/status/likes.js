@@ -7,13 +7,13 @@ export default class LikesStore {
 
 	constructor(status) {
 		this.count = parseInt(status.likes_count)
-		this.status = status
+		this.status_id = status.id
 		if (ws) {		// サーバーサイドではやる意味がない
 			ws.addEventListener("message", (e) => {
 				const data = JSON.parse(e.data)
 				if (data.like_created) {
 					const { status } = data
-					if (status.id === this.status.id) {
+					if (status.id === this.status_id) {
 						this.set(status.likes_count)
 					}
 				}
@@ -29,7 +29,7 @@ export default class LikesStore {
 	@action.bound
 	increment() {
 		request
-			.post("/like/create", { "id": this.status.id })
+			.post("/like/create", { "status_id": this.status_id })
 			.then(res => {
 				const data = res.data
 				if(data.error){

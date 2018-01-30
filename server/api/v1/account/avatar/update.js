@@ -1,6 +1,7 @@
 import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
 import logger from "../../../../logger"
+const fileType = require("file-type")
 const path = require("path")
 const Ftp = require("jsftp")
 const uid = require("uid-safe").sync
@@ -66,7 +67,7 @@ const gm_crop = async (data, width, height, x, y) => {
 	})
 }
 
-export default async (db, params, user, storage) => {
+export default async (db, data, user, storage) => {
 	if (!user) {
 		throw new Error("ユーザーが見つかりません")
 	}
@@ -74,9 +75,19 @@ export default async (db, params, user, storage) => {
 		throw new Error("ユーザーが見つかりません")
 	}
 
-	let data = params.data
+	const type = fileType(data)
+	if (!type) {
+		throw new Error("このファイル形式には対応していません")
+	}
+	if (type.ext !== "jpg" && type.ext !== "png") {
+		throw new Error("このファイル形式には対応していません")
+	}
+
 	const shape = await gm_filesize(data)
 	if (shape.width !== shape.height) {
+		throw new Error("画像が正方形ではありません")
+	}
+	if (shape.width == 0) {
 		throw new Error("画像が正方形ではありません")
 	}
 
@@ -109,7 +120,7 @@ export default async (db, params, user, storage) => {
 		
 	}
 
-	let filename = uid(8) + "." + params.ext
+	let filename = uid(8) + "." + type.ext
 	try {
 		await ftp_put(ftp, data, path.join(directory, filename))
 	} catch (error) {

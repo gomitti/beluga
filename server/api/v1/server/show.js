@@ -6,7 +6,7 @@ export default async (db, params) => {
 		throw new Error("パラメータを指定してください")
 	}
 	let query = null
-	if (!!params.id) {
+	if (params.id) {
 		if (typeof params.id === "string") {
 			try {
 				params.id = ObjectID(params.id)
@@ -19,7 +19,7 @@ export default async (db, params) => {
 		}
 		query = { "_id": params.id }
 	}
-	if (!!params.name) {
+	if (params.name) {
 		if (typeof params.name !== "string") {
 			throw new Error("nameが不正です")
 		}

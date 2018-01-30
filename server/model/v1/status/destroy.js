@@ -17,5 +17,10 @@ export default async (db, params) => {
 		throw new Error("権限がありません")
 	}
 
-	return await api.v1.status.destroy(db, params)
+	await api.v1.status.destroy(db, params)
+
+	// キャッシュの消去
+	memcached.v1.delete_status_in_cache(status)
+	
+	return true
 }

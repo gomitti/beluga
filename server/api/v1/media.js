@@ -1,2 +1,4 @@
 import image from "./media/image"
-export default { image }
+import video from "./media/video"
+import list from "./media/list"
+export default { image, video, list }

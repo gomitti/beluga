@@ -5,7 +5,7 @@ import TimelineView from "../../../../views/mobile/timeline";
 import HeaderView from "../../../../views/mobile/header";
 import PostboxView from "../../../../views/mobile/postbox";
 import Head from "../../../../views/mobile/head"
-import TimelineStore from "../../../../stores/timeline";
+import TimelineStore from "../../../../stores/timeline/hashtag";
 import StatusStore from "../../../../stores/status";
 import config from "../../../../beluga.config"
 import { request } from "../../../../api"
@@ -15,45 +15,38 @@ useStrict(true)
 
 @observer
 export default class App extends Component {
-
 	@observable timelines = []
 
 	@action.bound
 	addTimeline(timeline) {
 		this.timelines.push(timeline)
 	}
-
-	constructor(props) {
-		super(props)
-		if (request) {
-			request.csrf_token = this.props.csrf_token
-		}
-	}
-
 	// サーバー側でのみ呼ばれる
 	// ここで返したpropsはクライアント側でも取れる
 	static async getInitialProps({ query }) {
 		return { ...query }
 	}
-
-	componentWillMount() {
-		const timeline = new TimelineStore("/timeline/hashtag", { "id": this.props.hashtag.id }, { "hashtag": this.props.hashtag })
+	constructor(props) {
+		super(props)
+		const { hashtag } = this.props
+		this.timeline = new TimelineStore({ "id": hashtag.id }, { hashtag })
+		const stores = []
 		for (const status of this.props.statuses) {
 			const store = new StatusStore(status)
-			timeline.append(store)
+			stores.push(store)
 		}
-		this.addTimeline(timeline)
+		this.timeline.append(stores)
+		if (request) {
+			request.csrf_token = this.props.csrf_token
+		}
 	}
-
 	render() {
 		return (
 			<div>
 				<Head title={`${this.props.server.display_name} / ${config.site.name}`} />
 				<HeaderView server={this.props.server} logged_in={this.props.logged_in} />
 				<PostboxView logged_in={this.props.logged_in} server={this.props.server} hashtag={this.props.hashtag} />
-				{this.timelines.map(timeline =>
-					<TimelineView timeline={timeline} />
-				)}
+				<TimelineView timeline={this.timeline} />
 			</div>
 		);
 	}

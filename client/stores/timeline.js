@@ -5,13 +5,13 @@ import ws from "../websocket"
 
 export default class TimelineStore {
 	// 取得済みの全ての投稿
-	@observable statuses = [];
+	statuses = observable.shallowArray([])
 
 	constructor(endpoint, request_query, params) {
 		this.endpoint = endpoint
 		this.query = request_query
 		this.params = params
-		if (ws) {		// サーバーサイドではやる意味がない
+		if (ws) {
 			ws.addEventListener("message", (e) => {
 				const data = JSON.parse(e.data)
 				if (data.status_updated) {
@@ -25,6 +25,11 @@ export default class TimelineStore {
 				this.update()
 			}, 30000)
 		}
+	}
+
+	// 継承先のクラスでこのメソッドをオーバーライドする
+	statusBelongsTo(status){
+		return true
 	}
 
 	// ミュートなどでフィルタリングした投稿

@@ -13,14 +13,10 @@ p {
 }
 a {
 	text-decoration: none;
-	color: $link_color;
 	font-weight: bold;
 }
 a:hover{
 	text-decoration: none;
-}
-textarea {
-	font-size: 16px;
 }
 .status {
 	margin-bottom: 14px;
@@ -106,4 +102,18 @@ textarea {
 	> .vertical {
 		left: 28px;
 	}
+}
+video {
+	width: 100%;
+}
+textarea {
+	width: 100%;
+	font-size: 16px;
+	padding: 5px;
+}
+.status-body-emoji {
+	width: 20px;
+	height: 20px;
+	margin-bottom: -3px;
+	display: inline-block;
 }

@@ -1,4 +1,4 @@
-import config from "./beluga.config"
+import version from "./version"
 let push = undefined
 
 if (typeof window !== "undefined") {
@@ -31,7 +31,7 @@ if (typeof window !== "undefined") {
 		req.send("")
 	}
 
-	getAudioBuffer(`/sounds/notification.mp3?v=${config.version}`, (buffer) => {
+	getAudioBuffer(`/sounds/notification.mp3?v=${version}`, (buffer) => {
 		window.audio = window.audio || {}
 		window.audio.notification = buffer
 	})

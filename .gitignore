@@ -2,5 +2,8 @@
 /node_modules/
 /server/config/beluga.js
 /server/config/storage.js
+/client/asset/emoji/32x32
+/client/asset/emoji/64x64
+/client/asset/emoji/128x128
 package-lock.json
 .DS_Store

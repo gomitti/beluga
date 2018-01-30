@@ -6,17 +6,18 @@ export default {
 		"app": 3000
 	},
 	"status": {
-		"max_text_length": 3000
+		"max_text_length": 3000,
+		"reaction": {
+			"limit": 3,	// 1投稿につき何種類の絵文字を追加できるか
+			"allow_self_reactions": false	// 自分自身へのリアクションの追加を許可
+		}
 	},
 	"colors": ["#B9C4CA", "#E09580", "#E5D8CE", "#EBE39B", "#F9D2C9", "#FCC8B2", "#E5A0A6", "#B3D9DD",
-		"#AD8FCF", "#5D6790", "#8684DE", "#79CBD2", "#A9C8A2", "#C784C8", "#F8C785", "#B4BEBD", "#E3D4DA",
-		"#E6AECD", "#EA9895", "#A6CAE5", "#5982EE", "#45A8C1", "#F4DA94", "#77A6F6", "#63BA67"],
+		"#AD8FCF", "#8684DE", "#79CBD2", "#A9C8A2", "#C784C8", "#F8C785", "#B4BEBD", "#E3D4DA",
+		"#E6AECD", "#EA9895", "#A6CAE5", "#45A8C1", "#F4DA94", "#77A6F6"],
 	"gradients": [
-		["#fad0c4", "#ff9a9e"], ["#fbc2eb", "#a18cd1"], ["#f6d365", "#fda085"],
-		["#d4fc79", "#96e6a1"], ["#f093fb", "#f5576c"], ["#00f2fe", "#4facfe"],
-		["#fee140", "#fa709a"], ["#89f7fe", "#66a6ff"], ["#38ef7d", "#11998e"],
-		["#56ccf2", "#2f80ed"], ["#ffd200", "#f7971e"], ["#f8ffae", "#43c6ac"],
-		["#ffc371", "#ff5f6d"], ["#ffe259", "#ffa751"],
+		["#fad0c4", "#ff9a9e"], ["#fbc2eb", "#a18cd1"], ["#fee140", "#fa709a"], ["#89f7fe", "#66a6ff"],
+		["#56ccf2", "#2f80ed"], ["#f8ffae", "#43c6ac"], ["#ffe259", "#ffa751"]
 	],
 	"memcached": {
 		"capacity": 1000,
@@ -79,6 +80,9 @@ export default {
 	"log": {
 		"path": "/path/to/log/dir"
 	},
+	"tmp": {
+		"directory": "/path/to/tmp/dir"
+	},
 	"slug": {
 		"timeline": {
 			"server": "world",
@@ -87,7 +91,11 @@ export default {
 	},
 	"media": {
 		"image": {
-			"max_filesize": 1024 * 1024 * 5,
+			"max": {
+				"filesize": 1024 * 1024 * 10,
+				"width": 20000,
+				"height": 20000
+			},
 			"thumbnail": {
 				"square": {
 					"size": 300
@@ -101,7 +109,18 @@ export default {
 			}
 		},
 		"video": {
-			"max_filesize": 1024 * 1024 * 40
+			"allowed_file_types": ["mp4", "mov"],
+			"max": {
+				"filesize": 1024 * 1024 * 40,
+				"width": 3840,
+				"height": 2160
+			}
+		},
+		"list": {
+			"count": {
+				"max": 500,		// 1回のAPIリクエストで取得できる上限
+				"default": 20
+			}
 		}
 	}
 }

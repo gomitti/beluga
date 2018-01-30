@@ -1,0 +1,90 @@
+#navigationbar {
+	z-index: 3;
+	width: 100%;
+	position: fixed;
+	> .top {
+		background-color: rgba(47, 47, 47, 0.99);
+		height: 26px;
+	}
+	> .bottom {
+		height: 46px;
+		// border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+		background-clip: padding-box;
+		background-color: rgba(255, 255, 255, 0.99);
+		box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, .05);
+	}
+}
+#app.hashtag {
+	.navigationbar-menu {
+		width: 1065px;
+		margin: 0 auto;
+	}
+}
+#app.hashtags {
+	.navigationbar-menu {
+		width: 720px;
+		margin: 0 auto;
+	}
+}
+#app.home {
+	.navigationbar-menu {
+		width: 835px;
+		margin: 0 auto;
+	}
+}
+#app.world {
+	.navigationbar-menu {
+		width: 1205px;
+		margin: 0 auto;
+	}
+}
+.navigationbar-menu {
+	overflow: hidden;
+	> li {
+		float: left;
+		height: 46px;
+		> a {
+			display: block;
+			text-decoration: none;
+			color: rgb(117, 117, 117);
+			font-size: 13px;
+			line-height: 1;
+			font-weight: bold;
+			height: 46px;
+			line-height: 46px;
+			padding: 0 10px;
+			overflow: hidden;
+			border: solid white;
+			border-width: 0 0 3px 0;
+			box-sizing: border-box;
+			transition: color 80ms ease-in 0s;
+			transition: border-bottom-color 80ms ease-in 0s;
+			> .icon {
+				float: left;
+				width: 18px;
+				font-size: 18px;
+				font-family: Beluga;
+				display: inline-block;
+				margin-top: 2px;
+			}
+			> .text {
+				float: left;
+				font-size: 13px;
+				display: inline-block;
+				margin-left: 3px;
+			}
+			> .home:before {
+				content: "B";
+			}
+			> .mentions:before {
+				content: "F";
+			}
+			> .hashtags:before {
+				content: "G";
+			}
+			> .world:before {
+				content: "H";
+			}
+		}
+	}
+}

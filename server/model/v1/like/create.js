@@ -2,7 +2,6 @@ import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
 import api from "../../../api"
 import memcached from "../../../memcached"
-import { cache } from "../../../memcached/v1/status/show"
 import show from "../../../model/v1/status/show"
 
 export default async (db, params) => {
@@ -11,7 +10,7 @@ export default async (db, params) => {
 		throw new Error("ユーザーが見つかりません")
 	}
 
-	const status = await memcached.v1.status.show(db, { "id": params.id })
+	const status = await memcached.v1.status.show(db, { "id": params.status_id })
 	if (!status) {
 		throw new Error("投稿が見つかりません")
 	}
@@ -29,10 +28,8 @@ export default async (db, params) => {
 		{ "$inc": { "likes_count": 1 } }
 	)
 
-	const key = status.id.toHexString()
-	if (key in cache) {
-		delete cache[key]
-	}
+	// キャッシュの消去
+	memcached.v1.delete_status_in_cache(status)
 
 	return show(db, { "id": status.id })
 }

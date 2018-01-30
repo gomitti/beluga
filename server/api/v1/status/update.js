@@ -2,6 +2,10 @@ import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
 
 export default async (db, params) => {
+	params = Object.assign({
+		"from_mobile": false
+	}, params)
+
 	if (typeof params.text !== "string") {
 		throw new Error("本文を入力してください")
 	}
@@ -22,8 +26,12 @@ export default async (db, params) => {
 	if (!(params.user_id instanceof ObjectID)) {
 		throw new Error("ログインしてください")
 	}
-	
-	if(!(typeof params.ip_address === "string")){
+
+	if (typeof params.ip_address !== "string") {
+		throw new Error("サーバーで問題が発生しました")
+	}
+
+	if (typeof params.from_mobile !== "boolean") {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
@@ -33,6 +41,7 @@ export default async (db, params) => {
 		"likes_count": 0,
 		"favorites_count": 0,
 		"created_at": Date.now(),
+		"from_mobile": params.from_mobile,
 		"_ip_address": params.ip_address
 	}
 
@@ -47,7 +56,7 @@ export default async (db, params) => {
 	if (params.hashtag_id instanceof ObjectID) {
 		query.hashtag_id = params.hashtag_id
 	}
-	
+
 	// ユーザーのホームへの投稿
 	if (typeof params.recipient_id === "string") {
 		try {
@@ -82,13 +91,13 @@ export default async (db, params) => {
 	const collection = db.collection("statuses")
 
 	// 最初の投稿は本人以外にできないようにする
-	if(query.recipient_id){
+	if (query.recipient_id) {
 		const status = await collection.findOne({
 			"recipient_id": params.recipient_id,
 			"server_id": params.server_id
 		})
-		if (status === null){
-			if (params.user_id.equals(params.recipient_id) === false){
+		if (status === null) {
+			if (params.user_id.equals(params.recipient_id) === false) {
 				throw new Error("最初の投稿は本人以外にはできません")
 			}
 		}

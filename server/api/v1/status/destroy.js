@@ -14,5 +14,6 @@ export default async (db, params) => {
 	}
 
 	const collection = db.collection("statuses")
-	return await collection.deleteOne({ "_id": params.id })
+	await collection.deleteOne({ "_id": params.id })
+	return true
 }

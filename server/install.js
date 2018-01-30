@@ -7,7 +7,7 @@ const MongoClient = require("mongodb").MongoClient
 async function register_reserved_user_names(db) {
 	const collection = db.collection("users")
 	const reserved_names = [
-		"admin", "beluga"
+		"admin", "beluga", "me"
 	]
 	for (const name of reserved_names) {
 		try {
@@ -15,7 +15,7 @@ async function register_reserved_user_names(db) {
 			if (existing !== null) {
 				continue
 			}
-			const result = await collection.insertOne({	name })
+			const result = await collection.insertOne({ name })
 		} catch (error) {
 			console.log(error)
 		}
@@ -55,7 +55,13 @@ async function register_reserved_server_names(db) {
 		db.collection("statuses").createIndex({ "server_id": -1, "_id": -1 })
 		db.collection("statuses").createIndex({ "user_id": -1, "_id": -1 })
 		db.collection("statuses").createIndex({ "recipient_id": -1, "server_id": -1, "_id": -1 })
-		db.collection("likes").createIndex({ "status_id": -1, "user_id": -1 })
+		db.collection("likes").createIndex({ "status_id": -1, "user_id": -1 }, { "unique": true })
+		db.collection("favorites").createIndex({ "status_id": -1, "user_id": -1 }, { "unique": true })
+		db.collection("favorites").createIndex({ "user_id": -1 })
+		db.collection("favorites").createIndex({ "status_id": -1 })
+		db.collection("reactions").createIndex({ "status_id": -1, "user_id": -1, "shortname": -1 }, { "unique": true })
+		db.collection("media").createIndex({ "is_image": -1 })
+		db.collection("media").createIndex({ "is_video": -1 })
 
 		client.close()
 	} catch (error) {

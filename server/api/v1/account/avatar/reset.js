@@ -48,5 +48,5 @@ export default async (db, user, storage) => {
 		throw new Error("サーバーで問題が発生しました")
 	}
 	const data = await gm_draw(size, size, random_color)
-	return update(db, { data, "ext": "png" }, user, storage)
+	return update(db, data, user, storage)
 }
