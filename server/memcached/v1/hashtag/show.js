@@ -1,62 +1,34 @@
 import { ObjectID } from "mongodb"
-import config from "../../../config/beluga"
 import api from "../../../api"
+import { Memcached } from "../../../memcached/v1/memcached"
 
-let cache = {}
-
-const delete_cache_by_key = key => {
-	if (typeof key !== "string") {
-		return
-	}
-	if (key in cache) {
-		delete cache[key]
-	}
+const memcached = {
+	"ids": new Memcached(api.v1.hashtag.show),
+	"tagnames": new Memcached(api.v1.hashtag.show),
 }
 
 export const delete_hashtag_in_cache = hashtag => {
 	if (typeof hashtag.id === "string") {
-		return delete_cache_by_key(hashtag.id)
+		return memcached.ids.delete(hashtag.id)
 	}
 	if (hashtag.id instanceof ObjectID) {
-		return delete_cache_by_key(hashtag.id.toHexString())
+		return memcached.ids.delete(hashtag.id.toHexString())
+	}
+	if (typeof hashtag.tagname === "string") {
+		return memcached.tagnames.delete(hashtag.tagname)
 	}
 }
 
 export default async (db, params) => {
-	if (typeof params.id === "string") {
-		try {
-			params.id = ObjectID(params.id)
-		} catch (error) {
-			throw new Error("idが不正です")
-		}
+	let key = params.id
+	if (key instanceof ObjectID) {
+		key = key.toHexString()
 	}
-	if (!(params.id instanceof ObjectID)) {
-		return await api.v1.hashtag.show(db, params)		// タグ名とサーバーを指定している場合は面倒なのでキャッシュしない
+	if (typeof key === "string") {
+		return await memcached.ids.fetch(key, db, params)
 	}
-
-	const key = params.id.toHexString()
-	if (key in cache) {
-		const obj = cache[key];
-		if (obj.expires > Date.now()) {
-			obj.hit += 1
-			return obj.data
-		}
-		delete cache[key]
+	if (typeof params.tagname === "string") {
+		return await memcached.tagnames.fetch(params.tagname, db, params)
 	}
-
-	const hashtag = await api.v1.hashtag.show(db, params)
-	if (hashtag === null) {
-		return hashtag
-	}
-
-	if (Object.keys(cache).length > config.memcached.capacity) {
-		cache = {}
-	}
-
-	cache[key] = {
-		"expires": Date.now() + config.memcached.max_age * 1000,
-		"hit": 0,
-		"data": hashtag
-	}
-	return hashtag
+	return null
 }

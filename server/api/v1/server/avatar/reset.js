@@ -51,7 +51,7 @@ export default async (db, server, storage) => {
 		throw new Error("ユーザーが見つかりません")
 	}
 
-	const size = config.server.profile.image.size
+	const size = config.server.profile.image_size
 	const gradients = config.gradients
 	const gradient = gradients[Math.floor(Math.random() * gradients.length)]
 	const start = gradient[0]

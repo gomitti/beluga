@@ -47,6 +47,7 @@
     "node-ffprobe": "^1.2.2",
     "path": "^0.12.7",
     "react": "^16.2.0",
+    "react-color": "^2.13.8",
     "react-dom": "^16.2.0",
     "react-image-crop": "^3.0.10",
     "uid-safe": "^2.1.5",

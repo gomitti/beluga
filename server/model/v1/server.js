@@ -1,2 +1,3 @@
 import create from "./server/create"
-export default { create }
+import show from "./server/show"
+export default { create, show }

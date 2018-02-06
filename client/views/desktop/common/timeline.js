@@ -27,7 +27,7 @@ export default class TimelineView extends Component {
 			}
 		})
 	}
-	toggleNotification(e) {
+	toggleNotification = event => {
 		const checkbox = this.refs.notificationCheckbox
 		this.notification_enabled = checkbox.checked
 	}
@@ -35,7 +35,7 @@ export default class TimelineView extends Component {
 		const timeline = this.props.timeline;
 		return (
 			<div className="timeline">
-				<p className="notification">新着通知:<input type="checkbox" ref="notificationCheckbox" onChange={e => this.toggleNotification(e)} /></p >
+				<p className="notification">新着通知:<input type="checkbox" ref="notificationCheckbox" onChange={this.toggleNotification} /></p >
 				<div className="vertical"></div>
 				{timeline.filteredStatuses.map((status) => {
 					if (status.deleted) {

@@ -5,6 +5,7 @@ import ws from "../../websocket"
 export default class ReactionsStore {
 	@observable list = {}
 	constructor(status) {
+		this.is_pending = false
 		this.status_id = status.id
 		if (typeof status.reactions === "object") {
 			this.list = status.reactions
@@ -29,9 +30,13 @@ export default class ReactionsStore {
 		this.list = reactions
 	}
 	@action.bound
-	add(shortname) {
+	toggle(shortname) {
+		if (this.is_pending){
+			return
+		}
+		this.is_pending = true
 		request
-			.post("/reaction/add", { "status_id": this.status_id, shortname })
+			.post("/reaction/toggle", { "status_id": this.status_id, shortname })
 			.then(res => {
 				const data = res.data
 				if (data.error) {
@@ -41,6 +46,8 @@ export default class ReactionsStore {
 			})
 			.catch(error => {
 
+			}).then(_ => {
+				this.is_pending = false
 			})
 	}
 }

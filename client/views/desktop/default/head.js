@@ -4,8 +4,8 @@ import version from "../../../version"
 
 export default class HeadView extends Component {
 	render() {
-		const { platform } = this.props
-		const color = "#477da7"
+		let { platform, color } = this.props
+		color = color ? color : "#477da7"
 		return (
 			<Head>
 				<meta charSet="utf-8" />
@@ -16,9 +16,11 @@ export default class HeadView extends Component {
 					a,
 					a:hover,
 					.user-defined-color,
-					.user-defined-color-active.active,
-					.user-defined-color-hover:hover {
+					.user-defined-color-active.active {
 						color: ${color};
+					}
+					.user-defined-color-hover:hover {
+						color: ${color} !important;
 					}
 					.user-defined-bg-color {
 						background-color: ${color};
@@ -29,22 +31,12 @@ export default class HeadView extends Component {
 					.user-defined-border-color-active.active {
 						border-color: ${color};
 					}
-					.navigationbar-menu:hover {
-						> li {
-							> a.active:hover {
-								color: ${color};
-								border-bottom-color: ${color};
-							}
-						}
+					.navigationbar-menu:hover > li > a.active:hover {
+						color: ${color} !important;
+						border-color: ${color} !important;
 					}
-					.status-header {
-						> .inside {
-							> .link:hover {
-								> .display-name {
-									color: ${color};
-								}
-							}
-						}
+					.status-header > .inside > .link:hover > .display-name {
+						color: ${color} !important;
 					}
 				`}</style>
 			</Head>

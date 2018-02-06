@@ -1,4 +1,4 @@
-import config from "../../../../beluga.config"
+import config from "../../../beluga.config"
 import parser from "./parser/index"
 import { map_unicode_fname, map_shortname_fname, unicode_emoji_regexp } from "./parser/emoji"
 
@@ -60,14 +60,14 @@ const split_emoji_shortname = components => {
 }
 const split = sentence => {
 	let components = typeof sentence === "string" ? [sentence] : sentence
-	components = split_regexp(components, /(https?:\/\/[^  ]+)/g)
+	components = split_regexp(components, /(!?https?:\/\/[^\s 　]+)/g)
 	components = split_emoji_unicode(components)
 	components = split_emoji_shortname(components)
 	return components
 }
 
 export const parse_link = (substr, subviews) => {
-	if (substr.match(/^https?:\/\//)) {
+	if (substr.match(/^https?:\/\/[^\s 　]+/)) {
 		if (substr.indexOf(".") === -1) {
 			subviews.push(substr)
 			return true
@@ -86,6 +86,17 @@ export const parse_link = (substr, subviews) => {
 		const display_text = url.replace(/https?:\/\//, "")
 		subviews.push(<a href={url} className="status-body-link user-defined-color user-defined-color-hover" target="_blank">{display_text}</a>)
 		return true
+	}
+	return false
+}
+
+export const parse_embed = (substr, subviews, entities) => {
+	if (substr.match(/^!https?:\/\/[^\s 　]+/)) {
+		let node = parser.embed(substr, entities)
+		if (node) {
+			subviews.push(node)
+			return true
+		}
 	}
 	return false
 }
@@ -119,10 +130,14 @@ export const parse_emoji_shortname = (substr, subviews) => {
 	return false
 }
 
-export default sentence => {
+export default (sentence, entities) => {
 	const subviews = []
 	const components = split(sentence)
 	for (const substr of components) {
+		// 埋め込み
+		if (parse_embed(substr, subviews, entities)) {
+			continue
+		}
 		// リンク
 		if (parse_link(substr, subviews)) {
 			continue
@@ -138,5 +153,5 @@ export default sentence => {
 		// それ以外
 		subviews.push(substr)
 	}
-	return <span>{subviews}</span>
+	return subviews
 }

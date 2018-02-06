@@ -43,19 +43,19 @@ export default class PostboxView extends Component {
 			})
 	}
 
-	onKeyUp(e) {
-		if (e.keyCode == 16) {
+	onKeyUp = event => {
+		if (event.keyCode == 16) {
 			this.is_shift_key_down = false
 			return
 		}
-		if (e.keyCode == 17) {
+		if (event.keyCode == 17) {
 			this.is_ctrl_key_down = false
 			return
 		}
 	}
 
-	onKeyDown(e) {
-		if (e.keyCode == 16) {
+	onKeyDown = event => {
+		if (event.keyCode == 16) {
 			this.is_shift_key_down = true
 			if (this.timer_shift) {
 				clearTimeout(this.timer_shift)
@@ -64,7 +64,7 @@ export default class PostboxView extends Component {
 				this.is_shift_key_down = false
 			}.bind(this), 5000)
 		}
-		if (e.keyCode == 17) {
+		if (event.keyCode == 17) {
 			this.is_ctrl_key_down = true
 			if (this.timer_ctrl) {
 				clearTimeout(this.timer_ctrl)
@@ -73,15 +73,15 @@ export default class PostboxView extends Component {
 				this.is_ctrl_key_down = false
 			}.bind(this), 5000)
 		}
-		if (e.keyCode == 13) {
+		if (event.keyCode == 13) {
 			let textarea = this.refs.textarea
 			if (this.is_shift_key_down) {
-				e.preventDefault()
+				event.preventDefault()
 				this.post()
 				return
 			}
 			if (this.is_ctrl_key_down) {
-				e.preventDefault()
+				event.preventDefault()
 				this.post()
 				return
 			}
@@ -89,12 +89,12 @@ export default class PostboxView extends Component {
 		}
 	}
 
-	onFileChange(e) {
-		const files = e.target.files
+	onFileChange = event => {
+		const files = event.target.files
 		console.log(files)
 		for (const file of files) {
 			const reader = new FileReader()
-			reader.onload = (e) => {
+			reader.onload = (event) => {
 				request
 					.post("/media/image/upload", {
 						"data": reader.result
@@ -130,9 +130,9 @@ export default class PostboxView extends Component {
 		}
 		return (
 			<div>
-				<div><textarea ref="textarea" onKeyUp={e => this.onKeyUp(e)} onKeyDown={e => this.onKeyDown(e)} /></div>
-				<div><button className="button" onClick={e => this.post()}>投稿する</button></div>
-				<input type="file" ref="file" accept="image/*, video/*" onChange={e => this.onFileChange(e)} multiple />
+				<div><textarea ref="textarea" onKeyUp={this.onKeyUp} onKeyDown={this.onKeyDown} /></div>
+				<div><button className="button" onClick={this.post}>投稿する</button></div>
+				<input type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
 			</div>
 		);
 	}

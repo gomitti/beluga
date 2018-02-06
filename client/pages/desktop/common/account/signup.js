@@ -16,7 +16,7 @@ export default class App extends Component {
 		
 	}
 
-	signup() {
+	signup = event => {
 		if(this.pending === true){
 			return
 		}
@@ -76,7 +76,7 @@ export default class App extends Component {
 					<p>パスワードを再入力</p>
 					<p><input type="password" ref="confirmPassword" /></p>
 				</div>
-				<div><button className="button" onClick={e => this.signup()}>登録</button></div>
+				<div><button className="button" onClick={this.signup}>登録</button></div>
 			</div>
 		);
 	}

@@ -32,15 +32,15 @@ class EmojiHistory {
 		if (!(history instanceof Array)) {
 			return
 		}
-		if(history.length > 0){
+		if (history.length > 0) {
 			this.list = history
 		}
 	}
 	@action.bound
 	add(emoji) {
 		const list = []
-		for(const _emoji of this.list){
-			if(emoji.shortname === _emoji.shortname){
+		for (const _emoji of this.list) {
+			if (emoji.shortname === _emoji.shortname) {
 				continue
 			}
 			list.push(_emoji)
@@ -85,7 +85,7 @@ class EmojiHistoryView extends Component {
 		const buttons = []
 		for (const emoji of history.list) {
 			const { shortname, category, fname } = emoji
-			buttons.push(<button onClick={e => pick(shortname, category, fname)} className="emojipicker-ignore-click" ><i className={`emojipicker-ignore-click emoji-${category} _${fname}`}></i></button>)
+			buttons.push(<button onClick={event => pick(shortname, category, fname)} className="emojipicker-ignore-click" ><i className={`emojipicker-ignore-click emoji-${category} _${fname}`}></i></button>)
 		}
 		return (
 			<div className="emoji-category">
@@ -108,7 +108,7 @@ export default class EmojiPickerView extends Component {
 			const array = emojiset[category]
 			for (const fname of array) {
 				const shortname = map_code_shortname[fname]
-				buttons.push(<button onClick={e => this.pick(shortname, category, fname)} className="emojipicker-ignore-click" ><i className={`emojipicker-ignore-click emoji-${category} _${fname}`}></i></button>)
+				buttons.push(<button onClick={event => this.pick(shortname, category, fname)} className="emojipicker-ignore-click" ><i className={`emojipicker-ignore-click emoji-${category} _${fname}`}></i></button>)
 			}
 			this.categoryViews.push(
 				<div className="emoji-category">
@@ -118,6 +118,14 @@ export default class EmojiPickerView extends Component {
 					</div>
 				</div>
 			)
+		}
+		if (typeof window !== "undefined") {
+			window.addEventListener("scroll", event => {
+				const { picker } = this.props
+				if (picker.is_hidden === false) {
+					picker.hide()
+				}
+			})
 		}
 	}
 	componentDidMount() {
@@ -143,7 +151,7 @@ export default class EmojiPickerView extends Component {
 	}
 	render() {
 		const { picker } = this.props
-		if(!picker){
+		if (!picker) {
 			return null
 		}
 		return (

@@ -5,6 +5,7 @@
 	display: flex;
 	> .column {
 		flex: 0 0 auto;
+		min-width: 0;
 	}
 	> .column.left {
 		width: 220px;
@@ -65,8 +66,7 @@
 		.menu-link {
 			text-decoration: none;
 			color: rgb(160, 160, 160);
-			transition: background-color 30ms ease-in 0s;
-			transition: color 30ms ease-in 0s;
+			transition: color 30ms ease-in 0s, background-color 30ms ease-in 0s;
 			display: block;
 			padding: 4px 10px;
 			font-size: 14px;

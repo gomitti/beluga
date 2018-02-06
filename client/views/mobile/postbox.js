@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { request } from "../../api"
 
 export default class PostboxView extends Component {
-	post() {
+	post = event => {
 		if (this.pending === true) {
 			return
 		}
@@ -36,11 +36,11 @@ export default class PostboxView extends Component {
 				this.pending = false
 			})
 	}
-	onFileChange(e) {
-		const files = e.target.files
+	onFileChange = event => {
+		const files = event.target.files
 		for (const file of files) {
 			const reader = new FileReader()
-			reader.onload = (e) => {
+			reader.onload = event => {
 				const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
 				request
 					.post(endpoint, {
@@ -78,8 +78,8 @@ export default class PostboxView extends Component {
 			<div>
 				<div><textarea ref="textarea" /></div>
 				<div>
-					<input type="file" ref="file" accept="image/*, video/*" onChange={e => this.onFileChange(e)} multiple />
-					<button className="button" onTouchStart={e => this.post()}>投稿する</button>
+					<input type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
+					<button className="button" onTouchStart={this.post}>投稿する</button>
 					</div>
 			</div>
 		);

@@ -7,7 +7,45 @@ export default class NavigationBarView extends Component {
 		const { server, logged_in, active } = this.props
 		return (
 			<div id="navigationbar">
-				<div className="top"></div>
+				<div className="top">
+					<div className="inside clearfix">
+						<div className="navigationbar-logo-container"></div>
+						<div className="navigationbar-pulldown-container clearfix meiryo">
+							<ul>
+								{(() => {
+									if (logged_in) {
+										return (
+											<li>
+												<a href="">設定</a>
+												<ul className="navigationbar-pulldown-menu">
+													<li><a href="/settings/profile">プロフィール</a></li>
+													<li><a href="/settings/design">デザイン</a></li>
+													<li><a href="/settings/security">セキュリティ</a></li>
+												</ul>
+											</li>
+										)
+									}
+								})()}
+								<li>
+									<a href="">探す</a>
+									<ul className="navigationbar-pulldown-menu">
+										<li><a href="">投稿を検索</a></li>
+										<li><a href="">サーバーを探す</a></li>
+									</ul>
+								</li>
+								<li>
+									<a href="" className="misc"></a>
+									<ul className="navigationbar-pulldown-menu">
+										<li><a href="https://help.beluga.fm">ヘルプ</a></li>
+										<li><a href="https://research.beluga.fm" className="verdana">Research</a></li>
+										<li><a href="https://playground.beluga.fm" className="verdana">Playground</a></li>
+										<li><a href="https://github.com/belugafm/beluga">ソースコード</a></li>
+									</ul>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
 				<div className="bottom">
 					<ul className="navigationbar-menu">
 						{(() => {
@@ -21,7 +59,6 @@ export default class NavigationBarView extends Component {
 											<span className="text">ホーム</span>
 										</a>
 									</li>
-
 								)
 							}
 						})()}
@@ -59,7 +96,6 @@ export default class NavigationBarView extends Component {
 											<span className="text">タイムライン</span>
 										</a>
 									</li>
-
 								)
 							}
 						})()}

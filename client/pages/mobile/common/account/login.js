@@ -15,7 +15,7 @@ export default class App extends Component {
 		}
 	}
 
-	signin() {
+	signin = event => {
 		if (this.pending === true) {
 			return
 		}
@@ -63,7 +63,7 @@ export default class App extends Component {
 					<p>パスワード</p>
 					<p><input type="password" ref="password" /></p>
 				</div>
-				<div><button className="button" onClick={e => this.signin()}>ログイン</button></div>
+				<div><button className="button" onClick={this.signin}>ログイン</button></div>
 			</div>
 		);
 	}

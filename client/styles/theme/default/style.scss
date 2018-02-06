@@ -48,7 +48,7 @@ body {
 	    -webkit-overflow-scrolling: touch;
 	}
 	> .scroller::-webkit-scrollbar {
-	    width: 14px;
+	    width: 6px;
 	}
 	> .scroller::-webkit-scrollbar-thumb {
 	    background-color: rgba(0, 0, 0, .2);
@@ -61,4 +61,11 @@ body {
 	    background-color: transparent;
 	    border-color: transparent;
 	}
+}
+.clearfix::after {
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
 }

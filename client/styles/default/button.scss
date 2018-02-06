@@ -229,13 +229,24 @@ button {
 	margin: 0;
 	-webkit-appearance: none;
 	-webkit-tap-highlight-color: transparent;
-	box-shadow: 0 3px 7px rgba(0,0,0,0.2);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 	padding: 4px 12px;
 	margin-left: 4px;
 	user-select: none;
-	border: 1px solid rgba(0,0,0,0.1);
+	border: 1px solid rgba(0, 0, 0, 0.05);
 	border-radius: 6px;
 	color: white;
+	transition: transform .15s ease;
+}
+.button.neutral {
+	// background: #6C7A89;
+	color: #666;
+	background: linear-gradient(to bottom, rgb(252, 251, 247) 0%,rgb(247, 246, 242) 100%);
+	box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+	border-color: rgba(0, 0, 0, 0.2);
+}
+.button:hover {
+	transform: translateY(-1px);
 }
 .button:focus {
 	outline:0;
@@ -251,14 +262,6 @@ button {
 	// background: -webkit-linear-gradient(top, #fcfbf7 0%, #edece8 100%);
 	// background: linear-gradient(to bottom, #fcfbf7 0%, #edece8 100%);
 }
-.button.neutral {
-	// background: #6C7A89;
-	color: #666;
-	background: linear-gradient(to bottom, rgb(252, 251, 247) 0%,rgb(247, 246, 242) 100%);
-	box-shadow: 0 3px 7px rgba(0,0,0,0.03);
-	border-color: rgba(0, 0, 0, 0.2);
-}
-
 .button.in-progress,
 .button.in-progress:hover {
 	-webkit-animation: progress-bar-stripes 1s linear infinite;

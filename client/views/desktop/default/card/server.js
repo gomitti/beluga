@@ -48,7 +48,7 @@ export default class CardView extends Component {
 			memberViews.push(
 				<li>
 					<a href={`/user/${user.name}`}>
-						<img src={user.profile_image_url} />
+						<img src={user.avatar_url} />
 					</a>
 				</li>
 			)
@@ -59,7 +59,7 @@ export default class CardView extends Component {
 					<div className="group">
 						<div className="server-avatar">
 							<a href={`/server/${server.name}/about`}>
-								<img className="image" src={server.profile_image_url} />
+								<img className="image" src={server.avatar_url} />
 							</a>
 						</div>
 						<div className="server-name">

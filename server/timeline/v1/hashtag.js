@@ -1,8 +1,8 @@
 import { ObjectID } from "mongodb"
-import config from "../../../config/beluga"
-import api from "../../../api"
-import memcached from "../../../memcached"
-import show from "../status/show"
+import config from "../../config/beluga"
+import api from "../../api"
+import model from "../../model"
+import collection from "../../collection"
 
 export default async (db, params) => {
 	params = Object.assign({}, api.v1.timeline.default_params, params)
@@ -18,7 +18,7 @@ export default async (db, params) => {
 		throw new Error("idが不正です")
 	}
 
-	const hashtag = await memcached.v1.hashtag.show(db, { "id": params.id })
+	const hashtag = await model.v1.hashtag.show(db, { "id": params.id })
 	if (!hashtag) {
 		throw new Error("ルームが存在しません")
 	}
@@ -26,7 +26,7 @@ export default async (db, params) => {
 	const rows = await api.v1.timeline.hashtag(db, params)
 	const statuses = []
 	for (const row of rows) {
-		const status = await show(db, Object.assign({}, params, { "id": row.id }))
+		const status = await collection.v1.status.show(db, Object.assign({}, params, { "id": row.id }))
 		statuses.push(status)
 	}
 	return statuses

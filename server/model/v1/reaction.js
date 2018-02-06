@@ -1,2 +1,3 @@
 import add from "./reaction/add"
-export default { add }
+import toggle from "./reaction/toggle"
+export default { add, toggle }

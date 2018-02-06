@@ -80,8 +80,8 @@ export default async (db, params, server, storage) => {
 		throw new Error("画像が正方形ではありません")
 	}
 
-	if (shape.width > config.server.profile.image.size) {
-		// data = await gm_resize(data, config.server.profile.image.size, config.server.profile.image.size)
+	if (shape.width > config.server.profile.image_size) {
+		// data = await gm_resize(data, config.server.profile.image_size, config.server.profile.image_size)
 	}
 
 	const ftp = new Ftp({
@@ -127,7 +127,7 @@ export default async (db, params, server, storage) => {
 
 	let collection = db.collection("servers")
 	let result = await collection.update({ "_id": server.id }, {
-		"$set": { "profile_image_url": url }
+		"$set": { "avatar_url": url }
 	})
 
 	collection = db.collection("server_images")

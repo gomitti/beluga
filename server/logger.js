@@ -7,7 +7,7 @@ export default winston.createLogger({
 	"format": winston.format.json(),
 	"transports": [
 		new winston.transports.File({
-			"filename": path.join(config.log.path, "error.log"),
+			"filename": path.join(config.log.directory, "error.log"),
 			"level": "error"
 		})
 	]

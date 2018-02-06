@@ -1,5 +1,6 @@
 import api from "../../api"
 import model from "../../model"
+import collection from "../../collection"
 import storage from "../../config/storage"
 
 module.exports = (fastify, options, next) => {
@@ -16,12 +17,14 @@ module.exports = (fastify, options, next) => {
 			const from_mobile = ua.match(/mobile/i) ? true : false
 
 			const params = Object.assign({ "user_id": session.user_id, ip_address, from_mobile }, req.body)
-			const status = await model.v1.status.update(fastify.mongo.db, params)
-			if (!!status.hashtag_id) {
-				const hashtag = await api.v1.hashtag.show(fastify.mongo.db, { "id": status.hashtag_id })
-				status.hashtag = hashtag
-			}
-			status.user = await api.v1.user.show(fastify.mongo.db, { "id": status.user_id })
+			const status_id = await model.v1.status.update(fastify.mongo.db, params)
+			const status = await collection.v1.status.show(fastify.mongo.db, {
+				"id": status_id,
+				"trim_user": false,
+				"trim_recipient": false,
+				"trim_server": false,
+				"trim_hashtag": false
+			})
 			fastify.websocket_broadcast("status_updated", { status })
 			res.send({ "success": true, status })
 		} catch (error) {

@@ -1,3 +1,99 @@
+#app.settings {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+}
+.settings-menu-container {
+    flex: 0 0 auto;
+    width: 35%;
+    padding-top: 72px;
+    font-size: 15px;
+    > .inside {
+        float: right;
+        padding: 20px;
+        width: 160px;
+        > .title {
+            margin-left: 0px;
+            padding-bottom: 4px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgb(180, 180, 180);
+            color: rgb(100, 100, 100);
+            font-weight: bold;
+            font-size: 14px;
+        }
+    }
+}
+.settings-menu {
+    margin-bottom: 30px;
+    > li {
+        > a {
+            text-decoration: none;
+            color: rgb(100, 100, 100);
+            display: inline-block;
+            padding: 2px 0;
+            font-weight: bold;
+        }
+    }
+}
+.settings-content {
+    padding-top: 72px;
+    flex: 1 1 auto;
+    background: rgba(255, 255, 255, 0.7);
+    > .scroller {
+        height: 100%;
+        > .inside {
+            max-width: 500px;
+            padding: 20px;
+        }
+    }
+}
+.settings-module {
+    margin-bottom: 60px;
+    > .head {
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid rgb(220, 220, 220);
+        > h1 {
+            font-size: 18px;
+        }
+    }
+    .paragraph {
+        font-size: 15px;
+        line-height: 18px;
+    }
+    .button {
+        padding: 6px 14px;
+    }
+}
+.settings-module.color-pickers {
+    > .picker {
+        margin-bottom: 26px;
+    }
+    > .picker.input {
+        margin-top: -5px;
+        > .input {
+            width: 100px;
+            font-size: 15px;
+            color: rgb(51, 51, 51);
+            padding: 0px;
+            border-width: 0px 0px 3px;
+            border-top-style: initial;
+            border-right-style: initial;
+            border-bottom-style: solid;
+            border-left-style: initial;
+            border-top-color: initial;
+            border-right-color: initial;
+            border-bottom-color: rgb(3, 169, 244);
+            border-left-color: initial;
+            border-image: initial;
+            outline: none;
+            height: 30px;
+        }
+    }
+    > .picker.slider {
+        width: 366px;
+    }
+}
 .crop-module {
 	width: 400px;
 }

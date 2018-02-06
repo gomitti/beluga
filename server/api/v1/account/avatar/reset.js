@@ -38,7 +38,7 @@ export default async (db, user, storage) => {
 		throw new Error("ユーザーが見つかりません")
 	}
 
-	const size = config.user.profile.image.size
+	const size = config.user.profile.image_size
 	const colors = config.colors
 	let random_color = colors[Math.floor(Math.random() * colors.length)]
 	if (random_color.indexOf("#") !== 0) {

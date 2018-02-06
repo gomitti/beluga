@@ -16,7 +16,7 @@ export default class App extends Component {
 		}
 	}
 
-	create() {
+	create = event => {
 		if (this.pending === true) {
 			return
 		}
@@ -65,7 +65,7 @@ export default class App extends Component {
 					<p>表示名</p>
 					<p><input type="text" ref="displayName" /></p>
 				</div>
-				<div><button className="button" onClick={e => this.create()}>作成</button></div>
+				<div><button className="button" onClick={this.create}>作成</button></div>
 			</div>
 		);
 	}

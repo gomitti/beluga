@@ -5,7 +5,7 @@ import ws from "../websocket"
 
 export default class TimelineStore {
 	// 取得済みの全ての投稿
-	statuses = observable.shallowArray([])
+	@observable.shallow statuses = []
 
 	constructor(endpoint, request_query, params) {
 		this.endpoint = endpoint

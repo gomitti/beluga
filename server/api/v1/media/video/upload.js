@@ -65,12 +65,20 @@ const get_extension = format_name => {
 	return null
 }
 
-const reject = metadata => {
+const reject = (metadata, video_filepath, message) => {
 	logger.log({
 		"level": "error",
 		metadata
 	})
-	throw new Error("サーバーで問題が発生しました")
+	try {
+		fs.unlinkSync(video_filepath)
+	} catch (error) {
+		logger.log({
+			"level": "error",
+			"error": error.toString()
+		})
+	}
+	throw new Error(message ? message : "サーバーで問題が発生しました")
 }
 
 const extract_streams = streams => {
@@ -103,14 +111,6 @@ export default async (db, original_data, user, server) => {
 		throw new Error("ファイルサイズが大きすぎます")
 	}
 
-	const type = fileType(original_data)
-	if (!type) {
-		throw new Error("このファイル形式には対応していません")
-	}
-	if (!(config.media.video.allowed_file_types.includes(type.ext.toLowerCase()))) {
-		throw new Error("このファイル形式には対応していません")
-	}
-
 	const video_filepath = path.join(config.tmp.directory, uid(24))
 	try {
 		fs.writeFileSync(video_filepath, original_data)
@@ -122,27 +122,51 @@ export default async (db, original_data, user, server) => {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
+	const metadata = await ff_metadata(video_filepath)
+
+	// ファイルチェック
+	if (!metadata) {
+		reject(null, video_filepath)
+	}
+	if (!metadata.streams) {
+		reject(metadata, video_filepath)
+	}
+
+	// 拡張子のチェック
+	const { format } = metadata
+	const ext = get_extension(format.format_name)
+	if (ext === null) {
+		reject(metadata, video_filepath, "このファイル形式には対応していません")
+	}
+	if (!(config.media.video.allowed_file_types.includes(ext))) {
+		reject(metadata, video_filepath, `このファイル形式には対応していません（${ext}）`)
+	}
+
+	const { video, audio } = extract_streams(metadata.streams)
+	if (video === null) {
+		reject(metadata, video_filepath, "動画ではありません")
+	}
+	if (config.media.video.unsupported_codecs.includes(video.codec_long_name)){
+		reject(metadata, video_filepath, `このファイル形式には対応していません（${video.codec_long_name}）`)
+	}
+
+	const { width, height } = video
+	if (typeof width !== "number" && typeof height !== "number") {
+		reject(metadata, video_filepath)
+	}
+	if (width === 0 || height === 0) {
+		reject(metadata, video_filepath, `サイズが不正です（${width}x${height}）`)
+	}
+	if (width > config.media.video.max.width || height > config.media.video.max.height) {
+		reject(metadata, video_filepath, `サイズが大きすぎます（${width}x${height} > ${config.media.video.max.width}x${config.media.video.max.height}）`)
+	}
+
+	// 静止画
 	const tmp_poster_filename = uid(24) + ".jpg"
 	const tmp_poster_filepath = path.join(config.tmp.directory, tmp_poster_filename)
 	await ff_screenshot(video_filepath, tmp_poster_filename, config.tmp.directory)
 
-	// 静止画
-	let poster_data = null
-	try {
-		poster_data = fs.readFileSync(tmp_poster_filepath)
-	} catch (error) {
-		logger.log({
-			"level": "error",
-			"error": error.toString()
-		})
-		throw new Error("サーバーで問題が発生しました")
-	}
-	if (!poster_data) {
-		throw new Error("サーバーで問題が発生しました")
-	}
-
-	const metadata = await ff_metadata(video_filepath)
-
+	// 動画を削除
 	try {
 		fs.unlinkSync(video_filepath)
 	} catch (error) {
@@ -153,6 +177,17 @@ export default async (db, original_data, user, server) => {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
+	let poster_data = null
+	try {
+		poster_data = fs.readFileSync(tmp_poster_filepath)
+	} catch (error) {
+		logger.log({
+			"level": "error",
+			"error": error.toString()
+		})
+		poster_data = null
+	}
+	
 	try {
 		fs.unlinkSync(tmp_poster_filepath)
 	} catch (error) {
@@ -162,28 +197,9 @@ export default async (db, original_data, user, server) => {
 		})
 		throw new Error("サーバーで問題が発生しました")
 	}
-
-	if (!metadata) {
+	
+	if (!poster_data) {
 		throw new Error("サーバーで問題が発生しました")
-	}
-	if (!metadata.streams) {
-		reject(metadata)
-	}
-
-	const { video, audio } = extract_streams(metadata.streams)
-	if (video === null) {
-		reject(metadata)
-	}
-
-	const { width, height } = video
-	if (typeof width !== "number" && typeof height !== "number") {
-		reject(metadata)
-	}
-	if (width === 0 || height === 0) {
-		throw new Error(`サイズが不正です（${width}x${height}）`)
-	}
-	if (width > config.media.video.max.width || height > config.media.video.max.height) {
-		throw new Error(`サイズが大きすぎます（${width}x${height} > ${config.media.video.max.width}x${config.media.video.max.height}）`)
 	}
 
 	const min_size = Math.min(width, height)
@@ -223,16 +239,6 @@ export default async (db, original_data, user, server) => {
 			metadata
 		})
 		throw new Error("サーバーで問題が発生しました")
-	}
-
-	// もう一度拡張子のチェック
-	const { format } = metadata
-	const ext = get_extension(format.format_name)
-	if (ext === null) {
-		throw new Error("このファイル形式には対応していません")
-	}
-	if (!(config.media.video.allowed_file_types.includes(ext))) {
-		throw new Error("このファイル形式には対応していません")
 	}
 
 	const ftp = new Ftp({

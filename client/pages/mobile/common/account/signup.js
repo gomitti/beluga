@@ -15,7 +15,7 @@ export default class App extends Component {
 		}
 	}
 
-	signup() {
+	signup = event => {
 		const name = this.refs.name.value
 		const password = this.refs.password.value
 		const password_confirm = this.refs.confirmPassword.value
@@ -67,7 +67,7 @@ export default class App extends Component {
 					<p>パスワードを再入力</p>
 					<p><input type="password" ref="confirmPassword" /></p>
 				</div>
-				<div><button className="button" onClick={e => this.signup()}>登録</button></div>
+				<div><button className="button" onClick={this.signup}>登録</button></div>
 			</div>
 		);
 	}

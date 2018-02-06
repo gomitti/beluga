@@ -13,14 +13,7 @@ import { request } from "../../../../api"
 // mobxの状態をaction内でのみ変更可能にする
 useStrict(true)
 
-@observer
 export default class App extends Component {
-	@observable timelines = []
-
-	@action.bound
-	addTimeline(timeline) {
-		this.timelines.push(timeline)
-	}
 	// サーバー側でのみ呼ばれる
 	// ここで返したpropsはクライアント側でも取れる
 	static async getInitialProps({ query }) {

@@ -56,13 +56,27 @@ module.exports = (fastify, options, next) => {
 		const hashtags = []
 		for (const hashtag of rows) {
 			const server = await api.v1.server.show(db, { "id": hashtag.server_id })
-			if(!server){
+			if (!server) {
 				continue
 			}
 			hashtag.server = server
 			hashtags.push(hashtag)
 		}
 		app.render(req.req, res.res, `/${fastify.device_type(req)}/common/`, { hashtags, logged_in })
+	})
+
+	fastify.next("/embed/tweet/:user_name/:status_id", async (app, req, res) => {
+		const user_name = req.params.user_name
+		const status_id = req.params.status_id
+
+		if (!user_name.match(/^[a-zA-Z0-9_]+$/)) {
+			return fastify.error(app, req, res, 404)
+		}
+		if (!status_id.match(/^[0-9]+$/)) {
+			return fastify.error(app, req, res, 404)
+		}
+		const href = `https://twitter.com/${user_name}/status/${status_id}`
+		app.render(req.req, res.res, `/embed/tweet`, { href })
 	})
 	// Nextは.jsを動的に生成するため、最初の1回はここで生成する
 	// 2回目以降はNginxのproxy_cacheが効くのでここは呼ばれない

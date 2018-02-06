@@ -33,10 +33,12 @@
 				text-decoration: none;
 				font-weight: bold;
 				font-size: 15px;
-				> .symbol {
-				}
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				display: block;
+				overflow: hidden;
 			}
-			> a:before {
+			> a::before {
 				content: "G";
 				font-family: Beluga;
 			}

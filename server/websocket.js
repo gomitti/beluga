@@ -124,13 +124,15 @@ websocket
 					this.is_alive = true;
 				})
 				client.on("close", function () {
-					const disappeared = online.remove(this.url, this.user_id)	// サーバーとユーザーの関連付け
-					if (disappeared) {
+					const did_disappear = online.remove(this.url, this.user_id)	// サーバーとユーザーの関連付け
+					if (did_disappear) {
 						const server_name = get_server_name(this.url)
 						broadcast("members_need_reload", { server_name })	// 全員に通知
 					}
 				})
 				broadcast("online_changed", { "count": online.total() })	// 全員に通知
+				const server_name = get_server_name(url)
+				broadcast("members_need_reload", { server_name })	// 全員に通知
 			})
 
 		const interval = setInterval(() => {

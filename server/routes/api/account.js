@@ -39,7 +39,7 @@ module.exports = (fastify, options, next) => {
 
 			const server = storage.servers[0]
 			const url = await model.v1.account.avatar.reset(fastify.mongo.db, session.user_id, server)
-			res.send({ "success": true, "profile_image_url": url })
+			res.send({ "success": true, "avatar_url": url })
 		} catch (error) {
 			res.send({ "success": false, "error": error.toString() })
 		}
@@ -64,7 +64,7 @@ module.exports = (fastify, options, next) => {
 				data,
 				"user_id": session.user_id
 			}, server)
-			res.send({ "success": true, "profile_image_url": url })
+			res.send({ "success": true, "avatar_url": url })
 		} catch (error) {
 			res.send({ "success": false, "error": error.toString() })
 		}

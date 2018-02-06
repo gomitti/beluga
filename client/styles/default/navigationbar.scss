@@ -5,9 +5,12 @@
 	> .top {
 		background-color: rgba(47, 47, 47, 0.99);
 		height: 26px;
+		> .inside {
+			padding: 0 40px;
+		}
 	}
 	> .bottom {
-		height: 46px;
+		height: 44px;
 		// border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 		background-clip: padding-box;
 		background-color: rgba(255, 255, 255, 0.99);
@@ -38,27 +41,33 @@
 		margin: 0 auto;
 	}
 }
+#app.settings {
+	.navigationbar-menu {
+		width: 788px;
+		margin: 0 auto;
+	}
+}
 .navigationbar-menu {
 	overflow: hidden;
 	> li {
 		float: left;
-		height: 46px;
+		height: 44px;
 		> a {
 			display: block;
 			text-decoration: none;
-			color: rgb(117, 117, 117);
+			color: rgb(100, 100, 100);
 			font-size: 13px;
-			line-height: 1;
 			font-weight: bold;
-			height: 46px;
-			line-height: 46px;
+			line-height: 1;
+			height: 44px;
+			line-height: 44px;
 			padding: 0 10px;
 			overflow: hidden;
 			border: solid white;
 			border-width: 0 0 3px 0;
 			box-sizing: border-box;
-			transition: color 80ms ease-in 0s;
-			transition: border-bottom-color 80ms ease-in 0s;
+			transition: 80ms ease-in 0s;
+			transition-property: border-bottom-color, color;
 			> .icon {
 				float: left;
 				width: 18px;
@@ -73,18 +82,87 @@
 				display: inline-block;
 				margin-left: 3px;
 			}
-			> .home:before {
+			> .home::before {
 				content: "B";
 			}
-			> .mentions:before {
+			> .mentions::before {
 				content: "F";
 			}
-			> .hashtags:before {
+			> .hashtags::before {
 				content: "G";
 			}
-			> .world:before {
+			> .world::before {
 				content: "H";
 			}
+		}
+	}
+}
+.navigationbar-menu:hover {
+	> li {
+		> a.active {
+			color: rgb(117, 117, 117);
+			border-color: white;
+		}
+	}
+}
+.navigationbar-logo-container {
+	float: left;
+}
+.navigationbar-pulldown-container {
+	float: right;
+	> ul {
+		> li {
+			float: left;
+			position: relative;
+			margin-left: 20px;
+			> a {
+				font-size: 11px;
+				color: rgb(200, 200, 200);
+				text-decoration: none;
+				display: block;
+				height: 26px;
+				line-height: 26px;
+			}
+			> a.misc::before {
+				font-size: 18px;
+				font-family: Beluga;
+				content: "E";
+			}
+		}
+		> li:hover {
+			> a {
+				color: rgb(250, 250, 250);
+			}
+			> .navigationbar-pulldown-menu {
+				display: block;
+			}
+		}
+	}
+}
+.navigationbar-pulldown-menu {
+	position: absolute;
+	right: -18px;
+	display: none;
+	width: 180px;
+	padding: 0 0 10px 0;
+	background: rgba(30, 30, 30, 0.99);
+	border-radius: 6px;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.3);
+	background-clip: padding-box;
+	> li {
+		> a {
+			color: rgb(200, 200, 200);
+			text-decoration: none;
+			display: block;
+			font-size: 12px;
+			line-height: 12px;
+			padding: 8px 15px;
+		}
+		> a:hover {
+			color: rgb(250, 250, 250);
+			background-color: rgb(60, 60, 60);
 		}
 	}
 }

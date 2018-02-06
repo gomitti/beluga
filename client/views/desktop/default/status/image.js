@@ -6,8 +6,9 @@ export default class ImageView extends Component {
 		super(props)
 		this.state = {}
 	}
-	onLoad(e) {
+	onLoad = event => {
 		const img = this.refs.img
+		console.log("onload", img)
 		if (img) {
 			const max_size = config.status.image.max_size.desktop
 			const width = img.naturalWidth || img.width
@@ -26,13 +27,17 @@ export default class ImageView extends Component {
 	}
 	render() {
 		if (this.state.width && this.state.height) {
-			return <img src={this.props.src} width={this.state.width} height={this.state.height} />
+			return <a href={this.props.src} target="_blank" style={{
+				"maxWidth": this.state.width,
+				"maxHeight": this.state.height,
+			}}>
+				<img src={this.props.src} />
+			</a>
+		}
+		if(typeof window === "undefined"){
+			return null
 		}
 		// <div>で囲むとonLoadが正しく呼ばれる謎
-		return (
-			<div>
-				<img ref="img" onLoad={e => this.onLoad(e)} src={this.props.src} width="0" height="0" />
-			</div>
-		)
+		return <img ref="img" onLoad={this.onLoad} src={this.props.src} width="0" height="0" />
 	}
 }

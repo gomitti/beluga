@@ -1,5 +1,6 @@
 import React, { Component } from "react"
 import { request } from "../../../api"
+import PostboxMediaHistoryView from "./postbox/media/history"
 const classnames = require("classnames")
 
 export default class PostboxView extends Component {
@@ -18,22 +19,22 @@ export default class PostboxView extends Component {
 		}
 
 	}
-	toggleMediaView(e) {
-		e.preventDefault()
+	toggleMediaView = event => {
+		event.preventDefault()
 		this.setState({
 			"show_media": !this.state.show_media
 		})
 	}
-	appendEmoji(e) {
-		e.preventDefault()
-		const { x, y } = e.target.getBoundingClientRect()
+	appendEmojiShortname = event => {
+		event.preventDefault()
+		const { x, y } = event.target.getBoundingClientRect()
 		emojipicker.show(x, y + 40, shortname => {
 			const { textarea } = this.refs
 			this.setText(textarea.value + `:${shortname}:`)
 		})
 	}
-	appendMedia(e, item) {
-		e.preventDefault()
+	appendMediaLink = (event, item) => {
+		event.preventDefault()
 		const { textarea } = this.refs
 		if (textarea.value.length === 0) {
 			this.setText(`${item.source}`)
@@ -41,9 +42,9 @@ export default class PostboxView extends Component {
 			this.setText(textarea.value + "\n" + `${item.source}`)
 		}
 	}
-	post(e) {
-		if (e) {
-			e.preventDefault()
+	post = event => {
+		if (event) {
+			event.preventDefault()
 		}
 		if (this.pending === true) {
 			return
@@ -86,18 +87,18 @@ export default class PostboxView extends Component {
 				textarea.focus()
 			})
 	}
-	onKeyUp(e) {
-		if (e.keyCode == 16) {
+	onKeyUp = event => {
+		if (event.keyCode == 16) {
 			this.is_shift_key_down = false
 			return
 		}
-		if (e.keyCode == 17) {
+		if (event.keyCode == 17) {
 			this.is_ctrl_key_down = false
 			return
 		}
 	}
-	onKeyDown(e) {
-		if (e.keyCode == 16) {
+	onKeyDown = event => {
+		if (event.keyCode == 16) {
 			this.is_shift_key_down = true
 			if (this.timer_shift) {
 				clearTimeout(this.timer_shift)
@@ -106,7 +107,7 @@ export default class PostboxView extends Component {
 				this.is_shift_key_down = false
 			}.bind(this), 5000)
 		}
-		if (e.keyCode == 17) {
+		if (event.keyCode == 17) {
 			this.is_ctrl_key_down = true
 			if (this.timer_ctrl) {
 				clearTimeout(this.timer_ctrl)
@@ -115,15 +116,15 @@ export default class PostboxView extends Component {
 				this.is_ctrl_key_down = false
 			}.bind(this), 5000)
 		}
-		if (e.keyCode == 13) {
+		if (event.keyCode == 13) {
 			const { textarea } = this.refs
 			if (this.is_shift_key_down) {
-				e.preventDefault()
+				event.preventDefault()
 				this.post()
 				return
 			}
 			if (this.is_ctrl_key_down) {
-				e.preventDefault()
+				event.preventDefault()
 				this.post()
 				return
 			}
@@ -142,7 +143,7 @@ export default class PostboxView extends Component {
 			"is_ready": true
 		})
 	}
-	onTextChange(e) {
+	onTextChange = event => {
 		const { textarea } = this.refs
 		if (textarea.value.length === 0 && this.state.is_ready === true) {
 			return this.setState({
@@ -155,22 +156,22 @@ export default class PostboxView extends Component {
 			})
 		}
 	}
-	onDragOver(e) {
-		if(this.state.drag_entered === false){
+	onDragOver = event => {
+		if (this.state.drag_entered === false) {
 			this.setState({ "drag_entered": true })
 		}
 		if (window.chrome) {
 			return true;
 		}
-		e.preventDefault()
+		event.preventDefault()
 	}
-	onDragEnd(e) {
+	onDragEnd = event => {
 		if (this.state.drag_entered) {
 			this.setState({ "drag_entered": false })
 		}
 	}
-	onDrop(e) {
-		const transfer = e.dataTransfer;
+	onDrop = event => {
+		const transfer = event.dataTransfer;
 		if (!transfer) {
 			return true;
 		}
@@ -178,14 +179,14 @@ export default class PostboxView extends Component {
 		if (str) {
 			return true;
 		}
-		e.preventDefault();
+		event.preventDefault();
 		if (transfer.files.length == 0) {
 			alert("ファイルを取得できません")
 			return false;
 		}
 		for (const file of transfer.files) {
 			const reader = new FileReader();
-			reader.onload = (e) => {
+			reader.onload = (event) => {
 				const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
 				request
 					.post(endpoint, {
@@ -214,11 +215,11 @@ export default class PostboxView extends Component {
 			reader.readAsDataURL(file)
 		}
 	}
-	onFileChange(e) {
-		const files = e.target.files
+	onFileChange = event => {
+		const files = event.target.files
 		for (const file of files) {
 			const reader = new FileReader()
-			reader.onload = (e) => {
+			reader.onload = (event) => {
 				const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
 				request
 					.post(endpoint, {
@@ -254,64 +255,36 @@ export default class PostboxView extends Component {
 				<div>投稿するには<a href="/login">ログイン</a>してください</div>
 			)
 		}
-		const mediaViews = []
-		if (media instanceof Array && this.state.show_media) {
-			for (const item of media) {
-				let thumbnail = null
-				if (item.is_image) {
-					thumbnail = `${item.uri}/${item.directory}/${item.suffix}.square.${item.extension}`
-				} else if (item.is_video) {
-					thumbnail = `${item.uri}/${item.directory}/${item.suffix}.square.jpg`
-				}
-				if (!thumbnail) {
-					continue
-				}
-				mediaViews.push(
-					<a className="item" onClick={e => this.appendMedia(e, item)}>
-						<img src={thumbnail} />
-					</a>
-				)
-			}
-		}
 		return (
-			<div className="postbox-module" onDragOver={e => this.onDragOver(e)} onDragEnd={e => this.onDragEnd(e)} onDragLeave={e => this.onDragEnd(e)} onDrop={e => this.onDrop(e)}>
+			<div className="postbox-module" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
 				<div className="inside">
 					<div className="postbox-left">
 						<a href="/user/" className="avatar link">
-							<img src={logged_in.profile_image_url} />
+							<img src={logged_in.avatar_url} />
 						</a>
 					</div>
 					<div className="postbox-right">
 						<div className="postbox-content">
 							<div className="body">
-								<textarea onChange={e => this.onTextChange(e)} className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })} ref="textarea" onKeyUp={e => this.onKeyUp(e)} onKeyDown={e => this.onKeyDown(e)} />
+								<textarea onChange={this.onTextChange} className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })} ref="textarea" onKeyUp={this.onKeyUp} onKeyDown={this.onKeyDown} />
 							</div>
 						</div>
 						<div className="postbox-footer">
-							<input type="file" ref="file" accept="image/*, video/*" onChange={e => this.onFileChange(e)} multiple />
+							<input type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
 							<div className="panel">
-								<button className="action emojipicker-ignore-click" onClick={e => this.appendEmoji(e)}>✌️</button>
-								<button className="action emojipicker-ignore-click" onClick={e => this.toggleMediaView(e)}>画</button>
-								<button className="action emojipicker-ignore-click" onClick={e => this.appendEmoji(e)}>✌️</button>
+								<button className="action emojipicker-ignore-click" onClick={this.appendEmojiShortname}>✌️</button>
+								<button className="action emojipicker-ignore-click" onClick={this.toggleMediaView}>画</button>
+								<button className="action emojipicker-ignore-click" onClick={this.appendEmojiShortname}>✌️</button>
 							</div>
 							<div className="submit">
 								<button className={classnames("button meiryo", {
 									"ready user-defined-bg-color": !this.state.is_pending && this.state.is_ready,
 									"neutral": !this.state.is_pending && !this.state.is_ready,
 									"in-progress": this.state.is_pending,
-								})} onClick={e => this.post(e)}>投稿する</button>
+								})} onClick={this.post}>投稿する</button>
 							</div>
 						</div>
-						{(() => {
-							if (mediaViews.length == 0) {
-								return null
-							}
-							return (
-								<div className="postbox-media">
-									{mediaViews}
-								</div>
-							)
-						})()}
+						<PostboxMediaHistoryView isHidden={!this.state.show_media} media={media} append={this.appendMediaLink} />
 					</div>
 				</div>
 			</div>

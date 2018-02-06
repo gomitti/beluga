@@ -55,7 +55,7 @@ module.exports = (fastify, options, next) => {
 
 			const base64_components = req.body.data.split(",")
 			const base64_data = base64_components.length == 2 ? base64_components[1] : req.body.data
-			const data = new Buffer(base64_data, "base64");
+			const data = new Buffer(base64_data, "base64")
 
 			const server = storage.servers[0]
 			const urls = await api.v1.media.video.upload(fastify.mongo.db, data, user, server)

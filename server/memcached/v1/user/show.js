@@ -1,62 +1,34 @@
 import { ObjectID } from "mongodb"
-import config from "../../../config/beluga"
 import api from "../../../api"
+import { Memcached } from "../../../memcached/v1/memcached"
 
-let cache = {}
-
-const delete_cache_by_key = key => {
-	if (typeof key !== "string") {
-		return
-	}
-	if (key in cache) {
-		delete cache[key]
-	}
+const memcached = {
+	"ids": new Memcached(api.v1.user.show),
+	"names": new Memcached(api.v1.user.show),
 }
 
 export const delete_user_in_cache = user => {
 	if (typeof user.id === "string") {
-		return delete_cache_by_key(user.id)
+		return memcached.ids.delete(user.id)
 	}
 	if (user.id instanceof ObjectID) {
-		return delete_cache_by_key(user.id.toHexString())
+		return memcached.ids.delete(user.id.toHexString())
+	}
+	if (typeof user.name === "string") {
+		return memcached.names.delete(user.name)
 	}
 }
 
 export default async (db, params) => {
-	if (typeof params.id === "string") {
-		try {
-			params.id = ObjectID(params.id)
-		} catch (error) {
-			throw new Error("idが不正です")
-		}
+	let key = params.id
+	if (key instanceof ObjectID) {
+		key = key.toHexString()
 	}
-	if (!(params.id instanceof ObjectID)) {
-		throw new Error("idを指定してください")
+	if (typeof key === "string") {
+		return await memcached.ids.fetch(key, db, params)
 	}
-
-	const key = params.id.toHexString()
-	if (key in cache) {
-		const obj = cache[key];
-		if (obj.expires > Date.now()) {
-			obj.hit += 1
-			return obj.data
-		}
-		delete cache[key]
+	if (typeof params.name === "string") {
+		return await memcached.names.fetch(params.name, db, params)
 	}
-
-	const user = await api.v1.user.show(db, params)
-	if (user === null) {
-		return user
-	}
-
-	if (Object.keys(cache).length > config.memcached.capacity){
-		cache = {}
-	}
-
-	cache[key] = {
-		"expires": Date.now() + config.memcached.max_age * 1000,
-		"hit": 0,
-		"data": user
-	}
-	return user
+	return null
 }

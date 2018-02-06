@@ -7,7 +7,7 @@ class ImageView extends Component {
 		super(props)
 		this.state = {}
 	}
-	onLoad(e) {
+	onLoad = event => {
 		const img = this.refs.img
 		if (img) {
 			const max_size = config.status.image.max_size.desktop
@@ -29,7 +29,7 @@ class ImageView extends Component {
 		if (this.state.width && this.state.height) {
 			return <img src={this.props.src} width={this.state.width} height={this.state.height} />
 		}
-		return <img ref="img" src={this.props.src} onLoad={e => this.onLoad(e)} width="0" height="0" />
+		return <img ref="img" src={this.props.src} onLoad={this.onLoad} width="0" height="0" />
 	}
 }
 
@@ -131,7 +131,7 @@ export default class StatusView extends Component {
 					<div className="header">
 						<a href="/user/" className="avatar">
 							<span className="name">@{status.user.name}</span>
-							<img src={status.user.profile_image_url} />
+							<img src={status.user.avatar_url} />
 						</a>
 					</div>
 					<div className="content">

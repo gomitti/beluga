@@ -1,13 +1,13 @@
 import React, { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../../beluga.config"
-import { map_shortname_fname } from "./parser/emoji"
+import { map_shortname_fname } from "../parser/emoji"
 
 @observer
 export default class ReactionsView extends Component {
-	add(shortname) {
+	toggle(shortname) {
 		const { status } = this.props
-		status.reactions.add(shortname)
+		status.reactions.toggle(shortname)
 	}
 	render() {
 		const { status } = this.props
@@ -22,7 +22,7 @@ export default class ReactionsView extends Component {
 			}
 			const count = status.reactions.list[shortname]
 			buttons.push(
-				<button className="status-reaction" onClick={e => this.add(shortname)}>
+				<button className="status-reaction" onClick={event => this.toggle(shortname)}>
 					<img className="emoji" src={`/asset/emoji/64x64/${fname}.png`} />
 					<span className="count">{count}</span>
 				</button>

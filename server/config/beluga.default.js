@@ -6,10 +6,19 @@ export default {
 		"app": 3000
 	},
 	"status": {
-		"max_text_length": 3000,
+		"max_text_length": 5000,
 		"reaction": {
 			"limit": 3,	// 1投稿につき何種類の絵文字を追加できるか
 			"allow_self_reactions": false	// 自分自身へのリアクションの追加を許可
+		},
+		"embed": {
+			"web": {
+				// 1つの投稿にURLの埋め込みを何個まで許可するか
+				// サーバー側でHTTPリクエストが発生するため大量の埋め込みを行うと負荷がかかる
+				"limit": 3,
+				"timeout": 3000,		// ミリ秒
+				"max_description_length": 200
+			}
 		}
 	},
 	"colors": ["#B9C4CA", "#E09580", "#E5D8CE", "#EBE39B", "#F9D2C9", "#FCC8B2", "#E5A0A6", "#B3D9DD",
@@ -31,9 +40,10 @@ export default {
 		"max_display_name_length": 32,
 		"name_regexp": /^[a-zA-Z0-9_]+$/,
 		"profile": {
-			"image": {
-				"size": 300
-			}
+			"image_size": 300,
+			"max_description_length": 5000,
+			"max_location_length": 100,
+			"default_theme_color": "#477da7"
 		},
 	},
 	"hashtag": {
@@ -78,7 +88,7 @@ export default {
 		}
 	},
 	"log": {
-		"path": "/path/to/log/dir"
+		"directory": "/path/to/log/dir"
 	},
 	"tmp": {
 		"directory": "/path/to/tmp/dir"
@@ -110,6 +120,7 @@ export default {
 		},
 		"video": {
 			"allowed_file_types": ["mp4", "mov"],
+			"unsupported_codecs": ["MPEG-4 part 2"],
 			"max": {
 				"filesize": 1024 * 1024 * 40,
 				"width": 3840,

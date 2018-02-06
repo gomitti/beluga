@@ -9,19 +9,19 @@ export default class GifView extends Component {
 			"display": false
 		}
 	}
-	onLoad(e) {
+	onLoad = event => {
 		this.setState({
 			"loaded": true,
 			"pending": false,
 			"display": true
 		})
 	}
-	onMouseEnter(e) {
+	onMouseEnter = event => {
 		this.setState({
 			"display": true
 		})
 	}
-	onMouseLeave(e) {
+	onMouseLeave = event => {
 		this.setState({
 			"display": false
 		})
@@ -30,7 +30,7 @@ export default class GifView extends Component {
 		const { width, height, coalesce_src, original_src } = this.props
 		const src = this.state.display ? original_src : coalesce_src
 		return (
-			<div className="gifview" onMouseEnter={e => this.onMouseEnter(e)} onMouseLeave={e => this.onMouseLeave(e)} style={{ width, height }}>
+			<div className="gifview" onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave} style={{ width, height }}>
 				<span className="verdana watermark">GIF</span>
 				<a href={original_src} target="_blank">
 					<img src={src} width={width} height={height} />

@@ -15,8 +15,8 @@ export default class App extends Component {
 		}
 	}
 
-	signin(e) {
-		e.preventDefault()
+	signin = event => {
+		event.preventDefault()
 		if (this.pending === true) {
 			return
 		}
@@ -54,7 +54,7 @@ export default class App extends Component {
 	}
 	render() {
 		return (
-			<form onSubmit={e => this.signin(e)} method="POST">
+			<form onSubmit={this.signin} method="POST">
 				<Head title="ログイン"></Head>
 				<div>
 					<p>ユーザー名</p>
@@ -64,7 +64,7 @@ export default class App extends Component {
 					<p>パスワード</p>
 					<p><input type="password" ref="password" /></p>
 				</div>
-				<div><button className="button" onClick={e => this.signin(e)}>ログイン</button></div>
+				<div><button className="button" onClick={this.signin}>ログイン</button></div>
 			</form>
 		);
 	}

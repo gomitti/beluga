@@ -28,12 +28,12 @@ export default class App extends Component {
 		super(props)
 		const { hashtag } = this.props
 		this.timeline = new TimelineStore({ "id": hashtag.id }, { hashtag })
-		const stores = []
+		const statuses = []
 		for (const status of this.props.statuses) {
 			const store = new StatusStore(status)
-			stores.push(store)
+			statuses.push(store)
 		}
-		this.timeline.append(stores)
+		this.timeline.append(statuses)
 		if (request) {
 			request.csrf_token = this.props.csrf_token
 		}

@@ -1,7 +1,7 @@
 import api from "../../api"
-import memcached from "../../memcached"
 import config from "../../config/beluga"
 import model from "../../model"
+import timeline from "../../timeline"
 import { hash } from "bcrypt/bcrypt"
 
 module.exports = (fastify, options, next) => {
@@ -11,7 +11,7 @@ module.exports = (fastify, options, next) => {
 		const member = []
 		let including_me = false
 		for (const user_id of online_user_ids) {
-			const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
+			const user = await model.v1.user.show(fastify.mongo.db, { "id": user_id })
 			if (user) {
 				member.push(user)
 				if (logged_in && user.id.equals(logged_in.id)) {
@@ -37,7 +37,7 @@ module.exports = (fastify, options, next) => {
 			const logged_in = await fastify.logged_in(req, res, session)
 
 			const server_name = req.params.server_name
-			const server = await memcached.v1.server.show(fastify.mongo.db, { "name": server_name })
+			const server = await model.v1.server.show(fastify.mongo.db, { "name": server_name })
 			if (server === null) {
 				return fastify.error(app, req, res, 404)
 			}
@@ -53,7 +53,7 @@ module.exports = (fastify, options, next) => {
 			if(session.user_id){
 				params.user_id = session.user_id
 			}
-			const statuses = await model.v1.timeline.server(fastify.mongo.db, params)
+			const statuses = await timeline.v1.server(fastify.mongo.db, params)
 
 			const hashtags = await api.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
 
@@ -81,12 +81,12 @@ module.exports = (fastify, options, next) => {
 			const logged_in = await fastify.logged_in(req, res, session)
 
 			const server_name = req.params.server_name
-			const server = await memcached.v1.server.show(fastify.mongo.db, { "name": server_name })
+			const server = await model.v1.server.show(fastify.mongo.db, { "name": server_name })
 			if (server === null) {
 				return fastify.error(app, req, res, 404)
 			}
 			const tagname = req.params.tagname
-			const hashtag = await memcached.v1.hashtag.show(fastify.mongo.db, {
+			const hashtag = await model.v1.hashtag.show(fastify.mongo.db, {
 				"server_id": server.id, tagname
 			})
 			if (hashtag === null) {
@@ -101,7 +101,7 @@ module.exports = (fastify, options, next) => {
 			if (session.user_id) {
 				params.user_id = session.user_id
 			}
-			const statuses = await model.v1.timeline.hashtag(fastify.mongo.db, params)
+			const statuses = await timeline.v1.hashtag(fastify.mongo.db, params)
 
 			const hashtags = await api.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
 
@@ -133,17 +133,17 @@ module.exports = (fastify, options, next) => {
 			const logged_in = await fastify.logged_in(req, res, session)
 
 			const server_name = req.params.server_name
-			const server = await api.v1.server.show(fastify.mongo.db, { "name": server_name })
+			const server = await model.v1.server.show(fastify.mongo.db, { "name": server_name })
 			if (server === null) {
 				return fastify.error(app, req, res, 404)
 			}
-			const user = await api.v1.user.show(fastify.mongo.db, {
+			const user = await model.v1.user.show(fastify.mongo.db, {
 				"name": req.params.user_name
 			})
 			if (user === null) {
 				return fastify.error(app, req, res, 404)
 			}
-			const statuses = await model.v1.timeline.home(fastify.mongo.db, Object.assign({
+			const statuses = await timeline.v1.home(fastify.mongo.db, Object.assign({
 				"user_id": user.id,
 				"server_id": server.id,
 				"trim_user": false,
@@ -199,7 +199,7 @@ module.exports = (fastify, options, next) => {
 				if (session.user_id) {
 					params.user_id = session.user_id
 				}
-				home_statuses = await model.v1.timeline.home(fastify.mongo.db, params)
+				home_statuses = await timeline.v1.home(fastify.mongo.db, params)
 			}
 			const params = Object.assign({
 				"server_id": server.id,
@@ -212,7 +212,7 @@ module.exports = (fastify, options, next) => {
 			if (session.user_id) {
 				params.user_id = session.user_id
 			}
-			const server_statuses = await model.v1.timeline.server(fastify.mongo.db, params)
+			const server_statuses = await timeline.v1.server(fastify.mongo.db, params)
 
 			const hashtags = await api.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
 

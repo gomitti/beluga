@@ -2,6 +2,8 @@ import { Component } from "react"
 import { useStrict } from "mobx"
 import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import Head from "../../../../views/desktop/default/head"
+import NavigationBarView from "../../../../views/desktop/default/navigationbar"
+import SettingsMenuView from "../../../../views/desktop/default/settings/menu"
 import config from "../../../../beluga.config"
 import { request } from "../../../../api"
 
@@ -14,6 +16,7 @@ export default class App extends Component {
 	}
 	constructor(props) {
 		super(props)
+		const { logged_in } = props
 		this.state = {
 			crop: {
 				x: 0,
@@ -26,7 +29,7 @@ export default class App extends Component {
 			},
 			src: null,
 			extension: null,
-			preview_src: null,
+			preview_src: logged_in.avatar_url,
 			is_ready: false
 		}
 		if (request) {
@@ -116,12 +119,12 @@ export default class App extends Component {
 			})
 			.then(res => {
 				const data = res.data
-				const { profile_image_url, success } = data
+				const { avatar_url, success } = data
 				if (success == false) {
 					alert(data.error)
 					return
 				}
-				this.setState({ "preview_src": profile_image_url })
+				this.setState({ "preview_src": avatar_url })
 				alert("保存しました")
 			})
 			.catch(error => {
@@ -130,15 +133,15 @@ export default class App extends Component {
 	}
 	reset = () => {
 		request
-			.post("/account/avatar/reset", { })
+			.post("/account/avatar/reset", {})
 			.then(res => {
 				const data = res.data
-				const { profile_image_url, success } = data
+				const { avatar_url, success } = data
 				if (success == false) {
 					alert(data.error)
 					return
 				}
-				this.setState({ "preview_src": profile_image_url })
+				this.setState({ "preview_src": avatar_url })
 				alert("保存しました")
 			})
 			.catch(error => {
@@ -171,26 +174,53 @@ export default class App extends Component {
 		reader.readAsDataURL(file)
 	}
 	render() {
-		const { profile_image_size } = this.props
+		const { profile_image_size, platform, logged_in } = this.props
 		const { preview_src } = this.state
 		return (
-			<div className="crop-module">
-				<div className="preview-container">
-					<img src={preview_src} className="preview" />
+			<div id="app" className="settings">
+				<Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} />
+				<NavigationBarView logged_in={logged_in} />
+				<SettingsMenuView />
+				<div className="settings-content scroller-wrapper">
+					<div className="scroller">
+						<div className="inside">
+
+							<div className="settings-module">
+								<div className="head">
+									<h1>プロフィールの編集</h1>
+								</div>
+								<button className="button user-defined-bg-color">プロフィールを保存</button>
+							</div>
+
+							<div className="settings-module">
+								<div className="head">
+									<h1>アイコンの編集</h1>
+								</div>
+								<div className="crop-module">
+									<div className="preview-container">
+										<img src={preview_src} className="preview" />
+									</div>
+									<Head />
+									<div ref="module">
+										<ReactCrop
+											{...this.state}
+											profile_image_size={profile_image_size}
+											onImageLoaded={this.onImageLoaded}
+											onComplete={this.onCropComplete}
+											onChange={this.onCropChange}
+										/>
+									</div>
+									<input type="file" ref="file" accept="image/*" onChange={this.onFileChange} />
+									<button className="button user-defined-bg-color" onClick={this.crop}>保存</button>
+								</div>
+								<div className="paragraph">
+									アイコンをリセットし、ランダムな単色に戻すこともできます。
+							</div>
+								<button className="button user-defined-bg-color" onClick={this.reset}>アイコンをリセット</button>
+							</div>
+						</div>
+					</div>
 				</div>
-				<Head />
-				<div ref="module">
-					<ReactCrop
-						{...this.state}
-						profile_image_size={profile_image_size}
-						onImageLoaded={this.onImageLoaded}
-						onComplete={this.onCropComplete}
-						onChange={this.onCropChange}
-					/>
-				</div>
-				<input type="file" ref="file" accept="image/*" onChange={this.onFileChange} />
-				<button className="button user-defined-bg-color" onClick={this.crop}>保存</button>
-				<button className="button user-defined-bg-color" onClick={this.reset}>リセット</button>
 			</div>
 		)
 	}

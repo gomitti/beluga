@@ -40,6 +40,7 @@
 .status-right {
 	flex: 1 1 auto;
 	z-index: 2;
+	min-width: 0;
 }
 .status-header {
 	position: relative;
@@ -96,7 +97,7 @@
 		}
 	}
 }
-.status-body-link:before {
+.status-body-link::before {
 	font-family: Beluga;
 	content: "L";
 }
@@ -129,7 +130,7 @@
 		}
 	}
 	> .meta {
-		font-size: 14px;
+		font-size: 12px;
 		position: relative;
 		> .sep {
 			position: absolute;
@@ -141,13 +142,13 @@
 		}
 		> .count {
 			display: inline-block;
-			margin-top: 2px;
+			margin-top: 4px;
 			font-weight: bold;
 			margin-left: 14px;
 		}
 		> .unit {
 			display: inline-block;
-			margin-top: 2px;
+			margin-top: 4px;
 			margin-left: 2px;
 		}
 	}
@@ -188,16 +189,75 @@
 		border: 1px solid rgb(140, 140, 140);
 	}
 }
+.status-body-gallery {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	margin-top: 6px;
+	> a {
+		flex: 0 1 auto;
+		margin-right: 6px;
+		display: block;
+		> img {
+			width: 100%;
+			border-radius: 6px;
+		}
+	}
+}
+.status-body-gallery:first-child {
+	margin-top: 0;
+}
+.status-body-website {
+	display: flex;
+	flex-direction: row;
+	padding: 12px;
+	border-radius: 5px;
+	border: 1px solid rgb(220, 220, 220);
+	margin: 4px 0;
+	> .image {
+		width: 80px;
+		flex: 0 0 auto;
+		> img {
+			width: 100%;
+			height: auto;
+			border-radius: 4px;
+		}
+	}
+	> .content {
+		margin-left: 12px;
+		> .title {
+			font-size: 15px;
+			line-height: 18px;
+		}
+		> .description {
+			margin-top: 4px;
+			font-size: 13px;
+			line-height: 16px;
+		}
+		> .domain {
+			margin-top: 4px;
+			font-weight: bold;
+			font-size: 13px;
+			line-height: 13px;
+		}
+	}
+}
 .status-body-video {
 	width: 100%;
 }
 .status-footer {
 	height: 15px;
+	line-height: 15px;
 	margin-bottom: 8px;
+	display: flex;
 	> .belonging {
 		font-size: 14px;
 		color: rgb(200,200,200);
 		margin-right: 10px;
+		max-width: 200px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	> .time {
 		text-decoration: none;
@@ -233,23 +293,23 @@
 			font-family: Beluga;
 			font-size: 17px;
 			color: rgb(100, 100, 100);
-			> span:before {
+			> span::before {
 				font-family: Beluga;
 			}
 		}
-		> .like:before {
+		> .like::before {
 			content: "D";
 		}
-		> .favorite:before {
+		> .favorite::before {
 			content: "I";
 		}
-		> .emoji:before {
+		> .emoji::before {
 			content: "A";
 		}
-		> .comment:before {
+		> .comment::before {
 			content: "K";
 		}
-		> .destroy:before {
+		> .destroy::before {
 			content: "J";
 		}
 	}

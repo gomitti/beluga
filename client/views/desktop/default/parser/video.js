@@ -1,5 +1,5 @@
-import config from "../../../../../beluga.config"
-import VideoView from "../video"
+import config from "../../../../beluga.config"
+import VideoView from "../status/video"
 
 export default sentence => {
 	const url = sentence

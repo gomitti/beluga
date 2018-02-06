@@ -12,8 +12,8 @@ export default class HeaderView extends Component {
 	setOnline(count) {
 		this.online = count
 	}
-	resetAvatar(e) {
-		e.preventDefault()
+	resetAvatar = event => {
+		event.preventDefault()
 		request
 			.post("/account/avatar/reset", {})
 			.then(res => {
@@ -29,8 +29,8 @@ export default class HeaderView extends Component {
 			})
 	}
 	componentDidMount() {
-		ws.addEventListener("message", (e) => {
-			const data = JSON.parse(e.data)
+		ws.addEventListener("message", (event) => {
+			const data = JSON.parse(event.data)
 			if (data.online_changed) {
 				this.setOnline(data.count)
 			}
@@ -46,7 +46,7 @@ export default class HeaderView extends Component {
 						return <a href={`/hashtag/${this.props.server.name}/create`}>ルームの作成</a>
 					}
 				})()}</p>
-				<p>アイコン:<a href="#" onClick={e => this.resetAvatar(e)}>リセット</a> / </p>
+				<p>アイコン:<a href="#" onClick={this.resetAvatar}>リセット</a> / </p>
 				{(() => {
 					if (this.props.logged_in) {
 						return <p>ログイン中:@{this.props.logged_in.name}</p>

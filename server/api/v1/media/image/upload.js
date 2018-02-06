@@ -120,15 +120,21 @@ export default async (db, original_data, user, server) => {
 		throw new Error("画像サイズが不正です")
 	}
 
+	// gifの静止画
+	let coalesce_data = null
+	if (type.ext === "gif") {
+		coalesce_data = await gm_coalesce(original_data)
+	}
+
 	// 正方形のサムネイル
-	let square_data = null
+	let square_data = type.ext === "gif" ? coalesce_data : original_data
 	let base_size = config.media.image.thumbnail.square.size
 	if (min_size > base_size) {
 		// リサイズの必要がある場合
 		const ratio = base_size / min_size
 		const new_width = original_shape.width * ratio
 		const new_height = original_shape.height * ratio
-		square_data = await gm_resize(original_data, new_width, new_height)
+		square_data = await gm_resize(square_data, new_width, new_height)
 		if (original_shape.width >= original_shape.height) {
 			const x = parseInt((new_width - base_size) / 2.0)
 			square_data = await gm_crop(square_data, base_size, base_size, x, 0)
@@ -141,11 +147,11 @@ export default async (db, original_data, user, server) => {
 		if (original_shape.width >= original_shape.height) {
 			base_size = original_shape.height
 			const x = parseInt((original_shape.width - base_size) / 2.0)
-			square_data = await gm_crop(original_data, base_size, base_size, x, 0)
+			square_data = await gm_crop(square_data, base_size, base_size, x, 0)
 		} else {
 			base_size = original_shape.width
 			const y = parseInt((original_shape.height - base_size) / 2.0)
-			square_data = await gm_crop(original_data, base_size, base_size, 0, y)
+			square_data = await gm_crop(square_data, base_size, base_size, 0, y)
 		}
 	}
 
@@ -167,12 +173,6 @@ export default async (db, original_data, user, server) => {
 		const new_width = original_shape.width * ratio
 		const new_height = original_shape.height * ratio
 		small_data = await gm_resize(medium_data ? medium_data : original_data, new_width, new_height)
-	}
-
-	// gifの静止画
-	let coalesce_data = null
-	if (type.ext === "gif") {
-		coalesce_data = await gm_coalesce(original_data)
 	}
 
 	const ftp = new Ftp({
@@ -199,13 +199,13 @@ export default async (db, original_data, user, server) => {
 
 	let total_bytes = original_data.length + square_data.length
 	if (medium_data) {
-		total_bytes += medium_data
+		total_bytes += medium_data.length
 	}
 	if (small_data) {
-		total_bytes += small_data
+		total_bytes += small_data.length
 	}
 	if (coalesce_data) {
-		total_bytes += coalesce_data
+		total_bytes += coalesce_data.length
 	}
 
 	const suffix = `${original_shape.width}-${original_shape.height}`

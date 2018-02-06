@@ -24,7 +24,7 @@ export default class HeaderView extends Component {
 			}
 		})
 	}
-	toggleNotification(e) {
+	toggleNotification = event => {
 		const checkbox = this.refs.notificationCheckbox
 		this.notification_enabled = checkbox.checked
 	}
@@ -35,7 +35,7 @@ export default class HeaderView extends Component {
 				<div className="inside">
 					<h1 className="header-title">{server.display_name}</h1>
 					<div className="header-options">
-						<p className="notification">通知<input type="checkbox" ref="notificationCheckbox" onChange={e => this.toggleNotification(e)} /></p >
+						<p className="notification">通知<input type="checkbox" ref="notificationCheckbox" onChange={this.toggleNotification} /></p >
 					</div>
 				</div>
 			</div>
