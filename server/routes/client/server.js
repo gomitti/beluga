@@ -2,6 +2,7 @@ import api from "../../api"
 import config from "../../config/beluga"
 import model from "../../model"
 import timeline from "../../timeline"
+import collection from "../../collection"
 import { hash } from "bcrypt/bcrypt"
 
 module.exports = (fastify, options, next) => {
@@ -59,7 +60,7 @@ module.exports = (fastify, options, next) => {
 
 			let media = []
 			if (session.user_id) {
-				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+				media = await collection.v1.account.bookmark.media.list(fastify.mongo.db, { "user_id": session.user_id })
 			}
 
 			server.members = await fastify.members(server, logged_in)
@@ -107,7 +108,7 @@ module.exports = (fastify, options, next) => {
 
 			let media = []
 			if(session.user_id){
-				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+				media = await collection.v1.account.bookmark.media.list(fastify.mongo.db, { "user_id": session.user_id })
 			}
 
 			server.members = await fastify.members(server, logged_in)
@@ -154,7 +155,7 @@ module.exports = (fastify, options, next) => {
 
 			let media = []
 			if (session.user_id) {
-				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+				media = await collection.v1.account.bookmark.media.list(fastify.mongo.db, { "user_id": session.user_id })
 			}
 
 			// ホームの最初の投稿は本人以外にはできなくする
@@ -218,7 +219,7 @@ module.exports = (fastify, options, next) => {
 
 			let media = []
 			if (session.user_id) {
-				media = await api.v1.media.list(fastify.mongo.db, { "user_id": session.user_id })
+				media = await collection.v1.account.bookmark.media.list(fastify.mongo.db, { "user_id": session.user_id })
 			}
 
 			server.members = await fastify.members(server, logged_in)

@@ -7,7 +7,7 @@
     flex: 0 0 auto;
     width: 35%;
     padding-top: 72px;
-    font-size: 15px;
+    font-size: 14px;
     > .inside {
         float: right;
         padding: 20px;
@@ -31,6 +31,7 @@
             color: rgb(100, 100, 100);
             display: inline-block;
             padding: 2px 0;
+            margin-bottom: 3px;
             font-weight: bold;
         }
     }
@@ -57,12 +58,53 @@
             font-size: 18px;
         }
     }
-    .paragraph {
-        font-size: 15px;
+    .description {
+        font-size: 14px;
         line-height: 18px;
+        margin-top: 20px;
     }
     .button {
-        padding: 6px 14px;
+        padding: 5px 12px;
+    }
+    > .submit {
+        margin-top: 20px;
+        > .button {
+            margin-right: 10px;
+        }
+    }
+}
+.settings-module.profile {
+    > .item {
+        margin-top: 20px;
+        > .title {
+            font-size: 14px;
+            line-height: 1;
+            font-weight: bold;
+        }
+        > .form-input {
+            font-size: 14px;
+            margin-top: 8px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 6px 8px;
+            background: rgb(247, 247, 247);
+        }
+        > .form-input:focus {
+            background: white;
+        }
+        > textarea {
+            height: 200px;
+            min-width: 100%;
+            max-width: 100%;
+        }
+        > .hint {
+            margin-top: 4px;
+            font-size: 12px;
+            color: rgb(160, 160, 160);
+        }
+    }
+    > .item:first-child {
+        margin: 0;
     }
 }
 .settings-module.color-pickers {
@@ -73,7 +115,7 @@
         margin-top: -5px;
         > .input {
             width: 100px;
-            font-size: 15px;
+            font-size: 14px;
             color: rgb(51, 51, 51);
             padding: 0px;
             border-width: 0px 0px 3px;
@@ -92,6 +134,93 @@
     }
     > .picker.slider {
         width: 366px;
+    }
+}
+.settings-module.bookmark{
+    > .image-selector {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        width: 100%;
+        margin-top: 20px;
+        max-height: 300px;
+        > .bookmarks {
+            flex: 0 0 auto;
+            margin-right: 10px;
+            border-right: 1px solid rgb(220, 220, 220);
+            width: 228px;
+        }
+        > .candidates {
+            flex: 0 0 auto;
+            width: 250px;
+        }
+        > .list {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            > .item {
+                flex: 0 0 auto;
+                width: 70px;
+                height: 70px;
+                margin: 0 4px 4px 0;
+                display: block;
+                position: relative;
+                > .image {
+                    width: 70px;
+                    height: 70px;
+                    box-sizing: border-box;
+                    height: auto;
+                    border-radius: 6px;
+                }
+                > .overlay-bg {
+                    position: absolute;
+                    width: 70px;
+                    height: 70px;
+                    border: 5px solid rgba(255, 255, 255, 0);
+                    border-radius: 6px;
+                    top: 0;
+                    left: 0;
+                    box-sizing: border-box;
+                    transition: border-color 30ms ease-in 0s;
+                }
+                > .overlay-fg {
+                    position: absolute;
+                    width: 70px;
+                    height: 70px;
+                    border: 3px solid rgba(255, 255, 255, 0);
+                    border-radius: 6px;
+                    top: 0;
+                    left: 0;
+                    box-sizing: border-box;
+                    transition: border-color 30ms ease-in 0s;
+                }
+                > .number {
+                    position: absolute;
+                    top: 6px;
+                    right: 6px;
+                    text-align: center;
+                    min-width: 12px;
+                    font-size: 12px;
+                    color: white;
+                    font-weight: bold;
+                    line-height: 1;
+                    display: inline-block;
+                    padding: 4px 4px;
+                    border-radius: 20px;
+                }
+            }
+            > .item:hover {
+                > .overlay-bg {
+                    border-color: white;
+                }
+            }
+            > .item.active {
+                > .overlay-bg {
+                    border-color: white;
+                }
+            }
+        }
     }
 }
 .crop-module {

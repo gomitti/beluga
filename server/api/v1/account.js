@@ -4,4 +4,5 @@ import background from "./account/background"
 import tags from "./account/tags"
 import signup from "./account/signup"
 import signin from "./account/signin"
-export default { profile, avatar, background, tags, signin, signup }
+import bookmark from "./account/bookmark"
+export default { profile, avatar, background, tags, signin, signup, bookmark }

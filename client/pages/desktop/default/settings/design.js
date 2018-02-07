@@ -16,8 +16,9 @@ export default class App extends Component {
 	}
 	constructor(props) {
 		super(props)
+		const { logged_in } = props
 		this.state = {
-			"color": "#477da7"
+			"color": logged_in ? logged_in.profile.theme_color : config.default_theme_color
 		}
 		if (request) {
 			request.csrf_token = this.props.csrf_token
@@ -34,11 +35,63 @@ export default class App extends Component {
 			"color": hex.value
 		})
 	}
+	onUpdateProfile = event => {
+		if (this.pending === true) {
+			return
+		}
+		this.pending = true
+		request
+			.post("/account/profile/update", {
+				"theme_color": this.state.color
+			})
+			.then(res => {
+				const data = res.data
+				if (data.success == false) {
+					alert(data.error)
+				} else {
+					alert("保存しました")
+				}
+			})
+			.catch(error => {
+				alert(error)
+			})
+			.then(_ => {
+				this.pending = false
+			})
+	}
+	onResetProfile = event => {
+		if (this.pending === true) {
+			return
+		}
+		this.pending = true
+		request
+			.post("/account/profile/update", {
+				"theme_color": config.default_theme_color
+			})
+			.then(res => {
+				const data = res.data
+				if (data.success == false) {
+					alert(data.error)
+				} else {
+					alert("保存しました")
+					this.setState({
+						"color": config.default_theme_color
+					})
+				}
+			})
+			.catch(error => {
+				alert(error)
+			})
+			.then(_ => {
+				this.pending = false
+			})
+	}
 	render() {
 		const { platform, logged_in } = this.props
+		logged_in.profile.theme_color = this.state.color
 		return (
 			<div id="app" className="settings">
-				<Head title={`デザイン / 設定 / ${config.site.name}`} platform={platform} color={this.state.color} />
+				<Head title={`デザイン / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
 				<NavigationBarView logged_in={logged_in} />
 				<SettingsMenuView />
 				<div className="settings-content scroller-wrapper">
@@ -65,8 +118,8 @@ export default class App extends Component {
 									}} onChange={this.onInputChange} ref="hex" />
 								</div>
 								<div className="submit">
-									<button className="button user-defined-bg-color" onClick={this.reset}>テーマカラーを保存</button>
-									<button className="button neutral user-defined-bg-color" onClick={this.reset}>デフォルトに戻す</button>
+									<button className="button user-defined-bg-color" onClick={this.onUpdateProfile}>テーマカラーを保存</button>
+									<button className="button neutral user-defined-bg-color" onClick={this.onResetProfile}>デフォルトに戻す</button>
 								</div>
 							</div>
 
@@ -75,8 +128,8 @@ export default class App extends Component {
 									<h1>背景画像</h1>
 								</div>
 								<div className="submit">
-									<button className="button user-defined-bg-color" onClick={this.reset}>背景画像を保存</button>
-									<button className="button neutral user-defined-bg-color" onClick={this.reset}>デフォルトに戻す</button>
+									<button className="button user-defined-bg-color">背景画像を保存</button>
+									<button className="button neutral user-defined-bg-color">デフォルトに戻す</button>
 								</div>
 							</div>
 

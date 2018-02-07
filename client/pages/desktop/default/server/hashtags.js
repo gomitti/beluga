@@ -51,7 +51,7 @@ export default class App extends Component {
 		const { server, logged_in, hashtags, platform } = this.props
 		return (
 			<div id="app" className="timeline hashtags">
-				<Head title={`みつける / ${server.display_name} / ${config.site.name}`} platform={platform} />
+				<Head title={`みつける / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} />
 				<NavigationBarView server={server} logged_in={logged_in} active="hashtags" />
 				<div id="content" className="timeline hashtags">
 					<div className="inside column-container">

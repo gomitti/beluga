@@ -13,7 +13,7 @@ const delete_cache_by_key = key => {
 	}
 }
 
-export const delete_status_favorited_in_cache = status => {
+export const delete_status_favorited_from_cache = status => {
 	if (typeof status.id === "string") {
 		return delete_cache_by_key(status.id)
 	}

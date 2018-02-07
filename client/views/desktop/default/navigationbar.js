@@ -20,6 +20,8 @@ export default class NavigationBarView extends Component {
 												<ul className="navigationbar-pulldown-menu">
 													<li><a href="/settings/profile">プロフィール</a></li>
 													<li><a href="/settings/design">デザイン</a></li>
+													<li><a href="/settings/account">アカウント</a></li>
+													<li><a href="/settings/bookmark">ブックマーク</a></li>
 													<li><a href="/settings/security">セキュリティ</a></li>
 												</ul>
 											</li>

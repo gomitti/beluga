@@ -84,7 +84,7 @@ export default class App extends Component {
 		}
 		return (
 			<div id="app" className="timeline world">
-				<Head title={title} platform={platform} />
+				<Head title={title} platform={platform} logged_in={logged_in} />
 				<NavigationBarView server={server} logged_in={logged_in} active="world" />
 				<div id="content" className="timeline world">
 					<div className="inside column-container">

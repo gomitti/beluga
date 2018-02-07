@@ -4,7 +4,7 @@ import { Memcached } from "../../../memcached/v1/memcached"
 
 const memcached = new Memcached(api.v1.status.show)
 
-export const delete_status_in_cache = status => {
+export const delete_status_from_cache = status => {
 	if (typeof status.id === "string") {
 		return memcached.delete(status.id)
 	}

@@ -20,7 +20,7 @@ export default async (db, params) => {
 	await api.v1.status.destroy(db, params)
 
 	// キャッシュの消去
-	memcached.v1.delete_status_in_cache(status)
+	memcached.v1.delete_status_from_cache(status)
 	
 	return true
 }

@@ -69,5 +69,34 @@ module.exports = (fastify, options, next) => {
 			res.send({ "success": false, "error": error.toString() })
 		}
 	})
+	fastify.post(`/api/${api_version}/account/profile/update`, async (req, res) => {
+		try {
+			const session = await fastify.authenticate_session(req, res)
+			if (!session.user_id) {
+				throw new Error("ログインしてください")
+			}
+			await model.v1.account.profile.update(fastify.mongo.db, Object.assign({}, req.body, {
+				"user_id": session.user_id
+			}))
+			const user = model.v1.user.show(fastify.mongo.db, { "id": session.user_id })
+			res.send({ "success": true, user })
+		} catch (error) {
+			res.send({ "success": false, "error": error.toString() })
+		}
+	})
+	fastify.post(`/api/${api_version}/account/bookmark/media/update`, async (req, res) => {
+		try {
+			const session = await fastify.authenticate_session(req, res)
+			if (!session.user_id) {
+				throw new Error("ログインしてください")
+			}
+			await model.v1.account.bookmark.media.update(fastify.mongo.db, Object.assign({}, req.body, {
+				"user_id": session.user_id
+			}))
+			res.send({ "success": true })
+		} catch (error) {
+			res.send({ "success": false, "error": error.toString() })
+		}
+	})
 	next()
 }

@@ -7,7 +7,7 @@ const memcached = {
 	"tagnames": new Memcached(api.v1.hashtag.show),
 }
 
-export const delete_hashtag_in_cache = hashtag => {
+export const delete_hashtag_from_cache = hashtag => {
 	if (typeof hashtag.id === "string") {
 		return memcached.ids.delete(hashtag.id)
 	}
@@ -27,8 +27,13 @@ export default async (db, params) => {
 	if (typeof key === "string") {
 		return await memcached.ids.fetch(key, db, params)
 	}
-	if (typeof params.tagname === "string") {
-		return await memcached.tagnames.fetch(params.tagname, db, params)
+	
+	let server_id = params.server_id
+	if (server_id instanceof ObjectID) {
+		server_id = server_id.toHexString()
+	}
+	if (typeof params.tagname === "string" && typeof server_id === "string") {
+		return await memcached.tagnames.fetch([server_id, params.tagname], db, params)
 	}
 	return null
 }

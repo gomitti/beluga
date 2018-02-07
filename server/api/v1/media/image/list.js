@@ -1,12 +1,5 @@
 import { ObjectID } from "mongodb"
-import storage from "../../../../config/storage"
 import config from "../../../../config/beluga"
-
-const map_host_uri = {}
-for (const server of storage.servers) {
-	const protocol = server.https ? "https" : "http"
-	map_host_uri[server.host] = `${protocol}://${server.url_prefix}.${server.domain}`
-}
 
 export default async (db, params) => {
 	params = Object.assign({
@@ -29,19 +22,5 @@ export default async (db, params) => {
 	}
 
 	const collection = db.collection("media")
-	const media = await collection.find({ "user_id": params.user_id }).sort({ "created_at": -1 }).limit(params.count).toArray()
-	const list = []
-	for (const item of media) {
-		const { suffix, extension, host, directory } = item
-		if (!(suffix && extension && host && directory)) {
-			continue
-		}
-		const uri = map_host_uri[host]
-		if(!uri){
-			continue
-		}
-		const source = `${uri}/${directory}/${suffix}.${extension}`
-		list.push(source)
-	}
-	return list
+	return await collection.find({ "user_id": params.user_id }).sort({ "created_at": -1 }).limit(params.count).toArray()
 }

@@ -7,7 +7,7 @@ const memcached = {
 	"names": new Memcached(api.v1.server.show),
 }
 
-export const delete_user_in_cache = user => {
+export const delete_user_from_cache = user => {
 	if (typeof user.id === "string") {
 		return memcached.ids.delete(user.id)
 	}

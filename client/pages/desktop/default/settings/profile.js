@@ -30,7 +30,8 @@ export default class App extends Component {
 			src: null,
 			extension: null,
 			preview_src: logged_in.avatar_url,
-			is_ready: false
+			is_crop_ready: false,
+
 		}
 		if (request) {
 			request.csrf_token = this.props.csrf_token
@@ -38,6 +39,16 @@ export default class App extends Component {
 		if (typeof history !== "undefined") {
 			history.scrollRestoration = "manual"
 		}
+	}
+	componentDidMount() {
+		// stateで管理するのはあまり好きではない
+		const { logged_in } = this.props
+		if (!logged_in.profile) {
+			return
+		}
+		this.refs.display_name.value = logged_in.display_name || ""
+		this.refs.description.value = logged_in.profile.description || ""
+		this.refs.location.value = logged_in.profile.location || ""
 	}
 	onImageLoaded = image => {
 		console.log("onImageLoaded, image:", image)
@@ -58,7 +69,7 @@ export default class App extends Component {
 				width: image.naturalWidth,
 				height: image.naturalHeight
 			},
-			is_ready: true
+			is_crop_ready: true
 		})
 	}
 	onCropComplete = (crop, pixelCrop) => {
@@ -107,10 +118,14 @@ export default class App extends Component {
 		return canvas.toDataURL(extension, 1.0)
 	}
 	crop = () => {
-		if (this.state.is_ready === false) {
+		if (this.state.is_crop_ready === false) {
 			alert("画像を選択してください")
 			return
 		}
+		if (this.pending === true) {
+			return
+		}
+		this.pending = true
 		const base64 = this.getCroppedImg()
 		this.setState({ preview_src: base64 })
 		request
@@ -122,16 +137,23 @@ export default class App extends Component {
 				const { avatar_url, success } = data
 				if (success == false) {
 					alert(data.error)
+					this.pending = false
 					return
 				}
 				this.setState({ "preview_src": avatar_url })
 				alert("保存しました")
+				this.pending = false
 			})
 			.catch(error => {
 				alert(error)
+				this.pending = false
 			})
 	}
 	reset = () => {
+		if (this.pending === true) {
+			return
+		}
+		this.pending = true
 		request
 			.post("/account/avatar/reset", {})
 			.then(res => {
@@ -139,6 +161,7 @@ export default class App extends Component {
 				const { avatar_url, success } = data
 				if (success == false) {
 					alert(data.error)
+					this.pending = false
 					return
 				}
 				this.setState({ "preview_src": avatar_url })
@@ -147,15 +170,18 @@ export default class App extends Component {
 			.catch(error => {
 				alert(error)
 			})
+			.then(_ => {
+				this.pending = false
+			})
 	}
-	onFileChange = e => {
-		const files = e.target.files
+	onFileChange = event => {
+		const files = event.target.files
 		if (files.length !== 1) {
 			return
 		}
 		const file = files[0]
 		const reader = new FileReader()
-		reader.onload = (e) => {
+		reader.onload = event => {
 			const src = reader.result
 			const component = src.split(";")
 			if (component.length !== 2) {
@@ -173,34 +199,85 @@ export default class App extends Component {
 		}
 		reader.readAsDataURL(file)
 	}
+	onUpdateProfile = event => {
+		const display_name = this.refs.display_name.value
+		const description = this.refs.description.value
+		const location = this.refs.location.value
+		if (this.pending === true) {
+			return
+		}
+		this.pending = true
+		request
+			.post("/account/profile/update", {
+				display_name,
+				description,
+				location
+			})
+			.then(res => {
+				const data = res.data
+				if (data.success == false) {
+					alert(data.error)
+				} else {
+					alert("保存しました")
+				}
+			})
+			.catch(error => {
+				alert(error)
+			})
+			.then(_ => {
+				this.pending = false
+			})
+	}
 	render() {
 		const { profile_image_size, platform, logged_in } = this.props
 		const { preview_src } = this.state
+		if (!logged_in.profile) {
+			return null
+		}
 		return (
 			<div id="app" className="settings">
-				<Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} />
+				<Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
 				<NavigationBarView logged_in={logged_in} />
 				<SettingsMenuView />
 				<div className="settings-content scroller-wrapper">
 					<div className="scroller">
 						<div className="inside">
 
-							<div className="settings-module">
+							<div className="settings-module profile meiryo">
 								<div className="head">
-									<h1>プロフィールの編集</h1>
+									<h1>プロフィール</h1>
 								</div>
-								<button className="button user-defined-bg-color">プロフィールを保存</button>
+
+								<div className="item">
+									<h3 className="title">ユーザー名</h3>
+									<input className="form-input user-defined-border-color-focus" type="text" ref="display_name" />
+									<p className="hint">日本語が使えます。</p>
+								</div>
+
+								<div className="item">
+									<h3 className="title">自己紹介</h3>
+									<textarea className="form-input user-defined-border-color-focus" ref="description"></textarea>
+								</div>
+
+								<div className="item">
+									<h3 className="title">場所</h3>
+									<input className="form-input user-defined-border-color-focus" type="text" ref="location" />
+								</div>
+
+
+								<div className="submit">
+									<button className="button user-defined-bg-color" onClick={this.onUpdateProfile}>プロフィールを保存</button>
+								</div>
 							</div>
 
 							<div className="settings-module">
 								<div className="head">
-									<h1>アイコンの編集</h1>
+									<h1>アイコン</h1>
 								</div>
 								<div className="crop-module">
 									<div className="preview-container">
 										<img src={preview_src} className="preview" />
 									</div>
-									<Head />
 									<div ref="module">
 										<ReactCrop
 											{...this.state}
@@ -211,12 +288,22 @@ export default class App extends Component {
 										/>
 									</div>
 									<input type="file" ref="file" accept="image/*" onChange={this.onFileChange} />
-									<button className="button user-defined-bg-color" onClick={this.crop}>保存</button>
 								</div>
-								<div className="paragraph">
+								{(() => {
+									if (this.state.is_crop_ready) {
+										return (
+											<div className="submit">
+												<button className="button user-defined-bg-color" onClick={this.crop}>アイコンを保存</button>
+											</div>
+										)
+									}
+								})()}
+								<div className="description">
 									アイコンをリセットし、ランダムな単色に戻すこともできます。
-							</div>
-								<button className="button user-defined-bg-color" onClick={this.reset}>アイコンをリセット</button>
+								</div>
+								<div className="submit">
+									<button className="button neutral user-defined-bg-color" onClick={this.reset}>アイコンをリセット</button>
+								</div>
 							</div>
 						</div>
 					</div>

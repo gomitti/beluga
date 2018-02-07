@@ -2,8 +2,6 @@ import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
 import api from "../../../api"
 import memcached from "../../../memcached"
-import { cache } from "../../../memcached/v1/status/show"
-import show from "../../../model/v1/status/show"
 
 export default async (db, params) => {
 	const user = await memcached.v1.user.show(db, { "id": params.user_id })
@@ -28,8 +26,8 @@ export default async (db, params) => {
 	)
 
 	// キャッシュの消去
-	memcached.v1.delete_status_in_cache(status)
-	memcached.v1.delete_status_favorited_by_in_cache(status)
+	memcached.v1.delete_status_from_cache(status)
+	memcached.v1.delete_status_favorited_by_from_cache(status)
 
-	return show(db, { "id": status.id, "trim_favorited_by": false })
+	return true
 }

@@ -1,12 +1,5 @@
 import { ObjectID } from "mongodb"
-import storage from "../../../config/storage"
 import config from "../../../config/beluga"
-
-const map_host_uri = {}
-for (const server of storage.servers) {
-	const protocol = server.https ? "https" : "http"
-	map_host_uri[server.host] = `${protocol}://${server.url_prefix}.${server.domain}`
-}
 
 export default async (db, params) => {
 	params = Object.assign({
@@ -16,7 +9,6 @@ export default async (db, params) => {
 	if (!!params.user_id == false) {
 		throw new Error("user_idを指定してください")
 	}
-	let query = null
 	if (typeof params.user_id === "string") {
 		try {
 			params.user_id = ObjectID(params.user_id)
@@ -29,27 +21,16 @@ export default async (db, params) => {
 	}
 
 	const collection = db.collection("media")
-	const media = await collection.find({ "user_id": params.user_id }).sort({ "created_at": -1 }).limit(params.count).toArray()
-	const list = []
-	for (const item of media) {
-		const { suffix, extension, host, directory } = item
-		if (!(suffix && extension && host && directory)) {
-			continue
+	const rows = await collection.find({ "user_id": params.user_id }).sort({ "created_at": -1 }).limit(params.count).toArray()
+
+	for (const media of rows) {
+		media.id = media._id
+		for (const key in media) {
+			if (key.indexOf("_") == 0) {
+				delete media[key]
+			}
 		}
-		const uri = map_host_uri[host]
-		if (!uri) {
-			continue
-		}
-		const source = `${uri}/${directory}/${suffix}.${extension}`
-		list.push({
-			source,
-			uri,
-			directory,
-			suffix,
-			extension,
-			"is_video": !!item.is_video,
-			"is_image": !!item.is_image,
-		})
 	}
-	return list
+
+	return rows
 }

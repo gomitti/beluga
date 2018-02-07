@@ -4,7 +4,7 @@ import { Memcached } from "../../../memcached/v1/memcached"
 
 const memcached = new Memcached(api.v1.favorite.favorited_by)
 
-export const delete_status_favorited_by_in_cache = status => {
+export const delete_status_favorited_by_from_cache = status => {
 	if (typeof status.id === "string") {
 		return memcached.delete(status.id)
 	}

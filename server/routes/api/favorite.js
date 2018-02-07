@@ -9,7 +9,8 @@ module.exports = (fastify, options, next) => {
 				throw new Error("ログインしてください")
 			}
 			const params = Object.assign({}, req.body, { "user_id": session.user_id })
-			const status = await model.v1.favorite.create(fastify.mongo.db, params)
+			await model.v1.favorite.create(fastify.mongo.db, params)
+			const status = await model.v1.status.show(fastify.mongo.db, { "id": params.status_id, "trim_favorited_by": false })
 			fastify.websocket_broadcast("favorites_updated", { status })
 			res.send({ "success": true, status })
 		} catch (error) {
@@ -23,7 +24,8 @@ module.exports = (fastify, options, next) => {
 				throw new Error("ログインしてください")
 			}
 			const params = Object.assign({}, req.body, { "user_id": session.user_id })
-			const status = await model.v1.favorite.destroy(fastify.mongo.db, params)
+			await model.v1.favorite.destroy(fastify.mongo.db, params)
+			const status = await model.v1.status.show(fastify.mongo.db, { "id": params.status_id, "trim_favorited_by": false })
 			fastify.websocket_broadcast("favorites_updated", { status })
 			res.send({ "success": true, status })
 		} catch (error) {

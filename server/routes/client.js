@@ -1,5 +1,5 @@
 import { sha256 } from "js-sha256"
-import api from "../api"
+import model from "../model"
 const next = require("next")
 const dev = process.env.NODE_ENV !== "production"
 const handle = next({ dev }).getRequestHandler()
@@ -23,7 +23,7 @@ module.exports = (fastify, options, next) => {
 			return null
 		}
 		try {
-			return await api.v1.user.show(fastify.mongo.db, { "id": session.user_id })
+			return await model.v1.user.show(fastify.mongo.db, { "id": session.user_id, "trim_profile": false })
 		} catch (error) {
 			return null
 		}
@@ -55,7 +55,7 @@ module.exports = (fastify, options, next) => {
 		const rows = await collection.find({}).toArray()
 		const hashtags = []
 		for (const hashtag of rows) {
-			const server = await api.v1.server.show(db, { "id": hashtag.server_id })
+			const server = await model.v1.server.show(db, { "id": hashtag.server_id })
 			if (!server) {
 				continue
 			}

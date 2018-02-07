@@ -41,8 +41,10 @@ export default {
 		"name_regexp": /^[a-zA-Z0-9_]+$/,
 		"profile": {
 			"image_size": 300,
-			"max_description_length": 5000,
+			"max_description_length": 1000,
 			"max_location_length": 100,
+			"max_num_tags": 100,
+			"max_tag_length": 100,
 			"default_theme_color": "#477da7"
 		},
 	},

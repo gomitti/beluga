@@ -2,6 +2,7 @@ export default {
 	// "domain": "new.beluga.fm",
 	"domain": "localhost",
 	"websocket_port": 8080,
+	"default_theme_color": "#477da7",
 	"site": {
 		"name": "Beluga"
 	},

@@ -338,12 +338,10 @@
 		color: rgba(0, 0, 0, 0.7);
 	}
 	> .watermark {
-		background-color: rgba(255, 255, 255, 0.8);
-		background-clip: border-box;
-		border: 2px solid rgba(0, 0, 0, 0.7);
+		background-color: rgba(0, 0, 0, 0.8);
+		color: white;
 		padding: 1px 4px;
-		font-size: 12px;
-		font-weight: bold;
+		font-size: 9px;
 		border-radius: 4px;
 		position: absolute;
 		top: 4px;

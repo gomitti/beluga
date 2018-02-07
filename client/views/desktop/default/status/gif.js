@@ -31,7 +31,7 @@ export default class GifView extends Component {
 		const src = this.state.display ? original_src : coalesce_src
 		return (
 			<div className="gifview" onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave} style={{ width, height }}>
-				<span className="verdana watermark">GIF</span>
+				<span className="watermark">GIF</span>
 				<a href={original_src} target="_blank">
 					<img src={src} width={width} height={height} />
 				</a>

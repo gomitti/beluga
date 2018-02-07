@@ -4,14 +4,14 @@ import version from "../../../version"
 
 export default class HeadView extends Component {
 	render() {
-		let { platform, color } = this.props
-		color = color ? color : "#477da7"
+		const { platform, logged_in, title } = this.props
+		const color = (logged_in && logged_in.profile && logged_in.profile.theme_color) || "#477da7"
 		return (
 			<Head>
 				<meta charSet="utf-8" />
 				<link rel="stylesheet" href={`/css/theme/default/style.css?${version}`} />
 				{platform ? <link rel="stylesheet" href={`/css/theme/default/${platform}.css?${version}`} /> : null}
-				<title>{this.props.title}</title>
+				<title>{title}</title>
 				<style>{`
 					a,
 					a:hover,
@@ -29,7 +29,7 @@ export default class HeadView extends Component {
 					.user-defined-border-color-hover:hover,
 					.user-defined-border-color-drag-entered.drag-entered,
 					.user-defined-border-color-active.active {
-						border-color: ${color};
+						border-color: ${color} !important;
 					}
 					.navigationbar-menu:hover > li > a.active:hover {
 						color: ${color} !important;

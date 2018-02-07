@@ -9,6 +9,8 @@ export default class SettingsMenuView extends Component {
 					<ul className="settings-menu">
 						<li><a className="user-defined-color-hover" href="/settings/profile">プロフィール</a></li>
 						<li><a className="user-defined-color-hover" href="/settings/design">デザイン</a></li>
+						<li><a className="user-defined-color-hover" href="/settings/account">アカウント</a></li>
+						<li><a className="user-defined-color-hover" href="/settings/bookmark">ブックマーク</a></li>
 						<li><a className="user-defined-color-hover" href="/settings/security">セキュリティ</a></li>
 					</ul>
 					<h2 className="title">開発者</h2>
