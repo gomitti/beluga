@@ -1,2 +1,2 @@
-import bookmark from "./account/bookmark"
-export default { bookmark }
+import favorite from "./account/favorite"
+export default { favorite }

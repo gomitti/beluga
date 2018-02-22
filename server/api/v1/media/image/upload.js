@@ -1,102 +1,31 @@
 import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
 import logger from "../../../../logger"
-const fileType = require("file-type")
-const path = require("path")
-const Ftp = require("jsftp")
-const uid = require("uid-safe").sync
-const gm = require("gm")
+import assert, { is_string, is_number } from "../../../../assert"
+import { ftp_mkdir, ftp_put } from "../../../../lib/ftp"
+import { gm_coalesce, gm_crop, gm_noprofile, gm_shape, gm_resize } from "../../../../lib/gm"
+import fileType from "file-type"
+import path from "path"
+import Ftp from "jsftp"
+import { sync as uid } from "uid-safe"
 
-const ftp_mkdir = async (ftp, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.raw("mkd", directory, (error, data) => {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(data)
-		})
-	})
-}
+export default async (db, params) => {
+	let { user_id } = params
+	let original_data = params.data
+	const { storage } = params
 
-const ftp_put = async (ftp, data, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.put(data, directory, error => {
-			if (error) {
-				reject(error)
-			}
-			resolve()
-		})
-	})
-}
-
-const gm_shape = async data => {
-	return new Promise((resolve, reject) => {
-		gm(data).size(function (error, size) {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(size)
-		})
-	})
-}
-
-const gm_noprofile = async data => {
-	return new Promise((resolve, reject) => {
-		gm(data)
-			.noProfile()
-			.toBuffer(function (error, data) {
-				if (error) {
-					return reject(error)
-				}
-				return resolve(data)
-			})
-	})
-}
-
-export const gm_resize = async (data, width, height) => {
-	return new Promise((resolve, reject) => {
-		gm(data)
-			.resize(width, height)
-			.toBuffer(function (error, data) {
-				if (error) {
-					return reject(error)
-				}
-				return resolve(data)
-			})
-	})
-}
-
-const gm_coalesce = async data => {
-	return new Promise((resolve, reject) => {
-		gm(data)
-			.coalesce()
-			.toBuffer("JPG", function (error, data) {
-				if (error) {
-					return reject(error)
-				}
-				return resolve(data)
-			})
-	})
-}
-
-export const gm_crop = async (data, width, height, x, y) => {
-	return new Promise((resolve, reject) => {
-		gm(data)
-			.crop(width, height, x, y)
-			.toBuffer(function (error, data) {
-				if (error) {
-					return reject(error)
-				}
-				return resolve(data)
-			})
-	})
-}
-
-export default async (db, original_data, user, server) => {
-	if (!(user.id instanceof ObjectID)) {
-		throw new Error()
+	if (typeof user_id === "string") {
+		try {
+			user_id = ObjectID(user_id)
+		} catch (error) {
+			throw new Error("不正なユーザーです")
+		}
 	}
-	if (original_data.length > config.media.image.max.filesize) {
+	assert(user_id instanceof ObjectID, "不正なユーザーです")
+	assert(original_data instanceof Buffer, "不正なデータです")
+	assert(typeof storage === "object", "不正なサーバーです")
+
+	if (original_data.length > config.media.image.max_filesize) {
 		throw new Error("ファイルサイズが大きすぎます")
 	}
 	if (original_data.length === 0) {
@@ -111,19 +40,22 @@ export default async (db, original_data, user, server) => {
 		throw new Error("このファイル形式には対応していません")
 	}
 
-	original_data = await gm_noprofile(original_data)	// Exifを消す
-	const original_shape = await gm_shape(original_data)
-	const max_size = Math.max(original_shape.width, original_shape.height)
-	const min_size = Math.min(original_shape.width, original_shape.height)
-
-	if (original_shape.width == 0 || original_shape.height == 0) {
-		throw new Error("画像サイズが不正です")
+	if (type.ext !== "gif") {
+		original_data = await gm_noprofile(original_data)	// Exifを消す
 	}
 
 	// gifの静止画
 	let coalesce_data = null
 	if (type.ext === "gif") {
 		coalesce_data = await gm_coalesce(original_data)
+	}
+
+	// 縦横のサイズを取得
+	const original_shape = await gm_shape(type.ext === "gif" ? coalesce_data : original_data)
+	const max_size = Math.max(original_shape.width, original_shape.height)
+	const min_size = Math.min(original_shape.width, original_shape.height)
+	if (original_shape.width == 0 || original_shape.height == 0) {
+		throw new Error("画像サイズが不正です")
 	}
 
 	// 正方形のサムネイル
@@ -176,10 +108,10 @@ export default async (db, original_data, user, server) => {
 	}
 
 	const ftp = new Ftp({
-		"host": server.host,
-		"port": server.port,
-		"user": server.user,
-		"pass": server.password
+		"host": storage.host,
+		"port": storage.port,
+		"user": storage.user,
+		"pass": storage.password
 	})
 	let directory = "media"
 	try {
@@ -232,25 +164,25 @@ export default async (db, original_data, user, server) => {
 			"level": "error",
 			"error": error.toString(),
 			directory,
-			user,
+			user_id,
 		})
 		throw new Error("サーバーで問題が発生しました")
 	}
 
 	const collection = db.collection("media")
 	const result = await collection.insertOne({
-		"user_id": user.id,
-		"host": server.host,
 		directory,
+		user_id,
 		suffix,
+		"host": storage.host,
 		"is_image": true,
 		"extension": type.ext,
 		"bytes": total_bytes,
 		"created_at": Date.now()
 	})
 
-	const protocol = server.https ? "https" : "http"
-	const base_url = `${protocol}://${server.url_prefix}.${server.domain}`
+	const protocol = storage.https ? "https" : "http"
+	const base_url = `${protocol}://${storage.url_prefix}.${storage.domain}`
 
 	return {
 		"original": `${base_url}/${path.join(directory, original_filename)}`,

@@ -1,37 +1,39 @@
-export const isString = (value) => {
+import logger from "./logger"
+
+export const is_string = value => {
 	return typeof value === "string"
 }
-export const isObject = (value) => {
+export const is_object = value => {
 	return typeof value === "object"
 }
-export const isNumber = (value) => {
+export const is_number = value => {
 	return typeof value === "number"
 }
-export const keyExists = (key, params) => {
+export const is_array = value => {
+	return value instanceof Array
+}
+export const key_exists = (key, params) => {
 	return key in params
 }
-export const checkIsString = (value) => {
-	if(isString(value) == false){
-		throw new Error(`${value} is not a string`)
+
+const assert = (expression, message) => {
+	if (!!expression === true) {
+		return
 	}
+	const error = new Error(message)
+	const stack = error.stack.split("\n")
+	logger.log({
+		"level": "error",
+		"error": "Assertion failed",
+		"stack": stack
+	})
+	throw error
 }
-export const checkIsObject = (value) => {
-	if (isObject(value) == false) {
-		throw new Error(`${value} is not an object`)
-	}
-}
-export const checkIsNumber = (value) => {
-	if (isNumber(value) == false) {
-		throw new Error(`${value} is not a number`)
-	}
-}
-export const checkKeyExists = (key, params) => {
-	if (keyExists(key, params) == false) {
-		throw new Error(`${key} not found`)
-	}
-}
-export const checkHasOwnProperty = (key, object) => {
-	if (object.hasOwnProperty(key) == false) {
-		throw new Error(`${key} not found`)
-	}
-}
+
+assert.is_string = is_string
+assert.is_object = is_object
+assert.is_number = is_number
+assert.is_array = is_array
+assert.key_exists = key_exists
+
+export default assert

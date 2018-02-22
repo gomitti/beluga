@@ -3,40 +3,19 @@ import config from "../../../../config/beluga"
 import update from "./update"
 import path from "path"
 import Ftp from "jsftp"
-const uid = require("uid-safe").sync
-const fs = require("fs")
-const gm = require("gm")
+import assert from "../../../../assert"
+import { gm_draw } from "../../../../lib/gm"
 
-const ftp_mkdir = async (ftp, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.raw("mkd", directory, (error, data) => {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(data)
-		})
-	})
-}
-
-const gm_draw = async (width, height, color_code) => {
-	return new Promise((resolve, reject) => {
-		gm(width, height, color_code)
-			.toBuffer("PNG", function (error, data) {
-				if (error) {
-					return reject(error)
-				}
-				return resolve(data)
-			})
-	})
-}
-
-export default async (db, user, storage) => {
-	if (!user) {
-		throw new Error("ユーザーが見つかりません")
+export default async (db, params) => {
+	let { user_id } = params
+	if (typeof user_id === "string") {
+		try {
+			user_id = ObjectID(user_id)
+		} catch (error) {
+			throw new Error("不正なユーザーです")
+		}
 	}
-	if (!(user.id instanceof ObjectID)) {
-		throw new Error("ユーザーが見つかりません")
-	}
+	assert(user_id instanceof ObjectID, "不正なユーザーです")
 
 	const size = config.user.profile.image_size
 	const colors = config.colors
@@ -44,9 +23,13 @@ export default async (db, user, storage) => {
 	if (random_color.indexOf("#") !== 0) {
 		random_color = "#" + random_color
 	}
-	if (!!random_color.match(/^#[0-9A-Fa-f]+$/) === false) {
+	if (!random_color.match(/^#[0-9A-Fa-f]+$/)) {
 		throw new Error("サーバーで問題が発生しました")
 	}
 	const data = await gm_draw(size, size, random_color)
-	return update(db, data, user, storage)
+	return update(db, {
+		"user_id": user_id,
+		"storage": params.storage,
+		data
+	})
 }

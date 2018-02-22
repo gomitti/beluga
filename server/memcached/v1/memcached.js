@@ -1,14 +1,15 @@
 import config from "../../config/beluga"
+import assert from "../../assert"
 
 export class Memcached {
-	constructor(fn) {
+	// @max_age 秒
+	constructor(fn, max_age) {
 		this.cache = {}
 		this.fn = fn
+		this.max_age = max_age || config.memcached.max_age
 	}
 	delete_recursively(keys) {
-		if (!(keys instanceof Array)) {
-			return false
-		}
+		assert(keys instanceof Array, "@keys must be an array")
 		let root = this.cache
 		for (let i = 0; i < keys.length - 1; i++) {
 			const key = keys[i]
@@ -32,11 +33,10 @@ export class Memcached {
 		if (key instanceof Array) {
 			return this.delete_recursively(key)
 		}
+		assert(false, "Invalid key")
 	}
 	fetch_recursively(keys) {
-		if (!(keys instanceof Array)) {
-			return null
-		}
+		assert(keys instanceof Array, "@keys must be an array")
 		let root = this.cache
 		for (let i = 0; i < keys.length - 1; i++) {
 			const key = keys[i]
@@ -53,9 +53,7 @@ export class Memcached {
 		return null
 	}
 	store_recursively(keys, data) {
-		if(!(keys instanceof Array)){
-			return
-		}
+		assert(keys instanceof Array, "@keys must be an array")
 		let root = this.cache
 		for (let i = 0; i < keys.length - 1; i++) {
 			const key = keys[i]
@@ -68,29 +66,27 @@ export class Memcached {
 		}
 		const key = keys[keys.length - 1]
 		root[key] = {
-			"expires": Date.now() + config.memcached.max_age * 1000,
+			"expires": Date.now() + this.max_age * 1000,	// Date.now()はミリ秒
 			"hit": 0,
 			data
 		}
 	}
-	async fetch(key, db, params) {
-		if (typeof key === "string") {
-			key = [key]
+	async fetch(keys, db, params) {
+		if (typeof keys === "string") {
+			keys = [keys]
 		}
-		if (!(key instanceof Array)) {
-			return null
-		}
+		assert(keys instanceof Array, "@keys must be an array")
 
-		const obj = this.fetch_recursively(key)
+		const obj = this.fetch_recursively(keys)
 		if (obj) {
 			if (obj.expires > Date.now()) {
 				obj.hit += 1
 				if (obj.data instanceof Array) {
 					return obj.data
 				}
-				return Object.assign({}, obj.data)
+				return Object.assign({}, obj.data)	// コピーを送る（ただしshallow copyなので注意）
 			}
-			this.delete_recursively(key)
+			this.delete_recursively(keys)
 		}
 
 		const data = await this.fn(db, params)
@@ -102,11 +98,11 @@ export class Memcached {
 			this.cache = {}
 		}
 
-		this.store_recursively(key, data)
+		this.store_recursively(keys, data)
 
 		if (data instanceof Array) {
 			return data
 		}
-		return Object.assign({}, data)
+		return Object.assign({}, data)	// コピーを送る（ただしshallow copyなので注意）
 	}
 }

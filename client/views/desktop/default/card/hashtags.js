@@ -10,12 +10,12 @@ export default class CardView extends Component {
 		})
 	}
 	render() {
-		const { hashtags, server } = this.props
+		const { hashtags, server, onClickHashtag } = this.props
 		const listViews = []
 		for (const hashtag of hashtags) {
 			listViews.push(
 				<li>
-					<p className="tagname meiryo"><a className="user-defined-color" href={`/server/${server.name}/${hashtag.tagname}`}>{hashtag.tagname}</a></p>
+					<p className="tagname meiryo"><a className="user-defined-color" href={`/server/${server.name}/${hashtag.tagname}`} onClick={onClickHashtag} data-tagname={hashtag.tagname}>{hashtag.tagname}</a></p>
 					<p className="count"><span className="verdana">{hashtag.statuses_count}</span><span className="meiryo">件</span></p>
 				</li>
 			)

@@ -5,7 +5,7 @@
   font-family: "Beluga";
   font-weight: 400;
   font-style: normal;
-  src: url("/asset/default/beluga.ttf?v=0.1.29") format("truetype");
+  src: url("/asset/default/beluga.ttf?v=0.1.55") format("truetype");
 }
 
 body {
@@ -70,63 +70,7 @@ a:hover{
 }
 .status-body-link::before {
 	font-family: Beluga;
-	content: "L";
-}
-.status-body-emoji {
-	width: 20px;
-	height: 20px;
-	margin-right: 1px;
-    margin-bottom: -3px;
-	display: inline-block;
-}
-.status-favofites {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	margin-bottom: 4px;
-	> .users {
-		display: flex;
-		flex-direction: row;
-		flex: 0 0 auto;
-		> a {
-			display: block;
-			width: 24px;
-			height: 24px;
-			margin-right: 4px;
-			> img {
-				width: 100%;
-				height: 100%;
-				border-radius: 100%;
-			}
-		}
-	}
-	> .meta {
-		font-size: 12px;
-		position: relative;
-		> .sep {
-			position: absolute;
-			border-left: 2px solid rgb(220, 220, 220);
-			height: 16px;
-			top: 4px;
-			left: 6px;
-			display: inline-block;
-		}
-		> .count {
-			display: inline-block;
-			margin-top: 4px;
-			font-weight: bold;
-			margin-left: 14px;
-		}
-		> .unit {
-			display: inline-block;
-			margin-top: 4px;
-			margin-left: 2px;
-		}
-	}
-}
-.status-body-link::before {
-	font-family: Beluga;
-	content: "L";
+	content: "\E00B";
 }
 .status-body-emoji {
 	width: 20px;
@@ -320,24 +264,21 @@ a:hover{
 			font-family: Beluga;
 			font-size: 17px;
 			color: rgb(100, 100, 100);
-			> span::before {
-				font-family: Beluga;
-			}
 		}
 		> .like::before {
-			content: "D";
+			content: "\E003";
 		}
 		> .favorite::before {
-			content: "I";
+			content: "\E008";
 		}
 		> .emoji::before {
-			content: "A";
+			content: "\E000";
 		}
 		> .comment::before {
-			content: "K";
+			content: "\E00A";
 		}
 		> .destroy::before {
-			content: "J";
+			content: "\E009";
 		}
 	}
 }
@@ -390,10 +331,14 @@ textarea {
 	width: 100%;
 	font-size: 16px;
 	padding: 5px;
+	box-sizing: border-box;
 }
 .status-body-emoji {
 	width: 20px;
 	height: 20px;
 	margin-bottom: -3px;
 	display: inline-block;
+}
+.status-body-tweet {
+	width: 100%;
 }

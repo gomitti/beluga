@@ -1,5 +1,7 @@
 import { Component } from "react"
-import { useStrict } from "mobx"
+import { useStrict, observable, action } from "mobx"
+import { observer } from "mobx-react"
+import assert, { is_object, is_array, is_string } from "../../../assert"
 import TimelineView from "../../../views/desktop/default/timeline"
 import PostboxView from "../../../views/desktop/default/postbox"
 import NavigationBarView from "../../../views/desktop/default/navigationbar"
@@ -7,62 +9,83 @@ import Head from "../../../views/desktop/default/head"
 import ServerTimelineHeaderView from "../../../views/desktop/default/timeline/header/server"
 import HomeTimelineHeaderView from "../../../views/desktop/default/timeline/header/home"
 import EmojiPickerView, { EmojiPicker } from "../../../views/desktop/default/emoji"
+import { ColumnContainer, ColumnView } from "../../../views/desktop/default/column"
+import { options as column_options } from "../../../stores/column"
 import HashtagsCardView from "../../../views/desktop/default/card/hashtags"
 import ServerCardView from "../../../views/desktop/default/card/server"
 import HomeTimelineStore from "../../../stores/timeline/home"
 import ServerTimelineStore from "../../../stores/timeline/server"
 import StatusStore from "../../../stores/status"
 import config from "../../../beluga.config"
+import settings, { enum_column_target, enum_column_type } from "../../../settings/desktop"
 import { request } from "../../../api"
 
 // mobxの状態をaction内でのみ変更可能にする
 useStrict(true)
 
-export default class App extends Component {
+class ColumnContainerView extends ColumnContainer {
+	constructor(props) {
+		super(props)
+		const { server, logged_in, statuses_home, statuses_server } = props
+		assert(is_object(server), "@server must be object")
+		assert(is_array(statuses_home) || statuses_home === null, "@statuses_home must be array or null")
+		assert(is_array(statuses_server) || statuses_server === null, "@statuses_server must be array or null")
+		if (logged_in) {
+			assert(is_object(logged_in), "@logged_in must be object")
+			this.open({ "user_id": logged_in.id, "server_id": server.id },
+				{ "recipient": logged_in, server },
+				Object.assign({}, column_options, { "type": enum_column_type.home }),
+				statuses_home,
+				enum_column_target.blank)
+		}
+		this.open({ "server_id": server.id },
+			{ server },
+			Object.assign({}, column_options, {
+				"type": enum_column_type.server,
+				"status": {
+					"show_belonging": true
+				},
+				"postbox": {
+					"is_hidden": true
+				}
+			}),
+			statuses_server,
+			enum_column_target.blank)
+	}
+	render() {
+		const { server, hashtags, logged_in } = this.props
+		const columnViews = []
+		for (const column of this.columns) {
+			columnViews.push(
+				<ColumnView
+					{...this.props}
+					column={column}
+					close={this.close}
+					onClickHashtag={this.onClickHashtag}
+					onClickMention={this.onClickMention}
+				/>
+			)
+		}
+		return (
+			<div className="inside column-container">
+				{columnViews}
+				<div className="column server">
+					<ServerCardView server={server} />
+					<HashtagsCardView hashtags={hashtags} server={server} onClickHashtag={this.onClickHashtag} />
+				</div>
+			</div>
+		)
+	}
+}
 
+export default class App extends Component {
 	// サーバー側でのみ呼ばれる
 	// ここで返したpropsはクライアント側でも取れる
 	static async getInitialProps({ query }) {
 		return { ...query }
 	}
-
 	constructor(props) {
 		super(props)
-		const { server, logged_in, statuses } = props
-		this.timelines = {}
-		if (logged_in) {
-			this.timelines.home = {
-				"store": (() => {
-					const timeline = new HomeTimelineStore({ "user_id": logged_in.id, "server_id": server.id },
-						{ "user": logged_in, server })
-					const stores = []
-					for (const status of statuses.home) {
-						const store = new StatusStore(status)
-						stores.push(store)
-					}
-					timeline.append(stores)
-					return timeline
-				})(),
-				"options": {}
-			}
-		}
-		this.timelines.server = {
-			"store": (() => {
-				const timeline = new ServerTimelineStore({ "server_id": server.id }, { server })
-				const stores = []
-				for (const status of statuses.server) {
-					const store = new StatusStore(status)
-					stores.push(store)
-				}
-				timeline.append(stores)
-				return timeline
-			})(),
-			"options": {
-				"status": {
-					"show_belonging": true
-				}
-			}
-		}
 		if (request) {
 			request.csrf_token = this.props.csrf_token
 		}
@@ -75,9 +98,8 @@ export default class App extends Component {
 			history.scrollRestoration = "manual"
 		}
 	}
-
 	render() {
-		const { server, logged_in, hashtags, platform, media } = this.props
+		const { server, logged_in, hashtags, platform, emoji_favorites, statuses_home, statuses_server } = this.props
 		let title = `${server.display_name} / ${config.site.name}`
 		if (logged_in) {
 			title = `@${logged_in.name} / ` + title
@@ -87,39 +109,9 @@ export default class App extends Component {
 				<Head title={title} platform={platform} logged_in={logged_in} />
 				<NavigationBarView server={server} logged_in={logged_in} active="world" />
 				<div id="content" className="timeline world">
-					<div className="inside column-container">
-						{(() => {
-							if (logged_in) {
-								return (
-									<div className="column timeline">
-										<div className="inside timeline-container round">
-											<HomeTimelineHeaderView timeline={this.timelines.home.store} user={logged_in} />
-											<div className="content">
-												<div className="vertical"></div>
-												<PostboxView logged_in={logged_in} server={server} recipient={logged_in} media={media} />
-												<TimelineView timeline={this.timelines.home.store} options={this.timelines.home.options} />
-											</div>
-										</div>
-									</div>
-								)
-							}
-						})()}
-						<div className="column timeline">
-							<div className="inside timeline-container round">
-								<ServerTimelineHeaderView timeline={this.timelines.server.store} server={server} />
-								<div className="content">
-									<div className="vertical"></div>
-									<TimelineView timeline={this.timelines.server.store} options={this.timelines.server.options} />
-								</div>
-							</div>
-						</div>
-						<div className="column server">
-							<ServerCardView server={server} />
-							<HashtagsCardView hashtags={hashtags} server={server} />
-						</div>
-					</div>
+					<ColumnContainerView {...this.props} />
 				</div>
-				<EmojiPickerView picker={this.emojipicker} />
+				<EmojiPickerView picker={this.emojipicker} favorites={emoji_favorites} />
 			</div>
 		)
 	}

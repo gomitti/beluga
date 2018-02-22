@@ -14,8 +14,10 @@ import { delete_hashtag_from_cache } from "./hashtag/show"
 import { delete_server_hashtags_from_cache } from "./server/hashtags"
 import { delete_server_from_cache } from "./server/show"
 import { delete_user_from_cache } from "./user/show"
-import { delete_account_bookmark_media_from_cache } from "./account/bookmark/media/list"
+import { delete_account_bookmark_media_from_cache } from "./account/favorite/media/list"
+import { delete_account_bookmark_emoji_from_cache } from "./account/favorite/emoji/list"
 export default { status, user, account, hashtag, server, reaction, favorite, media,
 	delete_status_from_cache, delete_status_favorited_from_cache, delete_status_favorited_by_from_cache,
 	delete_status_reaction_from_cache, delete_hashtag_from_cache, delete_server_hashtags_from_cache, 
-	delete_server_from_cache, delete_user_from_cache, delete_account_bookmark_media_from_cache }
+	delete_server_from_cache, delete_user_from_cache, delete_account_bookmark_media_from_cache,
+	delete_account_bookmark_emoji_from_cache }

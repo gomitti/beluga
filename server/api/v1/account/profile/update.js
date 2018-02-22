@@ -1,6 +1,7 @@
 import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
 import logger from "../../../../logger"
+import assert from "../../../../assert"
 
 export default async (db, params) => {
 	if (typeof params.user_id === "string") {
@@ -10,15 +11,12 @@ export default async (db, params) => {
 			throw new Error("ログインしてください")
 		}
 	}
-	if (!(params.user_id instanceof ObjectID)) {
-		throw new Error("ログインしてください")
-	}
+	assert(params.user_id instanceof ObjectID, "ログインしてください")
 
 	const collection = db.collection("users")
 	const user = await collection.findOne({ "_id": params.user_id })
-	if (user === null) {
-		throw new Error("ユーザーが存在しません")
-	}
+	assert(user, "ユーザーが存在しません")
+	
 	if (!user.profile) {
 		user.profile = {}
 	}

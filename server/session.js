@@ -1,6 +1,6 @@
-const plugin = require("fastify-plugin")
-const uid = require("uid-safe").sync
-const signature = require("cookie-signature")
+import plugin from "fastify-plugin"
+import signature from "cookie-signature"
+import { sync as uid } from "uid-safe"
 import Session from "./session/session"
 import Store from "./session/store"
 import { setInterval } from "timers";

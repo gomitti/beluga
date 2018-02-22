@@ -1,5 +1,6 @@
 import config from "../../../beluga.config"
 import parser from "./parser/index"
+import assert, { is_object } from "../../../assert"
 import { map_unicode_fname, map_shortname_fname, unicode_emoji_regexp } from "./parser/emoji"
 
 const split_regexp = (components, regexp) => {
@@ -24,7 +25,7 @@ const split_emoji_unicode = components => {
 		if (sentence.length === 0) {
 			continue
 		}
-		if (!sentence.match(/[\u2700-\u27bf]|[\uD800-\uDBFF]/g)) {
+		if (!sentence.match(/[\u2700-\u27bf]|[\uD800-\uDBFF]/)) {
 			result.push(sentence)
 			continue
 		}
@@ -61,6 +62,8 @@ const split_emoji_shortname = components => {
 const split = sentence => {
 	let components = typeof sentence === "string" ? [sentence] : sentence
 	components = split_regexp(components, /(!?https?:\/\/[^\s 　]+)/g)
+	components = split_regexp(components, /(#[^\s 　]+)/g)
+	components = split_regexp(components, /(@[0-9a-zA-Z_]+)/g)
 	components = split_emoji_unicode(components)
 	components = split_emoji_shortname(components)
 	return components
@@ -101,6 +104,15 @@ export const parse_embed = (substr, subviews, entities) => {
 	return false
 }
 
+export const parse_tags = (substr, subviews, status, handlers) => {
+	let node = parser.tags(substr, status, handlers)
+	if (node) {
+		subviews.push(node)
+		return true
+	}
+	return false
+}
+
 export const parse_emoji_unicode = (substr, subviews) => {
 	if (substr.match(/[\u0023\u00AE\u00A9\u2049\u203C\u2122-\u21AA\u2328-\u23FA\u24C2\u25AA-\u25FE\u2600-\u26FF\u2700-\u27bf\u2935\u2934\u3030\u303D\u3297\u3299\uD800-\uDBFF]/g)) {
 		const metadata = map_unicode_fname[substr]
@@ -118,7 +130,7 @@ export const parse_emoji_unicode = (substr, subviews) => {
 }
 
 export const parse_emoji_shortname = (substr, subviews) => {
-	if (substr.match(/^:[a-zA-Z0-9_]+:$/g)) {
+	if (substr.match(/^:[a-zA-Z0-9_]+:$/)) {
 		const fname = map_shortname_fname[substr]
 		if (fname) {
 			subviews.push(<img alt={substr} className="status-body-emoji" src={`/asset/emoji/64x64/${fname}.png`} />)
@@ -130,12 +142,17 @@ export const parse_emoji_shortname = (substr, subviews) => {
 	return false
 }
 
-export default (sentence, entities) => {
+export default (sentence, status, handlers) => {
+	const entities = status ? status.entities : {}
 	const subviews = []
 	const components = split(sentence)
 	for (const substr of components) {
 		// 埋め込み
 		if (parse_embed(substr, subviews, entities)) {
+			continue
+		}
+		// ハッシュタグなど
+		if (parse_tags(substr, subviews, status, handlers)) {
 			continue
 		}
 		// リンク

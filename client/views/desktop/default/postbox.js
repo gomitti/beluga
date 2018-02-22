@@ -1,14 +1,15 @@
 import React, { Component } from "react"
+import assert from "../../../assert"
 import { request } from "../../../api"
-import PostboxMediaHistoryView from "./postbox/media/history"
-const classnames = require("classnames")
+import { PostboxMediaView } from "./postbox/media"
+import classnames from "classnames"
 
 export default class PostboxView extends Component {
 	constructor(props) {
 		super(props)
 		this.state = {
 			"is_ready": false,
-			"show_media": false,
+			"show_media_favorites": false,
 			"drag_entered": false
 		}
 	}
@@ -22,16 +23,20 @@ export default class PostboxView extends Component {
 	toggleMediaView = event => {
 		event.preventDefault()
 		this.setState({
-			"show_media": !this.state.show_media
+			"show_media_favorites": !this.state.show_media_favorites
 		})
 	}
-	appendEmojiShortname = event => {
+	toggleEmojiPicker = event => {
 		event.preventDefault()
 		const { x, y } = event.target.getBoundingClientRect()
-		emojipicker.show(x, y + 40, shortname => {
-			const { textarea } = this.refs
-			this.setText(textarea.value + `:${shortname}:`)
-		})
+		if (emojipicker.is_hidden) {
+			emojipicker.show(x, y + 40, shortname => {
+				const { textarea } = this.refs
+				this.setText(textarea.value + `:${shortname}:`)
+			})
+		} else {
+			emojipicker.hide()
+		}
 	}
 	appendMediaLink = (event, item) => {
 		event.preventDefault()
@@ -58,14 +63,14 @@ export default class PostboxView extends Component {
 			return
 		}
 		const query = { text }
-		// ルームへの投稿
-		if (this.props.hashtag) {
-			query.hashtag_id = this.props.hashtag.id
-		}
-		// ユーザーのホームへの投稿
-		if (this.props.recipient && this.props.server) {
-			query.recipient_id = this.props.recipient.id
-			query.server_id = this.props.server.id
+		const { hashtag, recipient, server } = this.props
+		if (hashtag) {	// ルームへの投稿
+			query.hashtag_id = hashtag.id
+		} else if (recipient && server) {	// ユーザーのホームへの投稿
+			query.recipient_id = recipient.id
+			query.server_id = server.id
+		} else {
+			assert(false, "Invalid post target")
 		}
 
 		request
@@ -142,6 +147,35 @@ export default class PostboxView extends Component {
 		this.setState({
 			"is_ready": true
 		})
+	}
+	onTextPaste = event => {
+		const { target, clipboardData } = event
+		console.dir(target)
+		console.log(clipboardData)
+		const data = clipboardData.getData("Text")
+		if (!data.match(/^https?:\/\/[^\s ]+$/)){
+			return
+		}
+		event.preventDefault()
+		let prefix = ""
+		if(window.confirm("リンク先のプレビューを有効にしますか？")){
+			prefix = "!"
+		}
+		const position = target.selectionStart
+		console.log(position, data)
+		if(position === 0){
+			if(target.value.length === 0){
+				target.value = prefix + data
+				return
+			}
+			target.value = prefix + data + "\n" + target.value
+			return
+		}
+		if(position === target.value.length){
+			target.value = target.value + "\n" + prefix + data
+			return
+		}
+		target.value = target.value.substring(0, position) + "\n" + prefix + data + "\n" + target.value.substring(position)
 	}
 	onTextChange = event => {
 		const { textarea } = this.refs
@@ -249,7 +283,7 @@ export default class PostboxView extends Component {
 		}
 	}
 	render() {
-		const { logged_in, media } = this.props
+		const { logged_in, media_favorites, media_history } = this.props
 		if (!logged_in) {
 			return (
 				<div>投稿するには<a href="/login">ログイン</a>してください</div>
@@ -266,15 +300,21 @@ export default class PostboxView extends Component {
 					<div className="postbox-right">
 						<div className="postbox-content">
 							<div className="body">
-								<textarea onChange={this.onTextChange} className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })} ref="textarea" onKeyUp={this.onKeyUp} onKeyDown={this.onKeyDown} />
+								<textarea
+									className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })}
+									ref="textarea"
+									onChange={this.onTextChange}
+									onPaste={this.onTextPaste}
+									onKeyUp={this.onKeyUp}
+									onKeyDown={this.onKeyDown} />
 							</div>
 						</div>
 						<div className="postbox-footer">
 							<input type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
 							<div className="panel">
-								<button className="action emojipicker-ignore-click" onClick={this.appendEmojiShortname}>✌️</button>
+								<button className="action emojipicker-ignore-click" onClick={this.toggleEmojiPicker}>✌️</button>
 								<button className="action emojipicker-ignore-click" onClick={this.toggleMediaView}>画</button>
-								<button className="action emojipicker-ignore-click" onClick={this.appendEmojiShortname}>✌️</button>
+								<button className="action emojipicker-ignore-click" onClick={this.toggleEmojiPicker}>✌️</button>
 							</div>
 							<div className="submit">
 								<button className={classnames("button meiryo", {
@@ -284,7 +324,7 @@ export default class PostboxView extends Component {
 								})} onClick={this.post}>投稿する</button>
 							</div>
 						</div>
-						<PostboxMediaHistoryView isHidden={!this.state.show_media} media={media} append={this.appendMediaLink} />
+						{media_favorites ? <PostboxMediaView is_hidden={!this.state.show_media_favorites} media={media_favorites} append={this.appendMediaLink} /> : null}
 					</div>
 				</div>
 			</div>

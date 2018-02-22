@@ -1,12 +1,18 @@
 import api from "../../../api"
+import memcached from "../../../memcached"
+import assert from "../../../assert"
 
 export default async (db, params) => {
-	const user = await api.v1.account.signin(db, params)
-	user.id = user._id
-	for (const key in user) {
-		if (key.indexOf("_") == 0) {
-			delete user[key]
-		}
-	}
-	return user
+	const user = await memcached.v1.user.show(db, { "name": params.name })
+	assert(user, "ユーザーが見つかりません")
+
+	await api.v1.account.signin(db, {
+		"raw_password": params.raw_password,
+		"user_id": user.id
+	})
+
+	// キャッシュの消去
+	memcached.v1.delete_user_from_cache(user)
+
+	return await memcached.v1.user.show(db, { "id": user.id })
 }

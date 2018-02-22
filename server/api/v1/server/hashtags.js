@@ -3,7 +3,7 @@ import config from "../../../config/beluga"
 
 export default async (db, params) => {
 	params = Object.assign({
-		"threshold": config.server.hashtags.min_count_to_display
+		"threshold": config.server.hashtags.min_statuses_count_to_display
 	}, params)
 
 	if (typeof params.id === "string") {

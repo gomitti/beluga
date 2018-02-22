@@ -8,18 +8,20 @@ export default {
 	"status": {
 		"max_text_length": 5000,
 		"reaction": {
-			"limit": 3,	// 1投稿につき何種類の絵文字を追加できるか
+			"limit": 3,		// 1投稿につき何種類の絵文字を追加できるか
 			"allow_self_reactions": false	// 自分自身へのリアクションの追加を許可
 		},
 		"embed": {
 			"web": {
-				// 1つの投稿にURLの埋め込みを何個まで許可するか
+				"limit": 3,				// 1つの投稿にURLの埋め込みを何個まで許可するか
 				// サーバー側でHTTPリクエストが発生するため大量の埋め込みを行うと負荷がかかる
-				"limit": 3,
-				"timeout": 3000,		// ミリ秒
+				"timeout": 10,			// 秒
 				"max_description_length": 200
 			}
-		}
+		},
+		"forbidden_words": [
+			"\u0C1C\u0C4D\u0C1E\u200C\u0C3E"	// Apple製品がクラッシュするため
+		]
 	},
 	"colors": ["#B9C4CA", "#E09580", "#E5D8CE", "#EBE39B", "#F9D2C9", "#FCC8B2", "#E5A0A6", "#B3D9DD",
 		"#AD8FCF", "#8684DE", "#79CBD2", "#A9C8A2", "#C784C8", "#F8C785", "#B4BEBD", "#E3D4DA",
@@ -30,7 +32,7 @@ export default {
 	],
 	"memcached": {
 		"capacity": 1000,
-		"max_age": 86400 
+		"max_age": 86400
 	},
 	"like": {
 		"max_count": 10		// 投稿1つにつき何回まで「いいね」を押せるか
@@ -40,6 +42,10 @@ export default {
 		"max_display_name_length": 32,
 		"name_regexp": /^[a-zA-Z0-9_]+$/,
 		"profile": {
+			"background_image": {
+				"max_size": 10000,
+				"max_filesize": 1024 * 1024 * 2
+			},
 			"image_size": 300,
 			"max_description_length": 1000,
 			"max_location_length": 100,
@@ -49,19 +55,19 @@ export default {
 		},
 	},
 	"hashtag": {
-		"max_tagname_length": 100		// UTF16基準なので注意。サロゲートペアは2文字扱いになる
+		"max_tagname_length": 100			// UTF16基準なので注意。サロゲートペアは2文字扱いになる
 	},
 	"server": {
 		"name_regexp": /^[a-zA-Z0-9_]+$/,
-		"max_name_length": 32,			// UTF16基準なので注意
-		"max_display_name_length": 100,	// UTF16基準なので注意
+		"max_name_length": 32,				// UTF16基準なので注意
+		"max_display_name_length": 100,		// UTF16基準なので注意
 		"profile": {
 			"image": {
 				"size": 300
 			}
 		},
 		"hashtags": {
-			"min_count_to_display": 10	// ルーム一覧に表示される最低限の投稿数
+			"min_statuses_count_to_display": 10	// ルーム一覧に表示される最低限の投稿数
 		}
 	},
 	"auth": {
@@ -70,11 +76,11 @@ export default {
 		"password_regexp": /^[\x21-\x7E]+$/,	// asciiのみ
 		"min_password_length": 4,
 		"session": {
-			"cookie_secret": "?[guL6]#",
+			"cookie_secret": "?[guL6]#",	// ここを変えるとセッションが切れるので注意
 			"cookie_name": "session_id",
 			"secure": use_https,
-			"max_age": 86400 * 7,		// 秒
-			"timezone_offset": 9 * 3600	// 秒
+			"max_age": 86400 * 7,			// 秒
+			"timezone_offset": 9 * 3600		// 秒
 		}
 	},
 	"timeline": {
@@ -103,11 +109,9 @@ export default {
 	},
 	"media": {
 		"image": {
-			"max": {
-				"filesize": 1024 * 1024 * 10,
-				"width": 20000,
-				"height": 20000
-			},
+			"max_filesize": 1024 * 1024 * 10,
+			"max_width": 20000,
+			"max_height": 20000,
 			"thumbnail": {
 				"square": {
 					"size": 300
@@ -123,11 +127,9 @@ export default {
 		"video": {
 			"allowed_file_types": ["mp4", "mov"],
 			"unsupported_codecs": ["MPEG-4 part 2"],
-			"max": {
-				"filesize": 1024 * 1024 * 40,
-				"width": 3840,
-				"height": 2160
-			}
+			"max_filesize": 1024 * 1024 * 40,
+			"max_width": 3840,
+			"max_height": 3840
 		},
 		"list": {
 			"count": {

@@ -45,12 +45,12 @@
 .status-header {
 	position: relative;
 	z-index: 1;
-	overflow: hidden;
+	line-height: 1;
 	> .inside {
 		> .link {
 			text-decoration: none;
 			> .display-name {
-				color: rgb(20, 20, 20);
+				color: rgb(50, 50, 50);
 				font-size: 14px;
 				font-weight: bold;
 				padding-right: 5px;
@@ -80,7 +80,7 @@
 	}
 }
 .status-content {
-	margin: 5px 0;
+	margin-top: 6px;
 	> .body {
 		font-size: 15px;
 		line-height: 20px;
@@ -99,7 +99,7 @@
 }
 .status-body-link::before {
 	font-family: Beluga;
-	content: "L";
+	content: "\E00B";
 }
 .status-body-emoji {
 	width: 20px;
@@ -108,11 +108,22 @@
     margin-bottom: -3px;
 	display: inline-block;
 }
+.status-body-hashtag::before {
+	font-family: Beluga;
+	content: "\E006";
+}
+.status-body-mention::before {
+	font-family: Beluga;
+	content: "\E005";
+}
+.status-body-tweet {
+	width: 100%;
+}
 .status-favofites {
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	margin-bottom: 4px;
+	margin-top: 6px;
 	> .users {
 		display: flex;
 		flex-direction: row;
@@ -157,8 +168,7 @@
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
-	margin-bottom: 4px;
-    margin-left: -4px;
+	margin: 2px 0 -4px -4px;
 	> .status-reaction {
 		flex: 0 0 auto;
 		display: flex;
@@ -169,7 +179,7 @@
 		background-color: white;
 		box-sizing: border-box;
 		border: 1px solid white;
-		transition: border-color 100ms ease-in 0s;
+		transition: border-color 50ms ease-in 0s;
 		> .emoji {
 			flex: 0 0 auto;
 			width: 20px;
@@ -193,7 +203,7 @@
 	display: flex;
 	flex-direction: row;
 	flex-wrap: nowrap;
-	margin-top: 6px;
+	margin: 3px 0;
 	> a {
 		flex: 0 1 auto;
 		margin-right: 6px;
@@ -202,6 +212,10 @@
 			width: 100%;
 			border-radius: 6px;
 		}
+	}
+	> .status-body-gif {
+		flex: 0 1 auto;
+		margin-right: 6px;
 	}
 }
 .status-body-gallery:first-child {
@@ -217,6 +231,7 @@
 	> .image {
 		width: 80px;
 		flex: 0 0 auto;
+		margin-right: 12px;
 		> img {
 			width: 100%;
 			height: auto;
@@ -224,10 +239,10 @@
 		}
 	}
 	> .content {
-		margin-left: 12px;
 		> .title {
 			font-size: 15px;
 			line-height: 18px;
+			font-weight: bold;
 		}
 		> .description {
 			margin-top: 4px;
@@ -237,8 +252,16 @@
 		> .domain {
 			margin-top: 4px;
 			font-weight: bold;
+			color: rgb(50, 50, 50);
 			font-size: 13px;
 			line-height: 13px;
+		}
+	}
+}
+@media (max-width: 1024px) {
+	.status-body-website {
+		> .image {
+			display: none;
 		}
 	}
 }
@@ -246,12 +269,12 @@
 	width: 100%;
 }
 .status-footer {
-	height: 15px;
-	line-height: 15px;
-	margin-bottom: 8px;
+	height: 13px;
+	line-height: 1;
+	margin: 6px 0 8px 0;
 	display: flex;
 	> .belonging {
-		font-size: 14px;
+		font-size: 13px;
 		color: rgb(200,200,200);
 		margin-right: 10px;
 		max-width: 200px;
@@ -261,7 +284,7 @@
 	}
 	> .time {
 		text-decoration: none;
-		font-size: 12px;
+		font-size: 13px;
 		color: rgb(200,200,200);
 	}
 }
@@ -279,7 +302,6 @@
 	position: absolute;
 	z-index: 4;
 	display: none;
-	background-color: white;
 	overflow: hidden;
 	right: 6px;
 	bottom: 3px;
@@ -288,29 +310,26 @@
 		> button {
 			width: 28px;
 			height: 28px;
-			background: white;
+			background: transparent;
 			margin-right: 2px;
 			font-family: Beluga;
 			font-size: 17px;
 			color: rgb(100, 100, 100);
-			> span::before {
-				font-family: Beluga;
-			}
 		}
 		> .like::before {
-			content: "D";
+			content: "\E003";
 		}
 		> .favorite::before {
-			content: "I";
+			content: "\E008";
 		}
 		> .emoji::before {
-			content: "A";
+			content: "\E000";
 		}
 		> .comment::before {
-			content: "K";
+			content: "\E00A";
 		}
 		> .destroy::before {
-			content: "J";
+			content: "\E009";
 		}
 	}
 }
@@ -320,35 +339,52 @@
 	}
 }
 .status-likes {
+	margin-top: 4px;
 	> p {
-		background-image: url("/asset/default/star.png");
-		width: 15px;
-		height: 15px;
-		background-size: 100% 100%;
+		width: 16px;
+		height: 16px;
+		font-size: 18px;
+		line-height: 1;
 		display: inline-block;
-		margin: 0 2px 3px 0px;
+		margin: 0 0 3px 0px;
+		color: rgb(254, 197, 46);
+	}
+	> p::before{
+		font-family: Beluga;
+		content: "\E002";
 	}
 }
-.gifview {
+.status-body-gif {
 	position: relative;
 	> a {
 		display: block;
 		width: 100%;
 		height: 100%;
 		color: rgba(0, 0, 0, 0.7);
+		> img {
+			width: 100%;
+			height: 100%;
+			border-radius: 6px;
+		}
 	}
 	> .watermark {
-		background-color: rgba(0, 0, 0, 0.8);
-		color: white;
-		padding: 1px 4px;
-		font-size: 9px;
+		padding: 3px 3px 3px 4px;
 		border-radius: 4px;
 		position: absolute;
+		background-color: rgba(0, 0, 0, 0.7);
 		top: 4px;
 		right: 4px;
+		> i {
+			background-image: url("/asset/default/gif.svg?v=0.1.55");
+			background-size: 15px 10px;
+			background-repeat: no-repeat;
+			width: 15px;
+			height: 10px;
+			display: block;
+		}
 	}
 }
-.gifview:hover {
+.status-body-gif:hover {
 	> .watermark {
 		display: none;
 	}

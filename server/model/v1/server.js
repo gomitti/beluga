@@ -1,3 +1,4 @@
 import create from "./server/create"
 import show from "./server/show"
-export default { create, show }
+import hashtags from "./server/hashtags"
+export default { create, show, hashtags }

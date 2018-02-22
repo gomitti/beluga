@@ -1,79 +1,29 @@
 import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
 import logger from "../../../../logger"
-const fileType = require("file-type")
-const path = require("path")
-const Ftp = require("jsftp")
-const uid = require("uid-safe").sync
-const fs = require("fs")
-const gm = require("gm")
+import assert, { is_string, is_number } from "../../../../assert"
+import { ftp_mkdir, ftp_put } from "../../../../lib/ftp"
+import { gm_filesize, gm_resize } from "../../../../lib/gm"
+import fileType from "file-type"
+import path from "path"
+import Ftp from "jsftp"
+import { sync as uid } from "uid-safe"
+import fs from "fs"
 
-const ftp_mkdir = async (ftp, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.raw("mkd", directory, (error, data) => {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(data)
-		})
-	})
-}
+export default async (db, params) => {
+	const { storage } = params
+	let { data, user_id } = params
 
-const ftp_put = async (ftp, data, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.put(data, directory, error => {
-			if (error) {
-				reject(error)
-			}
-			resolve()
-		})
-	})
-}
-
-const gm_filesize = async (data) => {
-	return new Promise((resolve, reject) => {
-		gm(data).size(function (error, size) {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(size)
-		})
-	})
-}
-
-const gm_resize = async (data, width, height) => {
-	return new Promise((resolve, reject) => {
-		gm(data)
-			.resize(width, height)
-			.toBuffer(function (error, data) {
-				if (error) {
-					return reject(error)
-				}
-				return resolve(data)
-			})
-	})
-}
-
-const gm_crop = async (data, width, height, x, y) => {
-	return new Promise((resolve, reject) => {
-		gm(data)
-			.crop(width, height, x, y)
-			.toBuffer(function (error, data) {
-				if (error) {
-					return reject(error)
-				}
-				return resolve(data)
-			})
-	})
-}
-
-export default async (db, data, user, storage) => {
-	if (!user) {
-		throw new Error("ユーザーが見つかりません")
+	if (typeof user_id === "string") {
+		try {
+			user_id = ObjectID(user_id)
+		} catch (error) {
+			throw new Error("不正なユーザーです")
+		}
 	}
-	if (!(user.id instanceof ObjectID)) {
-		throw new Error("ユーザーが見つかりません")
-	}
+	assert(user_id instanceof ObjectID, "不正なユーザーです")
+	assert(data instanceof Buffer, "不正なデータです")
+	assert(typeof storage === "object", "不正なサーバーです")
 
 	const type = fileType(data)
 	if (!type) {
@@ -95,6 +45,11 @@ export default async (db, data, user, storage) => {
 		data = await gm_resize(data, config.user.profile.image_size, config.user.profile.image_size)
 	}
 
+	assert(is_string(storage.host), "@storage.host must be string")
+	assert(is_number(storage.port), "@storage.port must be number")
+	assert(is_string(storage.user), "@storage.user must be string")
+	assert(is_string(storage.password), "@storage.password must be string")
+
 	const ftp = new Ftp({
 		"host": storage.host,
 		"port": storage.port,
@@ -113,7 +68,7 @@ export default async (db, data, user, storage) => {
 	} catch (error) {
 
 	}
-	directory = path.join(directory, user.id.toHexString())
+	directory = path.join(directory, user_id.toHexString())
 	try {
 		await ftp_mkdir(ftp, directory)
 	} catch (error) {
@@ -128,7 +83,7 @@ export default async (db, data, user, storage) => {
 			"level": "error",
 			"error": error.toString(),
 			directory,
-			user,
+			user_id,
 		})
 		throw new Error("サーバーで問題が発生しました")
 	}
@@ -136,14 +91,12 @@ export default async (db, data, user, storage) => {
 	const protocol = storage.https ? "https" : "http"
 	const url = `${protocol}://${storage.url_prefix}.${storage.domain}/${directory}/${filename}`
 
-	let collection = db.collection("users")
-	let result = await collection.update({ "_id": user.id }, {
+	await db.collection("users").update({ "_id": user_id }, {
 		"$set": { "avatar_url": url }
 	})
 
-	collection = db.collection("profile_images")
-	result = await collection.insertOne({
-		"user_id": user.id,
+	await db.collection("avatar_images").insertOne({
+		"user_id": user_id,
 		"host": storage.host,
 		directory,
 		filename,

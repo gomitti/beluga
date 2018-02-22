@@ -1,5 +1,5 @@
 import { ObjectID } from "mongodb"
-import * as assert from "../assert"
+import assert from "../assert"
 import logger from "../logger"
 
 export default class Store {
@@ -41,14 +41,14 @@ export default class Store {
 	async save(session) {
 		// console.log("Store::save", session)
 		try {
-			assert.checkIsString(session.id)
-			assert.checkIsString(session.encrypted_id)
+			assert(assert.is_string(session.id), "session.id is not string")
+			assert(assert.is_string(session.encrypted_id), "session.encrypted_id is not string")
 			if (session.user_id !== null) {
 				if (!(session.user_id instanceof ObjectID) ){
 					throw new Error("不正なユーザーIDです")
 				}
 			}
-			assert.checkIsNumber(session.expires)
+			assert(assert.is_number(session.expires), "session.expires is not string")
 		} catch (error) {
 			logger.log({
 				"level": "error",
@@ -68,7 +68,7 @@ export default class Store {
 			"user_id": session.user_id
 		}
 		await this.collection.insertOne(row)
-		this.clearCacheIfNeeded()
+		this.clear_cache_if_needed()
 		this.cache[session.id] = session
 		return true
 	}
@@ -85,12 +85,12 @@ export default class Store {
 		const expires = Date.now()
 		const result = await this.collection.deleteMany({ "expires": { $lt: expires} })
 	}
-	clearCacheIfNeeded() {
+	clear_cache_if_needed() {
 		if (Object.keys(this.cache).length >= this.options.max_cache_capacity) {
-			this.clearCache()
+			this.clear_cache()
 		}
 	}
-	clearCache() {
+	clear_cache() {
 		delete this.cache
 		this.cache = {}
 	}

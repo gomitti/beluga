@@ -1,6 +1,5 @@
 import config from "./beluga.config"
-let request = undefined
-let upload = undefined
+let request = null
 
 class Request {
 	constructor() {

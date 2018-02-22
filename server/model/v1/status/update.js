@@ -5,7 +5,7 @@ import memcached from "../../../memcached"
 import show from "./show"
 
 const request = axios.create({
-	"timeout": config.status.embed.web.timeout
+	"timeout": config.status.embed.web.timeout * 1000
 })
 
 const get_domain_from_url = url => {

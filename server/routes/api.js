@@ -56,6 +56,7 @@ module.exports = (fastify, options, next) => {
 	fastify.register(require("./api/media"))
 	fastify.register(require("./api/status"))
 	fastify.register(require("./api/server"))
+	fastify.register(require("./api/user"))
 	fastify.register(require("./api/timeline"))
 	fastify.register(require("./api/like"))
 	fastify.register(require("./api/favorite"))

@@ -1,5 +1,6 @@
 import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
+import assert from "../../../assert"
 
 export default async (db, params) => {
 	if (typeof params.status_id === "string") {
@@ -9,9 +10,7 @@ export default async (db, params) => {
 			throw new Error("投稿が見つかりません")
 		}
 	}
-	if (!(params.status_id instanceof ObjectID)) {
-		throw new Error("投稿が見つかりません")
-	}
+	assert(params.status_id instanceof ObjectID, "投稿が見つかりません")
 
 	const collection = db.collection("favorites")
 	const rows = await collection.find({ "status_id": params.status_id }).sort({ "created_at": -1 }).toArray()

@@ -16,7 +16,7 @@ export default class WebsiteView extends Component {
 			<div className="status-body-website">
 				{imageView}
 				<div className="content">
-					<a className="title meiryo user-defined-color" href={url}>{title}</a>
+					<a className="title meiryo user-defined-color bold" href={url} target="_blank">{title}</a>
 					<p className="domain verdana">{domain}</p>
 					{description ? <div className="description meiryo">{description}</div> : null}
 				</div>

@@ -1,8 +1,9 @@
 import { ObjectID } from "mongodb"
 import api from "../../../api"
 import { Memcached } from "../../../memcached/v1/memcached"
+import assert from "../../../assert"
 
-const memcached = new Memcached(api.v1.server.hashtags)
+const memcached = new Memcached(api.v1.server.hashtags, 600)
 
 export const delete_server_hashtags_from_cache = server => {
 	if (typeof server.id === "string") {
@@ -14,12 +15,12 @@ export const delete_server_hashtags_from_cache = server => {
 }
 
 export default async (db, params) => {
-	let key = params.id
-	if (key instanceof ObjectID) {
-		key = key.toHexString()
+	let primary_key = params.id
+	if (primary_key instanceof ObjectID) {
+		primary_key = primary_key.toHexString()
 	}
-	if (typeof key === "string") {
-		return await memcached.fetch(key, db, params)
-	}
-	return null
+	assert(typeof primary_key === "string", "@primary_key must be string")
+	const threshold = params.threshold
+	assert(typeof threshold === "number", "@threshold must be number")
+	return await memcached.fetch([primary_key, threshold], db, params)
 }

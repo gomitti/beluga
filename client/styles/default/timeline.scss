@@ -91,6 +91,7 @@
 	}
 }
 .timeline-container {
+	min-height: calc(100vh - 110px);
 	position: relative;
 	padding-bottom: 16px;
 	> .header {
@@ -104,19 +105,85 @@
 				font-size: 18px;
 				line-height: 18px;
 				font-weight: bold;
+				position: relative;
+				> .header-options {
+					position: absolute;
+					right: 0;
+					top: 0;
+					text-align: right;
+					display: flex;
+					flex-direction: row;
+					flex-wrap: nowrap;
+					align-items: center;
+					color: rgb(60, 60, 60);
+					> .back-button {
+						cursor: pointer;
+						font-size: 15px;
+					}
+					> .back-button::before {
+						font-family: Beluga;
+						content: "\E00F";
+					}
+					> .settings-button {
+						display: inline-block;
+						width: 20px;
+						height: 20px;
+						font-size: 20px;
+						line-height: 20px;
+					}
+					> .settings-button::before {
+						font-family: Beluga;
+						content: "\E00C";
+					}
+				}
 			}
-			> .header-options {
-				position: absolute;
-				right: 0;
-				top: 0;
-				text-align: right;
+			> .header-settings {
+				padding-top: 16px;
+				> section {
+					margin-bottom: 16px;
+				}
+				> section:last-child {
+					margin-bottom: 0;
+				}
+				> .column-operations {
+					font-size: 12px;
+					cursor: pointer;
+					> .close {
+						color: rgb(60, 60, 60);
+						float: left;
+						font-weight: bold;
+					}
+					> .close::before {
+						font-family: Beluga;
+						content: "\E010";
+						font-weight: bold;
+					}
+					> .move {
+						float: right;
+						font-weight: bold;
+						> .left,
+						> .right {
+							color: rgb(60, 60, 60);
+						}
+						> .left::before {
+							font-family: Beluga;
+							content: "\E00F";
+							margin-right: 6px;
+						}
+						> .right::before {
+							font-family: Beluga;
+							content: "\E00E";
+						}
+					}
+				}
 			}
 		}
 	}
 	> .content {
+		position: relative;
 		> .vertical {
 			position: absolute;
-			top: 100px;
+			top: 32px;
 			bottom: 35px;
 			left: 36px;
 			border-left: 0.15em solid #dcdcdc;

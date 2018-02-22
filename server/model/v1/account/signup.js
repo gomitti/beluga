@@ -3,29 +3,25 @@ import storage from "../../../config/storage"
 import logger from "../../../logger"
 
 export default async (db, params) => {
-	const user = await api.v1.account.signup(db, params)
-	user.id = user._id
-	for (const key in user) {
-		if (key.indexOf("_") == 0) {
-			delete user[key]
-		}
-	}
-	const server = storage.servers[0]
+	const user_id = await api.v1.account.signup(db, params)
+	const remote = storage.servers[0]
 	try {
-		await api.v1.account.avatar.reset(db, user, server)
+		await api.v1.account.avatar.reset(db, {
+			user_id,
+			"storage": remote
+		})
 	} catch (error) {
 		logger.log({
 			"level": "error",
 			"message": "Failed to signup",
 			"error": error.toString(),
-			server,
-			user,
+			remote,
+			user_id,
 		})
-		const collection = db.collection("users")
-		const result = await collection.deleteOne({
+		const result = await db.collection("users").deleteOne({
 			"name": params.name
 		})
 		throw error
 	}
-	return user
+	return user_id
 }

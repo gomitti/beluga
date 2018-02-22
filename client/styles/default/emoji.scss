@@ -2,31 +2,97 @@
 	position: absolute;
 	top: 100px;
 	right: 100px;
-	z-index: 5;
-	> .inside {
-		width: 328px;
-		height: 200px;
-		background-color: #fff;
-		border: 1px solid rgba(0, 0, 0, 0.2);
-		box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.1);
-		border-radius: 6px;
-		display: box;
-		display: flex;
-		flex-direction: column;
-		> .categories {
-			    overflow: auto;
-				display: -ms-flexbox;
-				display: flex;
-				-webkit-box-orient: vertical;
-				-o-box-orient: vertical;
-				-ms-flex-direction: column;
-				flex-direction: column;
-				padding: 10px;
-		}
-	}
+    z-index: 5;
 }
 
+.emoji-picker {
+    width: 366px;
+    height: 260px;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 6px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+    display: box;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    > .categories {
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        position: relative;
+        z-index: 0;
+    }
+    > .menu {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        height: 34px;
+        box-sizing: border-box;
+        padding-top: 6px;
+        justify-content: center;
+        background-color: rgb(245, 245, 245);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+        border-radius: 6px 6px 0 0;
+        position: relative;
+        z-index: 1;
+        > .item {
+            flex: 0 0 auto;
+            display: block;
+            background-color: transparent;
+            padding: 0 2px;
+            margin: 0 2px;
+            font-size: 20px;
+            color: rgb(140, 140, 140);
+            width: 28px;
+            border-bottom: 3px solid transparent;
+            font-family: "Beluga";
+        }
+        > .item.favorites::before {
+            content: "\E012";
+        }
+        > .item.history::before {
+            content: "\E013";
+        }
+        > .item.people::before {
+            content: "\E014";
+        }
+        > .item.nature::before {
+            content: "\E015";
+        }
+        > .item.food::before {
+            content: "\E016";
+        }
+        > .item.activity::before {
+            content: "\E017";
+        }
+        > .item.travel::before {
+            content: "\E018";
+        }
+        > .item.objects::before {
+            content: "\E019";
+        }
+        > .item.symbols::before {
+            content: "\E01A";
+        }
+        > .item.flags::before {
+            content: "\E01B";
+        }
+        > .item.regional::before {
+            content: "\E01C";
+        }
+    }
+}
 .emoji-category {
+    margin-top: 6px;
+    position: relative;
+    > .header {
+        font-size: 12px;
+        font-weight: bold;
+        color: rgb(100, 100, 100);
+    }
 	> .buttons {
 		display: flex;
 		flex-direction: row;
@@ -45,6 +111,9 @@
 			background-color: rgb(236, 236, 236);
 		}
 	}
+}
+.emoji-category:first-child {
+    margin-top: 0;
 }
 .emoji-people {
     text-indent: -9999em;

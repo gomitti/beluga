@@ -46,6 +46,5 @@ export default async (db, params) => {
 		}
 		status.hashtag = hashtag
 	}
-
 	return status
 }

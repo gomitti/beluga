@@ -1,9 +1,9 @@
-const mongodb = require("mongodb")
-const app = require("fastify")()
-const plugin = require("fastify-plugin")
-import  { websocket, bridge } from "./websocket"
+import mongodb from "mongodb"
+import plugin from "fastify-plugin"
+import { websocket, bridge } from "./websocket"
 import mongo from "./mongo"
 import config from "./config/beluga"
+const app = require("fastify")()
 
 mongodb.MongoClient
 	.connect(mongo.url)

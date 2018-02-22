@@ -1,4 +1,4 @@
-import TimelineStore from "../timeline"
+import TimelineStore from "./index"
 
 export default class ServerTimelineStore extends TimelineStore {
 	constructor(request_query, params) {

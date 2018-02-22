@@ -1,6 +1,7 @@
 import { ObjectID } from "mongodb"
 import api from "../../../api"
 import { Memcached } from "../../../memcached/v1/memcached"
+import assert from "../../../assert"
 
 const memcached = new Memcached(api.v1.status.show)
 
@@ -18,8 +19,6 @@ export default async (db, params) => {
 	if (key instanceof ObjectID) {
 		key = key.toHexString()
 	}
-	if (typeof key === "string") {
-		return await memcached.fetch(key, db, params)
-	}
-	return null
+	assert(typeof key === "string", "@key must be string")
+	return await memcached.fetch(key, db, params)
 }

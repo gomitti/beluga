@@ -11,28 +11,47 @@
     > .inside {
         float: right;
         padding: 20px;
+        padding-top: 32px;
         width: 160px;
         > .title {
             margin-left: 0px;
             padding-bottom: 4px;
             margin-bottom: 10px;
             border-bottom: 1px solid rgb(180, 180, 180);
-            color: rgb(100, 100, 100);
+            color: rgb(30, 30, 30);
             font-weight: bold;
             font-size: 14px;
+            line-height: 1;
+        }
+        > .title.settings::before {      
+            font-family: Beluga;
+            content: "\E00c";
+            font-size: 16px;
+            margin-right: 4px;
+        }
+        > .title.developers::before {      
+            font-family: Beluga;
+            content: "\E011";
+            font-size: 16px;
+            margin-right: 4px;
         }
     }
 }
 .settings-menu {
     margin-bottom: 30px;
     > li {
-        > a {
-            text-decoration: none;
+        > .item {
             color: rgb(100, 100, 100);
+            text-decoration: none;
             display: inline-block;
             padding: 2px 0;
             margin-bottom: 3px;
             font-weight: bold;
+        }
+        > .item.active::after {
+            font-family: Beluga;
+            content: "\E00E";
+            margin-left: 2px;
         }
     }
 }
@@ -55,7 +74,8 @@
         margin-bottom: 16px;
         border-bottom: 1px solid rgb(220, 220, 220);
         > h1 {
-            font-size: 18px;
+            font-size: 20px;
+            font-weight: bold;
         }
     }
     .description {
@@ -73,20 +93,20 @@
         }
     }
 }
-.settings-module.profile {
+.settings-module.form {
     > .item {
         margin-top: 20px;
         > .title {
             font-size: 14px;
             line-height: 1;
             font-weight: bold;
+            color: rgb(60, 60, 60);
         }
         > .form-input {
             font-size: 14px;
             margin-top: 8px;
             width: 100%;
             box-sizing: border-box;
-            padding: 6px 8px;
             background: rgb(247, 247, 247);
         }
         > .form-input:focus {
@@ -105,6 +125,13 @@
     }
     > .item:first-child {
         margin: 0;
+    }
+}
+.settings-module.desktop {
+    > .item {
+        > .title {
+            margin-bottom: 6px;
+        }
     }
 }
 .settings-module.color-pickers {
@@ -177,23 +204,23 @@
                     position: absolute;
                     width: 70px;
                     height: 70px;
-                    border: 5px solid rgba(255, 255, 255, 0);
-                    border-radius: 6px;
+                    // border: 5px solid rgba(255, 255, 255, 0);
+                    border-radius: 8px;
                     top: 0;
                     left: 0;
                     box-sizing: border-box;
-                    transition: border-color 30ms ease-in 0s;
+                    // transition: border-color 30ms ease-in 0s;
                 }
                 > .overlay-fg {
                     position: absolute;
                     width: 70px;
                     height: 70px;
-                    border: 3px solid rgba(255, 255, 255, 0);
+                    border: 4px solid rgba(255, 255, 255, 0);
                     border-radius: 6px;
                     top: 0;
                     left: 0;
                     box-sizing: border-box;
-                    transition: border-color 30ms ease-in 0s;
+                    // transition: border-color 30ms ease-in 0s;
                 }
                 > .number {
                     position: absolute;
@@ -219,6 +246,46 @@
                 > .overlay-bg {
                     border-color: white;
                 }
+            }
+        }
+    }
+    > .emoji-selector {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        width: 100%;
+        margin-top: 20px;
+        max-height: 300px;
+        > .bookmarks {
+            flex: 0 0 auto;
+            margin-right: 10px;
+            border-right: 1px solid rgb(220, 220, 220);
+            width: 216px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            > button {
+                border-radius: 3px;
+                margin: 0 0 2px 2px;
+                padding: 0;
+                cursor: pointer;
+                background-color: transparent;
+                box-sizing: padding-box;
+                height: 32px;
+                width: 32px;
+            }
+            > button:hover {
+                background-color: rgb(236, 236, 236);
+            }
+        }
+        > .candidates {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            button {
+                background-color: transparent;
             }
         }
     }

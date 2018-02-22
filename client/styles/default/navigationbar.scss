@@ -6,14 +6,13 @@
 		background-color: rgba(47, 47, 47, 0.99);
 		height: 26px;
 		> .inside {
-			padding: 0 40px;
+			padding: 0 40px 0 20px;
 		}
 	}
 	> .bottom {
 		height: 44px;
-		// border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 		background-clip: padding-box;
-		background-color: rgba(255, 255, 255, 0.99);
+		background-color: white;
 		box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, .05);
 	}
 }
@@ -83,22 +82,30 @@
 				margin-left: 3px;
 			}
 			> .home::before {
-				content: "B";
+				content: "\E001";
 			}
 			> .mentions::before {
-				content: "F";
+				content: "\E005";
 			}
 			> .hashtags::before {
-				content: "G";
+				content: "\E006";
 			}
 			> .world::before {
-				content: "H";
+				content: "\E007";
 			}
 		}
 	}
 }
 .navigationbar-logo-container {
 	float: left;
+	> .logo {
+		display: inline-block;
+		height: 26px;
+		width: 45px;
+		background-image: url("/asset/default/logo.svg?v=0.1.60");
+		background-size: 100% 100%;
+		background-repeat: no-repeat;
+	}
 }
 .navigationbar-pulldown-container {
 	float: right;
@@ -118,7 +125,7 @@
 			> a.misc::before {
 				font-size: 18px;
 				font-family: Beluga;
-				content: "E";
+				content: "\E004";
 			}
 		}
 		> li:hover {
@@ -136,7 +143,7 @@
 	right: -18px;
 	display: none;
 	width: 180px;
-	padding: 0 0 10px 0;
+	padding: 10px 0;
 	background: rgba(30, 30, 30, 0.99);
 	border-radius: 6px;
 	border-top-left-radius: 0;

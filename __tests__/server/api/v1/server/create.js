@@ -1,7 +1,7 @@
 jest.unmock("../../../../../server/api/v1/server/create")
 jest.unmock("../../../../../server/mongo")
 
-const MongoClient = require("mongodb").MongoClient
+import { MongoClient } from "mongodb"
 import mongo from "../../../../../server/mongo"
 import create from "../../../../../server/api/v1/server/create"
 

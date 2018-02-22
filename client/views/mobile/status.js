@@ -68,14 +68,14 @@ export default class StatusView extends Component {
 		const body = preprocess_text(status.text)
 		for (const contents of body) {
 			if (typeof contents === "string") {
-				bodyView.push(<p>{parse(contents, status.entities)}</p>)
+				bodyView.push(<p>{parse(contents, status, {})}</p>)
 				continue
 			}
 			if (contents instanceof Array) {
 				if (contents.length <= 2) {
 					const imageViews = []
 					for (const image_source of contents) {
-						const nodes = parse(image_source)
+						const nodes = parse(image_source, status, {})
 						for (const view of nodes) {
 							imageViews.push(view)
 						}
@@ -89,7 +89,7 @@ export default class StatusView extends Component {
 					const subset = contents.slice(n * 2, end)
 					const imageViews = []
 					for (const image_source of subset) {
-						const nodes = parse(image_source)
+						const nodes = parse(image_source, status, {})
 						for (const view of nodes) {
 							imageViews.push(view)
 						}

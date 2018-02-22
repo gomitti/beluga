@@ -66,33 +66,14 @@ const insert_statuses = async (db, user, hashtag, server) => {
 
 		if (true) {
 			const db = client.db(mongo.database.production)
-			if (false) {
+			if (true) {
 				const collection = db.collection("users")
 				const users = await collection.find({}).toArray()
-				const remote = storage.servers[0]
 				for (const user of users) {
-					user.id = user._id
-					const url = await api.v1.account.avatar.reset(db, user, remote)
-					console.log(url)
-				}
-			}
-			if (false) {
-				const collection = db.collection("servers")
-				const servers = await collection.find({}).toArray()
-				const remote = storage.servers[0]
-				for (const server of servers) {
-					server.id = server._id
-					const url = await api.v1.server.avatar.reset(db, server, remote)
-					console.log(url)
-				}
-			}
-			if (true) {
-				const collection = db.collection("hashtags")
-				const hashtags = await collection.find({}).toArray()
-				for (const hashtag of hashtags) {
-					const count = await db.collection("statuses").find({ "hashtag_id": hashtag._id }).count()
-					console.log(hashtag._id, count)
-					collection.updateOne({ "_id": hashtag._id }, { $set: { "statuses_count": count } })
+					db.collection("password").insertOne({
+						"user_id": user._id,
+						"password_hash": user._password_hash
+					})
 				}
 			}
 			return

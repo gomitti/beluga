@@ -238,7 +238,7 @@ export default class App extends Component {
 			<div id="app" className="settings">
 				<Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
 				<NavigationBarView logged_in={logged_in} />
-				<SettingsMenuView />
+				<SettingsMenuView active="profile" />
 				<div className="settings-content scroller-wrapper">
 					<div className="scroller">
 						<div className="inside">

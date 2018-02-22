@@ -1,6 +1,6 @@
 import config from "./config/beluga"
-const path = require("path");
-const winston = require("winston")
+import path from "path"
+import winston from "winston"
 
 export default winston.createLogger({
 	"level": "info",

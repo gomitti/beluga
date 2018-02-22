@@ -42,7 +42,13 @@
 		> textarea {
 			width: 100%;
 			box-sizing: border-box;
-			padding: 5px;
+			height: 60px;
+		}
+		> textarea.drag-entered {
+			border-width: 2px;
+			padding-left: 7px;
+			padding-right: 7px;
+			outline: 0;
 		}
 	}
 }
@@ -96,23 +102,42 @@
 	flex-direction: row;
 	position: relative;
 	width: 100%;
-	> a {
-		display: block;
-		flex: 1 1 auto;
-		padding: 2px;
-		box-sizing: border-box;
-		cursor: pointer;
-		max-width: 20%;
-		min-width: 50px;
-		height: auto;
-		> img {
-			width: 100%;
-			border-radius: 6px;
+	max-height: 320px;
+	> .scroller {
+		display: flex;
+		flex-direction: column;
+		flex-wrap: nowrap;
+		> .row {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			> a {
+				display: block;
+				flex: 0 1 auto;
+				padding: 2px;
+				box-sizing: border-box;
+				cursor: pointer;
+				// max-width: 20%;
+				// min-width: 30px;
+				width: 12.5%;
+				height: auto;
+				> img {
+					width: 100%;
+					border-radius: 4px;
+				}
+			}
+			> a:hover {
+				> img {
+					opacity: 0.8;
+				}	
+			}
 		}
 	}
-	> a:hover {
-		> img {
-			opacity: 0.8;
-		}	
-	}
+}
+.postbox-media.no-media {
+	padding: 20px;
+	text-align: center;
+	font-size: 15px;
+	box-sizing: border-box;
+	display: block;
 }

@@ -3,18 +3,15 @@ import Head from "../../../../views/desktop/common/head"
 import { request } from "../../../../api"
 
 export default class App extends Component {
-
 	static async getInitialProps({ query }) {
 		return { ...query }
 	}
-
 	constructor(props) {
 		super(props)
 		if (request) {
 			request.csrf_token = this.props.csrf_token
 		}
 	}
-
 	signin = event => {
 		event.preventDefault()
 		if (this.pending === true) {

@@ -25,7 +25,7 @@ export default class TweetView extends Component {
 	render() {
 		const { src } = this.props
 		return (
-			<iframe scrolling="no" frameBorder="no" src={src} onLoad={this.onLoad} ref="iframe"></iframe>
+			<iframe className="status-body-tweet" scrolling="no" frameBorder="no" src={src} onLoad={this.onLoad} ref="iframe"></iframe>
 		)
 	}
 }

@@ -14,9 +14,8 @@
   font-family: "Beluga";
   font-weight: 400;
   font-style: normal;
-  src: url("/asset/default/beluga.ttf?v=0.1.29") format("truetype");
+  src: url("/asset/default/beluga.ttf?v=0.1.57") format("truetype");
 }
-
 .lucida, .lucida:hover {
     font-family: 'lucida grande', tahoma, verdana, arial, 'hiragino kaku gothic pro', meiryo, 'ms pgothic', sans-serif;
 }
@@ -31,6 +30,9 @@ body, .meiryo {
 	position: relative;
 	overflow: hidden;
 }
+#app.settings {
+	background-color: #f4f4f4;
+}
 #content {
 	z-index: 2;
 	margin-top: 72px;
@@ -40,8 +42,18 @@ body, .meiryo {
 }
 body {
 	background-color: #f4f4f4;
+	background-repeat: repeat;
+	background-attachment: fixed;
+}
+.bold {
+	font-weight: bold;
+}
+.hidden {
+	display: none;
 }
 .scroller-wrapper {
+	display: flex;
+    flex-direction: column;
 	> .scroller {
 	    overflow-y: scroll;
 	    -webkit-transform: translateZ(0px);

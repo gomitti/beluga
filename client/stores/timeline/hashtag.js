@@ -1,4 +1,4 @@
-import TimelineStore from "../timeline"
+import TimelineStore from "./index"
 
 export default class HashtagTimelineStore extends TimelineStore {
 	constructor(request_query, params) {

@@ -2,12 +2,11 @@ import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
 import api from "../../../api"
 import model from "../../../model"
+import assert from "../../../assert"
 
 export default async (db, params) => {
 	const rows = await api.v1.media.list(db, params)
-	if (!(rows instanceof Array)) {
-		throw new Error("api.v1.media.list must return an array")
-	}
+	assert(rows instanceof Array, "@rows must be an array")
 
 	const list = []
 	for (const row of rows) {

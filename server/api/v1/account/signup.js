@@ -1,10 +1,10 @@
-import * as assert from "../../../assert"
+import assert from "../../../assert"
 import config from "../../../config/beluga"
 import storage from "../../../config/storage"
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt"
 
 export default async (db, params) => {
-	if (assert.isString(params.name) === false) {
+	if (assert.is_string(params.name) === false) {
 		throw new Error("ユーザー名を入力してください")
 	}
 	if (params.name.length == 0) {
@@ -17,7 +17,7 @@ export default async (db, params) => {
 		throw new Error(`ユーザー名に使用できない文字が含まれています`)
 	}
 
-	if (assert.isString(params.raw_password) === false) {
+	if (assert.is_string(params.raw_password) === false) {
 		throw new Error("パスワードを入力してください")
 	}
 	if (params.raw_password.length == 0) {
@@ -33,7 +33,7 @@ export default async (db, params) => {
 		throw new Error(`パスワードに使用できない文字が含まれています`)
 	}
 
-	if (assert.isString(params.ip_address) === false) {
+	if (assert.is_string(params.ip_address) === false) {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
@@ -63,7 +63,12 @@ export default async (db, params) => {
 		"statuses_count": 0,
 		"created_at": Date.now(),
 		"_ip_address": params.ip_address,
-		"_password_hash": password_hash
 	})
-	return result.ops[0]
+	const user_id = result.ops[0]
+
+	await db.collection("password").insertOne({
+		user_id, password_hash
+	})
+
+	return user_id
 }

@@ -39,15 +39,15 @@
 				overflow: hidden;
 			}
 			> a::before {
-				content: "G";
 				font-family: Beluga;
+				content: "\E006";
 			}
 			> a:hover {
 				text-decoration: underline;
 			}
 		}
 		> .count {
-			margin: 3px 0 0 2px;
+			margin: 1px 0 0 2px;
 			font-size: 12px;
 			color: rgb(119, 119, 119);
 		}

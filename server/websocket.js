@@ -1,5 +1,5 @@
-const plugin = require("fastify-plugin")
-const cookie = require('cookie');
+import plugin from "fastify-plugin"
+import cookie from "cookie"
 import { sha256 } from "js-sha256"
 import { ObjectID } from "mongodb"
 import config from "./config/beluga"

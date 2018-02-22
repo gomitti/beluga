@@ -9,7 +9,9 @@ export default class NavigationBarView extends Component {
 			<div id="navigationbar">
 				<div className="top">
 					<div className="inside clearfix">
-						<div className="navigationbar-logo-container"></div>
+						<div className="navigationbar-logo-container">
+							<a href="/" className="logo"></a>
+						</div>
 						<div className="navigationbar-pulldown-container clearfix meiryo">
 							<ul>
 								{(() => {
@@ -18,11 +20,13 @@ export default class NavigationBarView extends Component {
 											<li>
 												<a href="">設定</a>
 												<ul className="navigationbar-pulldown-menu">
-													<li><a href="/settings/profile">プロフィール</a></li>
-													<li><a href="/settings/design">デザイン</a></li>
-													<li><a href="/settings/account">アカウント</a></li>
-													<li><a href="/settings/bookmark">ブックマーク</a></li>
-													<li><a href="/settings/security">セキュリティ</a></li>
+													<li><a href="/settings/profile" target="_blank">プロフィール</a></li>
+													<li><a href="/settings/design" target="_blank">デザイン</a></li>
+													<li><a href="/settings/account" target="_blank">アカウント</a></li>
+													<li><a href="/settings/favorites" target="_blank">お気に入り</a></li>
+													<li><a href="/settings/security" target="_blank">セキュリティ</a></li>
+													<li><a href="/settings/two_factor_authentication" target="_blank">2段階認証</a></li>
+													<li><a href="/settings/desktop" target="_blank">デスクトップ</a></li>
 												</ul>
 											</li>
 										)

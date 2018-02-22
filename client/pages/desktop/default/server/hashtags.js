@@ -48,7 +48,7 @@ export default class App extends Component {
 	}
 
 	render() {
-		const { server, logged_in, hashtags, platform } = this.props
+		const { server, logged_in, hashtags, platform, bookmark, emoji_favorites } = this.props
 		return (
 			<div id="app" className="timeline hashtags">
 				<Head title={`みつける / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} />
@@ -74,7 +74,7 @@ export default class App extends Component {
 						</div>
 					</div>
 				</div>
-				<EmojiPickerView picker={this.emojipicker} />
+				<EmojiPickerView picker={this.emojipicker} bookmarks={emoji_favorites} />
 			</div>
 		)
 	}

@@ -1,62 +1,14 @@
 import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
 import logger from "../../../../logger"
-import { gm_crop, gm_resize } from "../image/upload"
-const fileType = require("file-type")
-const ffmpeg = require("fluent-ffmpeg")
-const ffprobe = require("node-ffprobe")
-const path = require("path")
-const Ftp = require("jsftp")
-const uid = require("uid-safe").sync
-const fs = require("fs")
-const gm = require("gm")
-
-const ftp_mkdir = async (ftp, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.raw("mkd", directory, (error, data) => {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(data)
-		})
-	})
-}
-
-const ftp_put = async (ftp, data, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.put(data, directory, error => {
-			if (error) {
-				reject(error)
-			}
-			resolve()
-		})
-	})
-}
-
-const ff_metadata = async filepath => {
-	return new Promise((resolve, reject) => {
-		ffprobe(filepath, function (error, probeData) {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(probeData)
-		})
-	})
-}
-
-const ff_screenshot = async (video_filepath, poster_filename, directory) => {
-	return new Promise((resolve, reject) => {
-		ffmpeg(video_filepath)
-			.on("end", function () {
-				resolve()
-			})
-			.screenshots({
-				count: 1,
-				folder: directory,
-				filename: poster_filename,
-			})
-	})
-}
+import assert, { is_string, is_number } from "../../../../assert"
+import { gm_crop, gm_resize } from "../../../../lib/gm"
+import { ftp_mkdir, ftp_put } from "../../../../lib/ftp"
+import { ff_metadata, ff_screenshot } from "../../../../lib/ffmpeg"
+import path from "path"
+import Ftp from "jsftp"
+import { sync as uid } from "uid-safe"
+import fs from "fs"
 
 const get_extension = format_name => {
 	if (format_name.indexOf("mp4") !== -1) {
@@ -103,11 +55,26 @@ const extract_streams = streams => {
 	return { "video": null, "audio": null }
 }
 
-export default async (db, original_data, user, server) => {
-	if (!(user.id instanceof ObjectID)) {
-		throw new Error()
+export default async (db, params) => {
+	let { user_id } = params
+	let original_data = params.data
+	const { storage } = params
+
+	if (typeof user_id === "string") {
+		try {
+			user_id = ObjectID(user_id)
+		} catch (error) {
+			throw new Error("不正なユーザーです")
+		}
 	}
-	if (original_data.length > config.media.video.max.filesize) {
+	assert(user_id instanceof ObjectID, "不正なユーザーです")
+	assert(original_data instanceof Buffer, "不正なデータです")
+	assert(typeof storage === "object", "不正なサーバーです")
+
+	if (original_data.length === 0) {
+		throw new Error("ファイルサイズが不正です")
+	}
+	if (original_data.length > config.media.video.max_filesize) {
 		throw new Error("ファイルサイズが大きすぎます")
 	}
 
@@ -157,8 +124,8 @@ export default async (db, original_data, user, server) => {
 	if (width === 0 || height === 0) {
 		reject(metadata, video_filepath, `サイズが不正です（${width}x${height}）`)
 	}
-	if (width > config.media.video.max.width || height > config.media.video.max.height) {
-		reject(metadata, video_filepath, `サイズが大きすぎます（${width}x${height} > ${config.media.video.max.width}x${config.media.video.max.height}）`)
+	if (width > config.media.video.max_width || height > config.media.video.max_height) {
+		reject(metadata, video_filepath, `サイズが大きすぎます（${width}x${height} > ${config.media.video.max_width}x${config.media.video.max_height}）`)
 	}
 
 	// 静止画
@@ -242,10 +209,10 @@ export default async (db, original_data, user, server) => {
 	}
 
 	const ftp = new Ftp({
-		"host": server.host,
-		"port": server.port,
-		"user": server.user,
-		"pass": server.password
+		"host": storage.host,
+		"port": storage.port,
+		"user": storage.user,
+		"pass": storage.password
 	})
 	let directory = "media"
 	try {
@@ -280,7 +247,7 @@ export default async (db, original_data, user, server) => {
 			"level": "error",
 			"error": error.toString(),
 			directory,
-			user,
+			user_id,
 			metadata
 		})
 		throw new Error("サーバーで問題が発生しました")
@@ -288,18 +255,18 @@ export default async (db, original_data, user, server) => {
 
 	const collection = db.collection("media")
 	const result = await collection.insertOne({
-		"user_id": user.id,
-		"host": server.host,
+		user_id,
 		directory,
 		suffix,
+		"host": storage.host,
 		"is_video": true,
 		"extension": ext,
 		"bytes": total_bytes,
 		"created_at": Date.now()
 	})
 
-	const protocol = server.https ? "https" : "http"
-	const base_url = `${protocol}://${server.url_prefix}.${server.domain}`
+	const protocol = storage.https ? "https" : "http"
+	const base_url = `${protocol}://${storage.url_prefix}.${storage.domain}`
 
 	return {
 		"original": `${base_url}/${path.join(directory, video_filename)}`,

@@ -35,6 +35,12 @@ export default async (db, params) => {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
+	for (const word of config.status.forbidden_words) {
+		if (params.text.indexOf(word) !== -1) {
+			throw new Error("禁止ワードが含まれています")
+		}
+	}
+
 	const query = {
 		"text": params.text,
 		"user_id": params.user_id,
@@ -88,10 +94,10 @@ export default async (db, params) => {
 		throw new Error("投稿先を指定してください")
 	}
 
-	if (typeof params.entities === "object" && Object.keys(params.entities).length > 0){
+	if (typeof params.entities === "object" && Object.keys(params.entities).length > 0) {
 		query["entities"] = params.entities
 	}
-	
+
 	const collection = db.collection("statuses")
 
 	// 最初の投稿は本人以外にできないようにする
@@ -106,7 +112,6 @@ export default async (db, params) => {
 			}
 		}
 	}
-
 
 	const result = await collection.insertOne(query)
 	const status = result.ops[0]

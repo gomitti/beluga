@@ -4,6 +4,7 @@ import config from "../../../beluga.config"
 import parse from "./parser"
 import ReactionsView from "./status/reactions"
 import { request } from "../../../api"
+import assert, { is_object } from "../../../assert"
 
 const created_at_to_elapsed_time = created_at => {
 	let diff = Math.floor((Date.now() - created_at) / 1000)
@@ -62,7 +63,6 @@ export const preprocess_text = text => {
 			components[components.length - 1] = last + component
 		}
 	}
-	const bodyView = []
 	const body = []
 	let images = []
 	for (const sentence of components) {
@@ -91,7 +91,45 @@ export const preprocess_text = text => {
 export default class StatusView extends Component {
 	constructor(props) {
 		super(props)
-		const { status } = props
+		const { status, onClickHashtag, onClickMention } = props
+		assert(is_object(status), "@status must be object")
+		const body = preprocess_text(status.text)
+		const bodyView = []
+		for (const contents of body) {
+			// 画像以外
+			if (typeof contents === "string") {
+				bodyView.push(<p>{parse(contents, status, { onClickHashtag, onClickMention })}</p>)
+				continue
+			}
+			// 連続する画像
+			if (contents instanceof Array) {
+				if (contents.length <= 3) {
+					const imageViews = []
+					for (const image_source of contents) {
+						const nodes = parse(image_source, status, {})
+						for (const view of nodes) {
+							imageViews.push(view)
+						}
+					}
+					bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
+					continue
+				}
+				const div = parseInt(Math.ceil(contents.length / 3))
+				for (let n = 0; n < div; n++) {
+					const end = Math.min((n + 1) * 3, contents.length)
+					const subset = contents.slice(n * 3, end)
+					const imageViews = []
+					for (const image_source of subset) {
+						const nodes = parse(image_source, status, {})
+						for (const view of nodes) {
+							imageViews.push(view)
+						}
+					}
+					bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
+				}
+			}
+		}
+		this.bodyView = bodyView
 		this.state = {
 			"elapsed_time_str": created_at_to_elapsed_time(status.created_at),
 			"created_at_str": time_from_create_at(status.created_at)
@@ -106,14 +144,14 @@ export default class StatusView extends Component {
 	onMouseEnter = event => {
 		const footer = this.refs.footer
 		const action = this.refs.action
-		action.style.top = `${footer.offsetTop - 3}px`
+		action.style.top = `${footer.offsetTop - 7}px`
 		this.prev_footer_offset_top = footer.offsetTop
 	}
 	onMouseMove = event => {
 		const footer = this.refs.footer
-		if (footer.offsetTop !== this.prev_footer_offset_top){
+		if (footer.offsetTop !== this.prev_footer_offset_top) {
 			const action = this.refs.action
-			action.style.top = `${footer.offsetTop - 3}px`
+			action.style.top = `${footer.offsetTop - 7}px`
 			this.prev_footer_offset_top = footer.offsetTop
 		}
 	}
@@ -169,45 +207,8 @@ export default class StatusView extends Component {
 		})
 	}
 	render() {
-		const { status, options } = this.props
+		const { status, options, onClickHashtag, onClickMention } = this.props
 		const { user } = status
-		const bodyView = []
-		const body = preprocess_text(status.text)
-		for (const contents of body) {
-			// 画像以外
-			if (typeof contents === "string") {
-				bodyView.push(<p>{parse(contents, status.entities)}</p>)
-				continue
-			}
-			// 連続する画像
-			if (contents instanceof Array) {
-				if(contents.length <= 3){
-					const imageViews = []
-					for (const image_source of contents) {
-						const nodes = parse(image_source)
-						for (const view of nodes) {
-							imageViews.push(view)
-						}
-					}
-					bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
-					continue
-				}
-				const div = parseInt(Math.ceil(contents.length / 3))
-				for(let n = 0;n < div;n++){
-					const end = Math.min((n + 1) * 3, contents.length)
-					const subset = contents.slice(n * 3, end)
-					const imageViews = []
-					for (const image_source of subset) {
-						const nodes = parse(image_source)
-						for (const view of nodes) {
-							imageViews.push(view)
-						}
-					}
-					bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
-				}
-			}
-		}
-
 		let likesView = null
 		if (status.likes.count > 0) {
 			const starViews = []
@@ -239,14 +240,14 @@ export default class StatusView extends Component {
 			</div>
 		}
 
-		let belongingLink = null
+		let belongingView = null
 		const { server, hashtag, recipient } = status
 		if (options.show_belonging) {
 			if (hashtag && server) {
-				belongingLink = <a href={`/server/${server.name}/${hashtag.tagname}`} className="belonging hashtag meiryo">#{hashtag.tagname}</a>
+				belongingView = <a href={`/server/${server.name}/${hashtag.tagname}`} onClick={onClickHashtag} className="belonging hashtag meiryo" data-tagname={hashtag.tagname}>#{hashtag.tagname}</a>
 			}
 			if (recipient && server) {
-				belongingLink = <a href={`/server/${server.name}/@${recipient.name}`} className="belonging recipient meiryo">@{recipient.name}</a>
+				belongingView = <a href={`/server/${server.name}/@${recipient.name}`} onClick={onClickMention} className="belonging recipient meiryo" data-name={recipient.name}>@{recipient.name}</a>
 			}
 		}
 		return (
@@ -268,13 +269,13 @@ export default class StatusView extends Component {
 							</div>
 						</div>
 						<div className="status-content">
-							<div className="body">{bodyView}</div>
+							<div className="body">{this.bodyView}</div>
 						</div>
 						{likesView}
 						{favoritesView}
 						<ReactionsView status={status} />
 						<div className="status-footer" ref="footer">
-							{belongingLink}
+							{belongingView}
 							<a href={`/status/${user.name}/${status.id}`} className="time verdana">{this.state.created_at_str}</a>
 						</div>
 					</div>

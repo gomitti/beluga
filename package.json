@@ -50,6 +50,8 @@
     "react-color": "^2.13.8",
     "react-dom": "^16.2.0",
     "react-image-crop": "^3.0.10",
+    "react-toggle": "^4.0.2",
+    "speakeasy": "^2.0.0",
     "uid-safe": "^2.1.5",
     "winston": "^3.0.0-rc1"
   },

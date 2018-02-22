@@ -33,10 +33,14 @@ export default async (db, params) => {
 		}
 	}
 	if (params.user_id instanceof ObjectID) {
-		status.favorited = await memcached.v1.favorite.favorited(db, {
-			"user_id": params.user_id,
-			"status_id": status.id
-		})
+		if (status.favorites_count === 0) {
+			status.favorited = false
+		} else {
+			status.favorited = await memcached.v1.favorite.favorited(db, {
+				"user_id": params.user_id,
+				"status_id": status.id
+			})
+		}
 	}
 
 	return status

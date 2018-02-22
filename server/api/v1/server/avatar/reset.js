@@ -2,22 +2,7 @@ import { ObjectID } from "mongodb"
 import config from "../../../../config/beluga"
 import logger from "../../../../logger"
 import update from "./update"
-import path from "path"
-import Ftp from "jsftp"
-const uid = require("uid-safe").sync
-const fs = require("fs")
-const gm = require("gm")
-
-const ftp_mkdir = async (ftp, directory) => {
-	return new Promise((resolve, reject) => {
-		ftp.raw("mkd", directory, (error, data) => {
-			if (error) {
-				return reject(error)
-			}
-			return resolve(data)
-		})
-	})
-}
+import gm from "gm"
 
 // 正方形にグラデーションを書き、それを回転させてさらに正方形に切り抜く
 const gm_draw = async (width, height, gradient, degree) => {
