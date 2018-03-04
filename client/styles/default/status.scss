@@ -49,13 +49,22 @@
 	> .inside {
 		> .link {
 			text-decoration: none;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			margin-right: 46px;
 			> .display-name {
+				flex: 0 1 auto;
 				color: rgb(50, 50, 50);
 				font-size: 14px;
 				font-weight: bold;
 				padding-right: 5px;
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
 			}
 			> .name {
+				flex: 1 1 auto;
 				color: rgb(120, 120, 120);
 				font-size: 14px;
 			}
@@ -110,11 +119,11 @@
 }
 .status-body-hashtag::before {
 	font-family: Beluga;
-	content: "\E006";
+	content: "\E01E";
 }
 .status-body-mention::before {
 	font-family: Beluga;
-	content: "\E005";
+	content: "\E01D";
 }
 .status-body-tweet {
 	width: 100%;
@@ -359,11 +368,10 @@
 	> a {
 		display: block;
 		width: 100%;
-		height: 100%;
 		color: rgba(0, 0, 0, 0.7);
 		> img {
 			width: 100%;
-			height: 100%;
+			height: auto;
 			border-radius: 6px;
 		}
 	}
@@ -387,5 +395,18 @@
 .status-body-gif:hover {
 	> .watermark {
 		display: none;
+	}
+}
+
+.status-header {
+	> .inside {
+		> .link {
+			> .display-name {
+				> .status-body-emoji {
+					width: 18px;
+					height: 18px;
+				}
+			}
+		}
 	}
 }

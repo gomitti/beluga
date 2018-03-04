@@ -1,8 +1,8 @@
 import TimelineStore from "./index"
 
 export default class HashtagTimelineStore extends TimelineStore {
-	constructor(request_query, params) {
-		super("/timeline/hashtag", request_query, params)
+	constructor(request_query, params, options) {
+		super("/timeline/hashtag", request_query, params, options)
 	}
 	statusBelongsTo(status) {
 		const { hashtag } = this.params

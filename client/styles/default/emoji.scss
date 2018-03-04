@@ -1,12 +1,12 @@
 .emoji-module {
 	position: absolute;
-	top: 100px;
-	right: 100px;
+	top: 0;
+	right: 0;
     z-index: 5;
-}
-
-.emoji-picker {
     width: 366px;
+}
+.emoji-picker {
+    width: 100%;
     height: 260px;
     background-color: #fff;
     border: 1px solid rgba(0, 0, 0, 0.2);

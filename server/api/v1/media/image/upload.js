@@ -145,7 +145,7 @@ export default async (db, params) => {
 	const square_filename = `${suffix}.square.${type.ext}`
 	const medium_filename = `${suffix}.medium.${type.ext}`
 	const small_filename = `${suffix}.small.${type.ext}`
-	const coalesce_filename = `${suffix}.coalesce.jpg`
+	const coalesce_filename = `${suffix}.coalesce.png`
 
 	try {
 		await ftp_put(ftp, original_data, path.join(directory, original_filename))

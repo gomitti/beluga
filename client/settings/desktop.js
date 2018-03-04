@@ -1,19 +1,22 @@
-export const enum_column_type = {
-	"server": Symbol(),
-	"home": Symbol(),
-	"hashtag": Symbol(),
+import enums from "../enums"
+import assert, { is_object } from "../assert"
+import assign from "../libs/assign"
+
+export const update = settings => {
+	assert(is_object(settings), "@settings must be object")
+	settings.column.target = settings.column.target.toString()
+	const settings_json = JSON.stringify(settings)
+	localStorage.setItem("desktop.settings", settings_json)
 }
-export const enum_column_target = {
-	"self": Symbol(),
-	"new": Symbol(),
-	"blank": Symbol(),
-}
-export default (() => {
-	const default_settings = {
-		"column": {
-			"target": enum_column_target.new
-		}
+let settings = {
+	"column": {
+		"target": enums.column.target.new
 	}
+}
+export const default_settings = assign(settings)
+
+// エディタの補完を有効にするためにわざと変な書き方をしている
+settings = (() => {
 	if (typeof localStorage === "undefined") {
 		return default_settings
 	}
@@ -25,5 +28,6 @@ export default (() => {
 	if (typeof settings !== "object") {
 		return default_settings
 	}
-	return Object.assign(default_settings, settings)
+	return Object.assign({}, default_settings, settings)
 })()
+export default settings

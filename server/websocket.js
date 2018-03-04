@@ -119,6 +119,7 @@ websocket
 				online.register(url, user_id)	// サーバーとユーザーの関連付け
 				client.url = url
 				client.user_id = user_id
+				client.arrived_at = Date.now()
 				client.is_alive = true
 				client.on("pong", function () {
 					this.is_alive = true;
@@ -149,12 +150,26 @@ websocket
 			online.clear()
 
 			// 再追加
+			const clients = []
 			websocket.ws.clients.forEach(client => {
 				if (!client.user_id) {
 					return
 				}
-				online.register(client.url, client.user_id)
+				clients.push(client)
 			})
+			// 来た時刻で昇順になるようにソート
+			clients.sort((a, b) => {
+				if (a.arrived_at < b.arrived_at) {
+					return -1
+				}
+				if (a.arrived_at > b.arrived_at) {
+					return 1
+				}
+				return 0
+			})
+			for(const client of clients){
+				online.register(client.url, client.user_id)
+			}
 			broadcast("online_changed", { "count": online.total() })		// 全員に通知
 		}, 30000);
 	})
@@ -165,7 +180,7 @@ const broadcast = (event, data) => {
 	}
 	websocket.ws.clients.forEach(client => {
 		client.send(JSON.stringify(Object.assign({
-			[event]: true
+			[event]: true	// イベント名をそのままキーにする
 		}, data)))
 	})
 }

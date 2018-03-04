@@ -65,7 +65,8 @@ export const gm_coalesce = async data => {
 	return new Promise((resolve, reject) => {
 		gm(data)
 			.selectFrame(0)
-			.setFormat("jpeg")
+			.transparent("white")
+			.setFormat("png")
 			.toBuffer(function (error, data) {
 				if (error) {
 					return reject(error)

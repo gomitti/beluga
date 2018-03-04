@@ -1,34 +1,56 @@
 import { observable, action, computed } from "mobx"
 import { request } from "../../api"
 import StatusStore from "../status"
+import assign from "../../libs/assign"
 import ws from "../../websocket"
 
-export default class TimelineStore {
-	// 取得済みの全ての投稿
-	@observable.shallow statuses = []
+export const default_options = {
+	"cancel_update": false
+}
 
-	constructor(endpoint, request_query, params) {
+export default class TimelineStore {
+	@observable.shallow statuses = [] 	// 取得済みの全ての投稿
+	@observable pending_update = false
+	@observable pending_more = false
+	constructor(endpoint, request_query, params, options) {
 		this.endpoint = endpoint
-		this.query = Object.assign(request_query)
+		this.query = assign(request_query)
 		this.params = params
+		this.options = assign(default_options, options)
+		this.no_more_statuses = false
 		if (ws) {
 			ws.addEventListener("message", (e) => {
 				const data = JSON.parse(e.data)
 				if (data.status_updated) {
 					const { status } = data
 					if (this.statusBelongsTo(status)) {
-				 		this.update()
+						this.update()
 					}
 				}
 			})
-			setInterval(() => {
-				this.update()
-			}, 30000)
+			if (this.options.cancel_update === false) {
+				setInterval(() => {
+					this.update()
+				}, 30000)
+			}
 		}
 	}
 
+	@action.bound
+	setNoMoreStatuses(yes_or_no){
+		this.no_more_statuses = yes_or_no
+	}
+	@action.bound
+	setPendingUpdate(yes_or_no) {
+		this.pending_update = yes_or_no
+	}
+	@action.bound
+	setPendingMore(yes_or_no) {
+		this.pending_more = yes_or_no
+	}
+
 	// 継承先のクラスでこのメソッドをオーバーライドする
-	statusBelongsTo(status){
+	statusBelongsTo(status) {
 		return true
 	}
 
@@ -69,12 +91,14 @@ export default class TimelineStore {
 	}
 
 	// 新しい投稿を読み込む
-	@action.bound
 	async update() {
-		if (this.pending) {
+		if (this.options.cancel_update === true) {
 			return
 		}
-		this.pending = true
+		if (this.pending_update) {
+			return
+		}
+		this.setPendingUpdate(true)
 		const params = {
 			"trim_user": false,
 			"trim_server": false,
@@ -84,7 +108,7 @@ export default class TimelineStore {
 		if (this.statuses.length > 0) {
 			params.since_id = this.statuses[0].id
 		}
-		const query = Object.assign(params, this.query)
+		const query = assign(params, this.query)
 		try {
 			const res = await request.get(this.endpoint, { "params": query })
 			const data = res.data
@@ -97,6 +121,47 @@ export default class TimelineStore {
 		} catch (error) {
 
 		}
-		this.pending = false
+		this.setPendingUpdate(false)
+	}
+	// 古い投稿を読み込む
+	async more() {
+		if (this.pending_more) {
+			return
+		}
+		if (this.statuses.length === 0) {
+			return
+		}
+		this.setPendingMore(true)
+		const params = {
+			"trim_user": false,
+			"trim_server": false,
+			"trim_hashtag": false,
+			"trim_recipient": false,
+			"count": 100
+		}
+		if (this.statuses.length > 0) {
+			params.max_id = this.statuses[this.statuses.length - 1].id
+		}
+		const query = assign(params, this.query)
+		try {
+			const res = await request.get(this.endpoint, { "params": query })
+			const data = res.data
+			if (data.success === false) {
+				alert(data.error)
+				return
+			}
+			if (data.statuses.length === 0) {
+				this.setNoMoreStatuses(true)
+			}
+			const stores = []
+			for (const status of data.statuses) {
+				const store = new StatusStore(status)
+				stores.push(store)
+			}
+			this.append(stores)
+		} catch (error) {
+
+		}
+		this.setPendingMore(false)
 	}
 }

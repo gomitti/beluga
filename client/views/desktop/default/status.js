@@ -1,10 +1,10 @@
 import React, { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../beluga.config"
-import parse from "./parser"
+import parse, { split_emoji_unicode, parse_emoji_unicode } from "./parser"
 import ReactionsView from "./status/reactions"
 import { request } from "../../../api"
-import assert, { is_object } from "../../../assert"
+import assert, { is_object, is_string } from "../../../assert"
 
 const created_at_to_elapsed_time = created_at => {
 	let diff = Math.floor((Date.now() - created_at) / 1000)
@@ -93,6 +93,8 @@ export default class StatusView extends Component {
 		super(props)
 		const { status, onClickHashtag, onClickMention } = props
 		assert(is_object(status), "@status must be object")
+
+		// 本文のビューを構築しておく
 		const body = preprocess_text(status.text)
 		const bodyView = []
 		for (const contents of body) {
@@ -130,6 +132,23 @@ export default class StatusView extends Component {
 			}
 		}
 		this.bodyView = bodyView
+
+		// ユーザー名（絵文字を使う場合があるため）
+		this.displayNameView = null
+		if(is_string(status.user.display_name)){
+			const components = split_emoji_unicode([status.user.display_name])
+			const subviews = []
+			for (const substr of components) {
+				// 絵文字（ユニコード）
+				if (parse_emoji_unicode(substr, subviews)) {
+					continue
+				}
+				// それ以外
+				subviews.push(substr)
+			}
+			this.displayNameView = subviews
+		}
+
 		this.state = {
 			"elapsed_time_str": created_at_to_elapsed_time(status.created_at),
 			"created_at_str": time_from_create_at(status.created_at)
@@ -176,7 +195,7 @@ export default class StatusView extends Component {
 		event.preventDefault()
 		const { status } = this.props
 		const { x, y } = event.target.getBoundingClientRect()
-		emojipicker.show(x, y + window.pageYOffset, shortname => {
+		emojipicker.show(x, y + window.pageYOffset + event.target.clientHeight, shortname => {
 			status.reactions.toggle(shortname)
 		})
 	}
@@ -262,7 +281,7 @@ export default class StatusView extends Component {
 						<div className="status-header">
 							<div className="inside">
 								<a href="/user/" className="avatar link">
-									{user.display_name ? <span className="display-name">{user.display_name}</span> : null}
+									<span className="display-name">{this.displayNameView}</span>
 									<span className="name verdana">@{user.name}</span>
 								</a>
 								<a href={`/status/${user.name}/${status.id}`} className="time meiryo">{this.state.elapsed_time_str}</a>

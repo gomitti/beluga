@@ -11,7 +11,7 @@ export const is_number = value => {
 	return typeof value === "number"
 }
 export const is_array = value => {
-	return value instanceof Array
+	return Array.isArray(value)
 }
 export const key_exists = (key, params) => {
 	return key in params
@@ -22,6 +22,7 @@ export default (expression, message) => {
 		return
 	}
 	const error = new Error(message)
+	alert(`Assertion failed: ${message}`)
 	console.log(`Assertion failed: ${message}`)
 	console.log(error.stack)
 	throw error

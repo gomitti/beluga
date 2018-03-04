@@ -50,9 +50,12 @@ module.exports = (fastify, options, next) => {
 				"trim_server": false,
 				"trim_hashtag": false,
 				"trim_recipient": false
-			}, req.body)
+			}, req.query)
 			if(session.user_id){
 				params.user_id = session.user_id
+			}
+			if(params.count){
+				params.count = parseInt(params.count)
 			}
 			const statuses = await timeline.v1.server(fastify.mongo.db, params)
 			const hashtags = await model.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
@@ -78,6 +81,7 @@ module.exports = (fastify, options, next) => {
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/server/hashtags`, {
 				csrf_token, server, statuses, logged_in, hashtags, 
 				"platform": fastify.platform(req),
+				"request_query": req.query,
 				media_favorites, media_history, emoji_favorites
 			})
 		} catch (error) {
@@ -91,7 +95,6 @@ module.exports = (fastify, options, next) => {
 			const session = await fastify.session.start(req, res)
 			const csrf_token = await fastify.csrf_token(req, res, session)
 			const logged_in = await fastify.logged_in(req, res, session)
-
 			const server_name = req.params.server_name
 			const server = await model.v1.server.show(fastify.mongo.db, { "name": server_name })
 			if (server === null) {
@@ -105,15 +108,17 @@ module.exports = (fastify, options, next) => {
 			if (hashtag === null) {
 				return fastify.error(app, req, res, 404)
 			}
-
 			const params = Object.assign({
 				"id": hashtag.id,
 				"trim_user": false,
 				"trim_favorited_by": false,
 				"trim_server": false,
-			}, req.body)
+			}, req.query)
 			if (session.user_id) {
 				params.user_id = session.user_id
+			}
+			if (params.count) {
+				params.count = parseInt(params.count)
 			}
 			const statuses = await timeline.v1.hashtag(fastify.mongo.db, params)
 			const hashtags = await model.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
@@ -139,6 +144,7 @@ module.exports = (fastify, options, next) => {
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/server/hashtag`, {
 				csrf_token, server, hashtag, logged_in, hashtags, statuses,
 				"platform": fastify.platform(req),
+				"request_query": req.query,
 				media_favorites, media_history, emoji_favorites
 			})
 		} catch (error) {
@@ -166,13 +172,17 @@ module.exports = (fastify, options, next) => {
 			if (user === null) {
 				return fastify.error(app, req, res, 404)
 			}
-			const statuses = await timeline.v1.home(fastify.mongo.db, Object.assign({
+			const params = Object.assign({
 				"user_id": user.id,
 				"server_id": server.id,
 				"trim_user": false,
 				"trim_favorited_by": false,
 				"trim_server": false,
-			}, req.body))
+			}, req.query)
+			if (params.count) {
+				params.count = parseInt(params.count)
+			}
+			const statuses = await timeline.v1.home(fastify.mongo.db, params)
 			const hashtags = await model.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
 			assert(statuses instanceof Array, "@hashtags must be an array")
 			assert(hashtags instanceof Array, "@hashtags must be an array")
@@ -203,6 +213,7 @@ module.exports = (fastify, options, next) => {
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/server/home`, {
 				csrf_token, server, user, logged_in, hashtags, statuses,
 				"platform": fastify.platform(req),
+				"request_query": req.query,
 				media_favorites, media_history, emoji_favorites
 			})
 		} catch (error) {
@@ -229,9 +240,12 @@ module.exports = (fastify, options, next) => {
 					"trim_user": false,
 					"trim_favorited_by": false,
 					"trim_server": false,
-				}, req.body)
+				}, req.query)
 				if (session.user_id) {
 					params.user_id = session.user_id
+				}
+				if (params.count) {
+					params.count = parseInt(params.count)
 				}
 				statuses_home = await timeline.v1.home(fastify.mongo.db, params)
 				assert(statuses_home instanceof Array)
@@ -243,9 +257,12 @@ module.exports = (fastify, options, next) => {
 				"trim_hashtag": false,
 				"trim_favorited_by": false,
 				"trim_recipient": false
-			}, req.body)
+			}, req.query)
 			if (session.user_id) {
 				params.user_id = session.user_id
+			}
+			if (params.count) {
+				params.count = parseInt(params.count)
 			}
 			const statuses_server = await timeline.v1.server(fastify.mongo.db, params)
 			const hashtags = await model.v1.server.hashtags(fastify.mongo.db, { "id": server.id })
@@ -272,6 +289,7 @@ module.exports = (fastify, options, next) => {
 			app.render(req.req, res.res, `/${fastify.device_type(req)}/${fastify.theme(req)}/world`, {
 				csrf_token, server, logged_in, hashtags, 
 				"platform": fastify.platform(req),
+				"request_query": req.query,
 				statuses_home, statuses_server, media_favorites, media_history, emoji_favorites
 			})
 		} catch (error) {

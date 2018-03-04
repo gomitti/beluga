@@ -1,3 +1,4 @@
+import { ObjectID } from "mongodb"
 import assert from "../../../assert"
 import config from "../../../config/beluga"
 import storage from "../../../config/storage"
@@ -64,7 +65,9 @@ export default async (db, params) => {
 		"created_at": Date.now(),
 		"_ip_address": params.ip_address,
 	})
-	const user_id = result.ops[0]
+	// const user_id = result.ops[0]
+	const user_id = result.insertedId
+	assert(user_id instanceof ObjectID, "@user_id must be an instance of ObjectID")
 
 	await db.collection("password").insertOne({
 		user_id, password_hash

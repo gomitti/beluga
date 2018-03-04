@@ -1,8 +1,8 @@
 import TimelineStore from "./index"
 
 export default class HomeTimelineStore extends TimelineStore {
-	constructor(request_query, params) {
-		super("/timeline/home", request_query, params)
+	constructor(request_query, params, options) {
+		super("/timeline/home", request_query, params, options)
 	}
 	statusBelongsTo(status) {
 		const { server, recipient } = this.params

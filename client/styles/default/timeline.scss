@@ -91,9 +91,9 @@
 	}
 }
 .timeline-container {
-	min-height: calc(100vh - 110px);
+	// min-height: calc(100vh - 110px);
 	position: relative;
-	padding-bottom: 16px;
+	padding-bottom: 10px;
 	> .header {
 		padding: 0 16px;
 		margin-bottom: 6px;
@@ -184,7 +184,7 @@
 		> .vertical {
 			position: absolute;
 			top: 32px;
-			bottom: 35px;
+			bottom: 64px;
 			left: 36px;
 			border-left: 0.15em solid #dcdcdc;
 		}
@@ -200,4 +200,17 @@
 }
 .column:first-child {
 	margin-left: 0;
+}
+.timeline-module {
+	> .more-link {
+		display: block;
+		background-color: rgb(244, 244, 244);
+		padding: 8px 0;
+		text-align: center;
+		margin: 0 10px;
+		border-radius: 6px;
+		color: rgb(60, 60, 60);
+		text-decoration: none;
+		font-size: 15px;
+	}
 }

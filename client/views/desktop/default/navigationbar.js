@@ -42,10 +42,10 @@ export default class NavigationBarView extends Component {
 								<li>
 									<a href="" className="misc"></a>
 									<ul className="navigationbar-pulldown-menu">
-										<li><a href="https://help.beluga.fm">ヘルプ</a></li>
-										<li><a href="https://research.beluga.fm" className="verdana">Research</a></li>
-										<li><a href="https://playground.beluga.fm" className="verdana">Playground</a></li>
-										<li><a href="https://github.com/belugafm/beluga">ソースコード</a></li>
+										<li><a href="https://help.beluga.fm" target="_blank">ヘルプ</a></li>
+										<li><a href="https://research.beluga.fm" className="verdana" target="_blank">Research</a></li>
+										<li><a href="https://playground.beluga.fm" className="verdana" target="_blank">Playground</a></li>
+										<li><a href="https://github.com/belugafm/beluga" target="_blank">ソースコード</a></li>
 									</ul>
 								</li>
 							</ul>

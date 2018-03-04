@@ -21,8 +21,9 @@ export default class App extends Component {
 	}
 	constructor(props) {
 		super(props)
-		const { server, user, logged_in } = props
-		this.timeline = new TimelineStore({ "user_id": user.id, "server_id": server.id }, { user, server })
+		const { server, user, logged_in, hashtag } = props
+		this.timeline = new TimelineStore({ "user_id": user.id, "server_id": server.id },
+			{ "recipient": user, server })
 		const statuses = []
 		for (const status of this.props.statuses) {
 			const store = new StatusStore(status)
@@ -34,11 +35,12 @@ export default class App extends Component {
 		}
 	}
 	render() {
+		const { server, user, logged_in, hashtag } = this.props
 		return (
 			<div>
-				<Head title={`${this.props.server.display_name} / ${config.site.name}`} />
-				<HeaderView server={this.props.server} logged_in={this.props.logged_in} />
-				<PostboxView logged_in={this.props.logged_in} server={this.props.server} hashtag={this.props.hashtag} />
+				<Head title={`${server.display_name} / ${config.site.name}`} />
+				<HeaderView server={server} logged_in={logged_in} />
+				<PostboxView recipient={user} logged_in={logged_in} server={server} hashtag={hashtag} />
 				<TimelineView timeline={this.timeline} />
 			</div>
 		);

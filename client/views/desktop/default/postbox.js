@@ -1,8 +1,10 @@
 import React, { Component } from "react"
 import assert from "../../../assert"
+import assign from "../../../libs/assign"
 import { request } from "../../../api"
 import { PostboxMediaView } from "./postbox/media"
 import classnames from "classnames"
+import { sync as uid } from "uid-safe"
 
 export default class PostboxView extends Component {
 	constructor(props) {
@@ -10,7 +12,9 @@ export default class PostboxView extends Component {
 		this.state = {
 			"is_ready": false,
 			"show_media_favorites": false,
-			"drag_entered": false
+			"drag_entered": false,
+			"uploading_files": [],
+			"uploaded_files": [],
 		}
 	}
 	componentDidMount() {
@@ -148,36 +152,46 @@ export default class PostboxView extends Component {
 			"is_ready": true
 		})
 	}
-	onTextPaste = event => {
+	onPasteText = event => {
 		const { target, clipboardData } = event
-		console.dir(target)
-		console.log(clipboardData)
 		const data = clipboardData.getData("Text")
-		if (!data.match(/^https?:\/\/[^\s ]+$/)){
+		// URL以外はそのままペースト
+		if (!data.match(/^https?:\/\/[^\s ]+$/)) {
 			return
+		}
+		// ファイルはそのままペースト
+		const components = data.split("/")
+		const filename = components[components.length - 1]
+		if (filename.indexOf(".") !== -1) {
+			if (!filename.match(/\.(html|htm|php|cgi)/)) {
+				return
+			}
 		}
 		event.preventDefault()
 		let prefix = ""
-		if(window.confirm("リンク先のプレビューを有効にしますか？")){
+		if (window.confirm("リンク先のプレビューを有効にしますか？")) {
 			prefix = "!"
 		}
 		const position = target.selectionStart
-		console.log(position, data)
-		if(position === 0){
-			if(target.value.length === 0){
+		if (position === 0) {
+			if (target.value.length === 0) {
 				target.value = prefix + data
 				return
 			}
 			target.value = prefix + data + "\n" + target.value
 			return
 		}
-		if(position === target.value.length){
+		if (position === target.value.length) {
+			if (target.value[target.value.length - 1] === "\n") {
+				target.value = target.value + prefix + data
+				return
+			}
 			target.value = target.value + "\n" + prefix + data
 			return
 		}
 		target.value = target.value.substring(0, position) + "\n" + prefix + data + "\n" + target.value.substring(position)
 	}
-	onTextChange = event => {
+	onChangeText = event => {
 		const { textarea } = this.refs
 		if (textarea.value.length === 0 && this.state.is_ready === true) {
 			return this.setState({
@@ -204,6 +218,34 @@ export default class PostboxView extends Component {
 			this.setState({ "drag_entered": false })
 		}
 	}
+	fileWillUpload = file => {
+		const { uploading_files } = this.state
+		uploading_files.push(file)
+		this.setState({
+			uploading_files
+		})
+	}
+	fileDidUpload = uploaded_file => {
+		let index = -1
+		for (let i = 0; i < this.state.uploading_files.length; i++) {
+			const file = this.state.uploading_files[i]
+			if (uploaded_file.identifier === file.identifier) {
+				index = i
+				break
+			}
+		}
+		assert(index !== -1)
+		let { uploaded_files, uploading_files } = this.state
+		uploading_files.splice(index, 1)
+		uploaded_files.push(uploaded_file)
+		if (uploading_files.length === 0) {
+			uploading_files = []
+			uploaded_files = []
+		}
+		this.setState({
+			uploading_files, uploaded_files
+		})
+	}
 	onDrop = event => {
 		const transfer = event.dataTransfer;
 		if (!transfer) {
@@ -218,9 +260,11 @@ export default class PostboxView extends Component {
 			alert("ファイルを取得できません")
 			return false;
 		}
-		for (const file of transfer.files) {
+		for (let file of transfer.files) {
+			file.identifier = uid(12)
+			this.fileWillUpload(file)
 			const reader = new FileReader();
-			reader.onload = (event) => {
+			reader.onload = event => {
 				const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
 				request
 					.post(endpoint, {
@@ -244,6 +288,7 @@ export default class PostboxView extends Component {
 						alert(error)
 					})
 					.then(_ => {
+						this.fileDidUpload(file)
 					})
 			}
 			reader.readAsDataURL(file)
@@ -252,8 +297,10 @@ export default class PostboxView extends Component {
 	onFileChange = event => {
 		const files = event.target.files
 		for (const file of files) {
+			file.identifier = uid(12)
+			this.fileWillUpload(file)
 			const reader = new FileReader()
-			reader.onload = (event) => {
+			reader.onload = event => {
 				const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
 				request
 					.post(endpoint, {
@@ -277,6 +324,7 @@ export default class PostboxView extends Component {
 						alert(error)
 					})
 					.then(_ => {
+						this.fileDidUpload(file)
 					})
 			}
 			reader.readAsDataURL(file)
@@ -288,6 +336,20 @@ export default class PostboxView extends Component {
 			return (
 				<div>投稿するには<a href="/login">ログイン</a>してください</div>
 			)
+		}
+		let uploadProgressView = null
+		if (this.state.uploading_files.length > 0) {
+			uploadProgressView =
+				<div className="postbox-upload-progress">
+					<p>
+						<span className="filename">{this.state.uploading_files[0].name}</span>
+						<span>をアップロードしています...</span>
+						{this.state.uploading_files.length + this.state.uploaded_files.length === 1 ?
+							null :
+							<span>({this.state.uploaded_files.length + 1}/{this.state.uploading_files.length + this.state.uploaded_files.length})</span>
+						}
+					</p>
+				</div>
 		}
 		return (
 			<div className="postbox-module" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
@@ -303,14 +365,15 @@ export default class PostboxView extends Component {
 								<textarea
 									className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })}
 									ref="textarea"
-									onChange={this.onTextChange}
-									onPaste={this.onTextPaste}
+									onChange={this.onChangeText}
+									onPaste={this.onPasteText}
 									onKeyUp={this.onKeyUp}
 									onKeyDown={this.onKeyDown} />
 							</div>
 						</div>
+						{uploadProgressView}
 						<div className="postbox-footer">
-							<input type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
+							<input className="hidden" type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
 							<div className="panel">
 								<button className="action emojipicker-ignore-click" onClick={this.toggleEmojiPicker}>✌️</button>
 								<button className="action emojipicker-ignore-click" onClick={this.toggleMediaView}>画</button>

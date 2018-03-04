@@ -20,12 +20,21 @@ const get_domain_from_url = url => {
 	return domain
 }
 
+const get_protocol_from_url = url => {
+	const component = url.split("://")
+	if (component.length < 2) {
+		return null
+	}
+	return component[0]
+}
+
 const extract_metadata = async url => {
 	let image = null
 	let title = null
 	let description = null
 	let match = null
 	const domain = get_domain_from_url(url)
+	const protocol = get_protocol_from_url(url)
 
 	// 実際にURLを読み込んでタイトルなどを取得
 	try {
@@ -69,12 +78,8 @@ const extract_metadata = async url => {
 			}
 			if ("og:image" in map_property_content) {
 				image = map_property_content["og:image"]
-			}
-			if ("og:url" in map_property_content) {
-				url = map_property_content["og:url"]
-				const new_domain = get_domain_from_url(url)
-				if (domain !== new_domain) {
-					throw Error()
+				if(image.indexOf("/") === 0){
+					image = `${protocol}://${domain}${image}`
 				}
 			}
 		} else {

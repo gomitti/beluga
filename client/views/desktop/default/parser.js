@@ -19,7 +19,7 @@ const split_regexp = (components, regexp) => {
 	}
 	return result
 }
-const split_emoji_unicode = components => {
+export const split_emoji_unicode = components => {
 	const result = []
 	for (const sentence of components) {
 		if (sentence.length === 0) {
@@ -59,18 +59,66 @@ const split_emoji_shortname = components => {
 	}
 	return result
 }
+const split_hashtag = components => {
+	const result = []
+	for (const sentence of components) {
+		if (sentence.length === 0) {
+			continue
+		}
+		if (!sentence.match(/#[^\s 　]+/g)) {
+			result.push(sentence)
+			continue
+		}
+		if (sentence.match(/^(!?https?:\/\/[^\s 　]+)/g)){
+			result.push(sentence)
+			continue
+		}
+		const array = sentence.split(/(#[^\s 　]+)/g)
+		for (const component of array) {
+			if (component.length === 0) {
+				continue
+			}
+			result.push(component)
+		}
+	}
+	return result
+}
+const split_mention = components => {
+	const result = []
+	for (const sentence of components) {
+		if (sentence.length === 0) {
+			continue
+		}
+		if (!sentence.match(/@[0-9a-zA-Z_]+/g)) {
+			result.push(sentence)
+			continue
+		}
+		if (sentence.match(/^(!?https?:\/\/[^\s 　]+)/g)) {
+			result.push(sentence)
+			continue
+		}
+		const array = sentence.split(/(@[0-9a-zA-Z_]+)/g)
+		for (const component of array) {
+			if (component.length === 0) {
+				continue
+			}
+			result.push(component)
+		}
+	}
+	return result
+}
 const split = sentence => {
 	let components = typeof sentence === "string" ? [sentence] : sentence
 	components = split_regexp(components, /(!?https?:\/\/[^\s 　]+)/g)
-	components = split_regexp(components, /(#[^\s 　]+)/g)
-	components = split_regexp(components, /(@[0-9a-zA-Z_]+)/g)
+	components = split_mention(components)
+	components = split_hashtag(components)
 	components = split_emoji_unicode(components)
 	components = split_emoji_shortname(components)
 	return components
 }
 
 export const parse_link = (substr, subviews) => {
-	if (substr.match(/^https?:\/\/[^\s 　]+/)) {
+	if (substr.match(/^!?https?:\/\/[^\s 　]+/)) {
 		if (substr.indexOf(".") === -1) {
 			subviews.push(substr)
 			return true
@@ -86,7 +134,7 @@ export const parse_link = (substr, subviews) => {
 			return true
 		}
 		const url = substr
-		const display_text = url.replace(/https?:\/\//, "")
+		const display_text = decodeURI(url.replace(/!?https?:\/\//, ""))
 		subviews.push(<a href={url} className="status-body-link user-defined-color user-defined-color-hover" target="_blank">{display_text}</a>)
 		return true
 	}

@@ -20,7 +20,7 @@ export default sentence => {
 			const dom_height = height * ratio
 			const href = url
 			if (ext === "gif") {
-				const coalesce_src = `${prefix}/${width}-${height}.coalesce.jpg`
+				const coalesce_src = `${prefix}/${width}-${height}.coalesce.png`
 				const original_src = url
 				return <GifView original_src={original_src} coalesce_src={coalesce_src} width={dom_width} height={dom_height} />
 			} else {

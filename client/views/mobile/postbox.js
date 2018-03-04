@@ -15,8 +15,12 @@ export default class PostboxView extends Component {
 			return
 		}
 		const query = { text }
-		if (this.props.hashtag) {
-			query.hashtag_id = this.props.hashtag.id
+		const { hashtag, recipient, server } = this.props
+		if (hashtag) {		// ルームへの投稿
+			query.hashtag_id = hashtag.id
+		} else if (recipient && server) {	// ユーザーのホームへの投稿
+			query.recipient_id = recipient.id
+			query.server_id = server.id
 		}
 		request
 			.post("/status/update", query)

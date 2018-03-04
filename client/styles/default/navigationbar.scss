@@ -62,7 +62,7 @@
 			line-height: 44px;
 			padding: 0 10px;
 			overflow: hidden;
-			border: solid white;
+			border: solid transparent;
 			border-width: 0 0 3px 0;
 			box-sizing: border-box;
 			transition: 80ms ease-in 0s;
@@ -98,6 +98,7 @@
 }
 .navigationbar-logo-container {
 	float: left;
+	height: 26px;
 	> .logo {
 		display: inline-block;
 		height: 26px;
@@ -109,6 +110,7 @@
 }
 .navigationbar-pulldown-container {
 	float: right;
+	height: 26px;
 	> ul {
 		> li {
 			float: left;

@@ -1,25 +1,30 @@
 import React, { Component } from "react"
 import classnames from "classnames"
 import Toggle from "react-toggle"
+import { observer } from "mobx-react"
 import ws from "../../../../../websocket"
-import assert, { is_object } from "../../../../../assert"
+import assert, { is_object, is_function } from "../../../../../assert"
 import { ColumnStore } from "../../../../../stores/column"
 import * as notification from "../../../../../notification"
 
+@observer
 export default class HeaderView extends Component {
 	constructor(props) {
 		super(props)
 		const { recipient } = props
-		const { server, column } = props
+		const { server, column, serialize } = props
 		assert(is_object(recipient), "@recipient must be object")
 		assert(column instanceof ColumnStore, "@column must be an instance of ColumnStore")
+		assert(is_object(column.options), "@column.options must be object")
+		assert(is_function(serialize), "@serialize must be function")
 		this.state = {
 			"is_settings_hidden": true
 		}
 	}
 	componentDidMount() {
 		ws.addEventListener("message", (e) => {
-			if (this.notification_enabled !== true) {
+			const { column } = this.props
+			if (column.settings.enable_desktop_notification !== true) {
 				return
 			}
 			const data = JSON.parse(e.data)
@@ -39,7 +44,11 @@ export default class HeaderView extends Component {
 		})
 	}
 	toggleNotification = event => {
-		this.notification_enabled = event.target.checked
+		const { column, serialize } = this.props
+		column.update_settings({
+			"enable_desktop_notification": event.target.checked
+		})
+		serialize()
 	}
 	toggleSettings = event => {
 		event.preventDefault()
@@ -66,12 +75,12 @@ export default class HeaderView extends Component {
 					})}>
 						<section>
 							<label className="form-react-toggle">
-								<Toggle onChange={this.toggleNotification} />
+								<Toggle onChange={this.toggleNotification} checked={column.settings.enable_desktop_notification} defaultChecked={column.settings.enable_desktop_notification} />
 								<span>デスクトップ通知</span>
 							</label>
 						</section>
 						<section className="column-operations clearfix">
-							<a className="close user-defined-color-hover" onClick={onClose}>閉じる</a>
+							{column.options.is_closable ? <a className="close user-defined-color-hover" onClick={onClose}>閉じる</a> : null}
 							<p className="move">
 								<a className="left user-defined-color-hover"></a>
 								<a className="right user-defined-color-hover"></a>

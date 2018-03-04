@@ -19,6 +19,9 @@ module.exports = (fastify, options, next) => {
 			if (params.trim_recipient) {
 				params.trim_recipient = fastify.parse_bool(params.trim_recipient)
 			}
+			if (params.count) {
+				params.count = parseInt(params.count)
+			}
 			const statuses = await timeline.v1.hashtag(fastify.mongo.db, params)
 			res.send({ "success": true, statuses })
 		} catch (error) {
@@ -42,6 +45,9 @@ module.exports = (fastify, options, next) => {
 			if (params.trim_recipient) {
 				params.trim_recipient = fastify.parse_bool(params.trim_recipient)
 			}
+			if (params.count) {
+				params.count = parseInt(params.count)
+			}
 			const statuses = await timeline.v1.home(fastify.mongo.db, params)
 			res.send({ "success": true, statuses })
 		} catch (error) {
@@ -64,6 +70,9 @@ module.exports = (fastify, options, next) => {
 			}
 			if (params.trim_recipient) {
 				params.trim_recipient = fastify.parse_bool(params.trim_recipient)
+			}
+			if (params.count) {
+				params.count = parseInt(params.count)
 			}
 			const statuses = await timeline.v1.server(fastify.mongo.db, params)
 			res.send({ "success": true, statuses })
