@@ -5,7 +5,7 @@ import model from "../../../model"
 import assert from "../../../assert"
 
 export default async (db, params) => {
-	const rows = await api.v1.media.list(db, params)
+	const rows = await model.v1.media.list(db, params)
 	assert(rows instanceof Array, "@rows must be an array")
 
 	const list = []

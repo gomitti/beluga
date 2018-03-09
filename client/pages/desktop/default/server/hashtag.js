@@ -3,6 +3,7 @@ import { useStrict, observable, action } from "mobx"
 import { observer } from "mobx-react"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
+import warning from "../../../../libs/warning"
 import assert, { is_object, is_array } from "../../../../assert"
 import TimelineView from "../../../../views/desktop/default/timeline"
 import PostboxView from "../../../../views/desktop/default/postbox"
@@ -75,13 +76,14 @@ class ColumnContainerView extends ColumnContainer {
 }
 
 export default class App extends Component {
-
 	// サーバー側でのみ呼ばれる
 	// ここで返したpropsはクライアント側でも取れる
 	static async getInitialProps({ query }) {
 		return { ...query }
 	}
-
+	componentDidMount() {
+		warning()
+	}
 	constructor(props) {
 		super(props)
 		if (request) {
@@ -96,7 +98,6 @@ export default class App extends Component {
 			history.scrollRestoration = "manual"
 		}
 	}
-
 	render() {
 		const { hashtag, server, logged_in, hashtags, platform, emoji_favorites, statuses } = this.props
 		return (

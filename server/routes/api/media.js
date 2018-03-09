@@ -1,5 +1,6 @@
 import api from "../../api"
 import storage from "../../config/storage"
+import memcached from "../../memcached"
 import config from "../../config/beluga"
 import logger from "../../logger"
 
@@ -7,7 +8,7 @@ module.exports = (fastify, options, next) => {
 	let api_version = "v1"
 	fastify.post(`/api/${api_version}/media/image/upload`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!!session.user_id === false) {
 				throw new Error("ログインしてください")
 			}
@@ -31,7 +32,7 @@ module.exports = (fastify, options, next) => {
 				"user_id": user.id, 
 				"storage": remote
 			})
-
+			memcached.v1.delete_media_list_from_cache(user)
 			res.send({ "success": true, urls })
 		} catch (error) {
 			logger.log({
@@ -44,7 +45,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/media/video/upload`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!!session.user_id === false) {
 				throw new Error("ログインしてください")
 			}
@@ -68,7 +69,7 @@ module.exports = (fastify, options, next) => {
 				"user_id": user.id,
 				"storage": remote
 			})
-
+			memcached.v1.delete_media_list_from_cache(user)
 			res.send({ "success": true, urls })
 		} catch (error) {
 			logger.log({

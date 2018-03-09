@@ -51,8 +51,10 @@
     "react-dom": "^16.2.0",
     "react-image-crop": "^3.0.10",
     "react-toggle": "^4.0.2",
+    "redux": "^3.7.2",
     "speakeasy": "^2.0.0",
     "uid-safe": "^2.1.5",
+    "video-react": "^0.9.4",
     "winston": "^3.0.0-rc1"
   },
   "devDependencies": {

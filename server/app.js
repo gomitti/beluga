@@ -13,7 +13,7 @@ mongodb.MongoClient
 			client: db
 		})
 		app.register(require("fastify-cookie"))
-		app.register(require("./session"), {
+		app.register(require("./auth/cookie"), {
 			"secret": config.auth.session.cookie_secret,
 			"cookie_name": config.auth.session.cookie_name,
 			"timezone_offset": config.auth.session.timezone_offset,

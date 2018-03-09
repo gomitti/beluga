@@ -1,5 +1,6 @@
 import config from "../../config/beluga"
-import assert from "../../assert"
+import assert, { is_array, is_object } from "../../assert"
+import assign from "../../lib/assing"
 
 export class Memcached {
 	// @max_age 秒
@@ -9,7 +10,7 @@ export class Memcached {
 		this.max_age = max_age || config.memcached.max_age
 	}
 	delete_recursively(keys) {
-		assert(keys instanceof Array, "@keys must be an array")
+		assert(is_array(keys), "@keys must be an array")
 		let root = this.cache
 		for (let i = 0; i < keys.length - 1; i++) {
 			const key = keys[i]
@@ -30,13 +31,13 @@ export class Memcached {
 		if (typeof key === "string") {
 			return this.delete_recursively([key])
 		}
-		if (key instanceof Array) {
+		if (is_array(key)) {
 			return this.delete_recursively(key)
 		}
 		assert(false, "Invalid key")
 	}
 	fetch_recursively(keys) {
-		assert(keys instanceof Array, "@keys must be an array")
+		assert(is_array(keys), "@keys must be an array")
 		let root = this.cache
 		for (let i = 0; i < keys.length - 1; i++) {
 			const key = keys[i]
@@ -52,8 +53,22 @@ export class Memcached {
 		}
 		return null
 	}
+	clear_if_needed_recursively(keys) {
+		let root = this.cache
+		for (let i = 0; i < keys.length - 1; i++) {
+			const key = keys[i]
+			if (key in root) {
+				root = root[key]
+			} else {
+				return
+			}
+			if (Object.keys(root).length > config.memcached.capacity) {
+				root = {}
+			}
+		}
+	}
 	store_recursively(keys, data) {
-		assert(keys instanceof Array, "@keys must be an array")
+		assert(is_array(keys), "@keys must be an array")
 		let root = this.cache
 		for (let i = 0; i < keys.length - 1; i++) {
 			const key = keys[i]
@@ -75,16 +90,20 @@ export class Memcached {
 		if (typeof keys === "string") {
 			keys = [keys]
 		}
-		assert(keys instanceof Array, "@keys must be an array")
+		assert(is_array(keys), "@keys must be an array")
 
 		const obj = this.fetch_recursively(keys)
 		if (obj) {
-			if (obj.expires > Date.now()) {
+			const { data, expires } = obj
+			if (expires > Date.now()) {
 				obj.hit += 1
-				if (obj.data instanceof Array) {
-					return obj.data
+				if (is_array(data)) {
+					return data
 				}
-				return Object.assign({}, obj.data)	// コピーを送る（ただしshallow copyなので注意）
+				if (is_object(obj)) {
+					return assign(data)	// コピーを送る
+				}
+				return data
 			}
 			this.delete_recursively(keys)
 		}
@@ -94,15 +113,15 @@ export class Memcached {
 			return data
 		}
 
-		if (Object.keys(this.cache).length > config.memcached.capacity) {
-			this.cache = {}
-		}
-
+		this.clear_if_needed_recursively(keys)
 		this.store_recursively(keys, data)
 
-		if (data instanceof Array) {
+		if (is_array(data)) {
 			return data
 		}
-		return Object.assign({}, data)	// コピーを送る（ただしshallow copyなので注意）
+		if (is_object(data)) {
+			return assign(data)	// コピーを送る
+		}
+		return data
 	}
 }

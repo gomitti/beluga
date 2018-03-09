@@ -8,7 +8,6 @@ export default class ImageView extends Component {
 	}
 	onLoad = event => {
 		const img = this.refs.img
-		console.log("onload", img)
 		if (img) {
 			const max_size = config.status.image.max_size.desktop
 			const width = img.naturalWidth || img.width

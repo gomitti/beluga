@@ -69,15 +69,21 @@ export class EmojiPicker {
 	@observable is_hidden = true
 	@observable.shallow history = new EmojiHistory()
 	@action.bound
-	show(left, top, callback) {
+	show(left, top, callback_pick, callback_hide) {
 		this.top = top
 		this.left = left
-		this.callback = callback
+		this.callback_pick = callback_pick
+		this.callback_hide = callback_hide
 		this.is_hidden = false
 	}
 	@action.bound
 	hide() {
 		this.is_hidden = true
+		if (this.callback_hide) {
+			this.callback_hide()
+		}
+		this.callback_pick = null
+		this.callback_hide = null
 	}
 }
 
@@ -228,8 +234,8 @@ export default class EmojiPickerWindow extends Component {
 	pick = (shortname, category, fname) => {
 		const { picker } = this.props
 		picker.history.add({ shortname, category, fname })
-		if (picker.callback) {
-			picker.callback(shortname)
+		if (picker.callback_pick) {
+			picker.callback_pick(shortname)
 		}
 	}
 	render() {

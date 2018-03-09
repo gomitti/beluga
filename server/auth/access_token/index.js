@@ -1,9 +1,3 @@
-import plugin from "fastify-plugin"
-import signature from "cookie-signature"
-import { sync as uid } from "uid-safe"
-import Session from "./session/session"
-import Store from "./session/store"
-import { setInterval } from "timers";
 
 const session = (fastify, options, next) => {
 	if (!fastify.mongo) {
@@ -54,33 +48,36 @@ const session = (fastify, options, next) => {
 		}
 		let encrypted_session_id = request.cookies[cookie_name]
 		if (typeof encrypted_session_id !== "string") {
-			return await start_anonymous_session(reply, secret)
+			return await start_anonymous_session(request, reply, secret)
 		}
 		const session = await store.get(encrypted_session_id)
 		if (session === null) {
-			return await start_anonymous_session(reply, secret)
+			return await start_anonymous_session(request, reply, secret)
 		}
 		const session_id = signature.unsign(`${session.id}.${encrypted_session_id}`, secret)
 		if (session_id === false) {
-			return await start_anonymous_session(reply, secret)
+			return await start_anonymous_session(request, reply, secret)
 		}
 		if (session_id !== session.id) {
-			return await start_anonymous_session(reply, secret)
+			return await start_anonymous_session(request, reply, secret)
 		}
 		return session
 	}
-	const start_anonymous_session = async (reply, secret) => {
-		const session = generate_session()
+	const start_anonymous_session = async (request, reply, secret) => {
+		const ip_address = request.headers["x-real-ip"]
+		const user_agent = request.headers["user-agent"] || null
+		assert(is_string(ip_address), "@ip_address must be string")
+		const session = generate_session(ip_address, user_agent)
 		await store.save(session)
 		const options = get_cookie_options()
 		reply.setCookie(cookie_name, session.encrypted_id, options)
 		return session
 	}
-	const generate_session = () => {
+	const generate_session = (ip_address, user_agent) => {
 		const session_id = uid(24)
 		const encrypted_session_id = signature.sign(session_id, secret).split(".")[1]
 		const expires = Date.now() + _cookie_options.max_age * 1000
-		return new Session(session_id, encrypted_session_id, null, expires)
+		return new Session(session_id, encrypted_session_id, null, expires, ip_address, user_agent)
 	}
 	const destroy_session = async (encrypted_id, reply) => {
 		await store.destroy(encrypted_id)
@@ -110,15 +107,19 @@ const session = (fastify, options, next) => {
 		return expires
 	}
 	class SessionManager {
-		async generate(reply, user_id) {
-			const session = generate_session()
+		async generate(request, reply, user_id) {
+			const ip_address = request.headers["x-real-ip"]
+			const user_agent = request.headers["user-agent"] || null
+			assert(is_string(ip_address), "@ip_address must be string")
+			const session = generate_session(ip_address)
 			session.user_id = user_id
 			await store.save(session)
 			const options = get_cookie_options()
 			reply.setCookie(cookie_name, session.encrypted_id, options)
 			return session
 		}
-		async destroy(reply, session) {
+		async destroy(session, reply) {
+			assert(is_object(session), "@session must be object")
 			return await destroy_session(session.encrypted_id, reply)
 		}
 		async start(request, reply) {
@@ -134,5 +135,3 @@ const session = (fastify, options, next) => {
 	fastify.decorate("session", new SessionManager())
 	next()
 }
-
-module.exports = plugin(session)

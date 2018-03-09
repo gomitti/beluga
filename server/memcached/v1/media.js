@@ -1,2 +1,3 @@
 import show from "./media/show"
-export default { show }
+import list from "./media/list"
+export default { show, list }

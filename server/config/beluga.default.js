@@ -37,6 +37,9 @@ export default {
 	"like": {
 		"max_count": 10		// 投稿1つにつき何回まで「いいね」を押せるか
 	},
+	"account": {
+		"max_num_accounts_per_ip_address": 3
+	},
 	"user": {
 		"max_name_length": 32,
 		"max_display_name_length": 32,
@@ -84,10 +87,8 @@ export default {
 		}
 	},
 	"timeline": {
-		"count": {
-			"max": 3000,
-			"default": 20
-		}
+		"max_count": 3000,
+		"default_count": 20
 	},
 	"websocket": {
 		"https": {

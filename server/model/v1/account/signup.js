@@ -18,10 +18,7 @@ export default async (db, params) => {
 			remote,
 			user_id,
 		})
-		const result = await db.collection("users").deleteOne({
-			"name": params.name
-		})
-		throw error
+		throw new Error("アカウントの作成処理が異常終了しました。サイト管理者にお知らせください。")
 	}
 	return user_id
 }

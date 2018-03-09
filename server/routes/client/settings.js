@@ -83,5 +83,19 @@ module.exports = (fastify, options, next) => {
 			csrf_token, logged_in
 		})
 	})
+	fastify.next("/settings/access_token", async (app, req, res) => {
+		const session = await fastify.session.start(req, res)
+		const csrf_token = await fastify.csrf_token(req, res, session)
+		const logged_in = await fastify.logged_in(req, res, session)
+		if (!logged_in) {
+			return fastify.error(app, req, res, 404)
+		}
+		const access_tokens = await model.v1.access_token.list(fastify.mongo.db, {
+			"user_id": logged_in.id
+		})
+		app.render(req.req, res.res, `/${fastify.device_type(req)}/default/settings/access_token`, {
+			csrf_token, logged_in, access_tokens
+		})
+	})
 	next()
 }

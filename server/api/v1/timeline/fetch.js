@@ -35,8 +35,8 @@ export default async (db, query, params) => {
 	if (typeof params.count !== "number") {
 		throw new Error("countが不正です")
 	}
-	if (params.count > config.timeline.count.max) {
-		params.count = config.timeline.count.max
+	if (params.count > config.timeline.max_count) {
+		params.count = config.timeline.max_count
 	}
 
 	if (typeof params.sort !== "number") {

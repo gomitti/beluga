@@ -3,6 +3,7 @@ import { useStrict, observable, action } from "mobx"
 import { observer } from "mobx-react"
 import enums from "../../../enums"
 import assign from "../../../libs/assign"
+import warning from "../../../libs/warning"
 import assert, { is_object, is_array, is_string } from "../../../assert"
 import TimelineView from "../../../views/desktop/default/timeline"
 import PostboxView from "../../../views/desktop/default/postbox"
@@ -48,7 +49,7 @@ class ColumnContainerView extends ColumnContainer {
 			)
 			column.is_closable = true
 		}
-		const column = this.insert({ "server_id": server.id },
+		const column = this.insert({ "id": server.id },
 			{ server },
 			assign(column_options, {
 				"type": enums.column.type.server,
@@ -102,6 +103,9 @@ export default class App extends Component {
 	// ここで返したpropsはクライアント側でも取れる
 	static async getInitialProps({ query }) {
 		return { ...query }
+	}
+	componentDidMount(){
+		warning()
 	}
 	constructor(props) {
 		super(props)

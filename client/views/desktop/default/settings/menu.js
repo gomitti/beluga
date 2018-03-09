@@ -19,7 +19,7 @@ export default class SettingsMenuView extends Component {
 					</ul>
 					<h2 className="title developers">開発者</h2>
 					<ul className="settings-menu">
-						<li><a href="/settings/api">API</a></li>
+						<li><a className={classnames("user-defined-color-hover user-defined-color-active item", { "active": active === "access_token" })} href="/settings/access_token">APIキー</a></li>
 					</ul>
 				</div>
 			</div>

@@ -1,12 +1,13 @@
 import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
+import { is_string } from "../../../assert"
 
 export default async (db, params) => {
 	params = Object.assign({
 		"from_mobile": false
 	}, params)
 
-	if (typeof params.text !== "string") {
+	if (is_string(params.text) === false) {
 		throw new Error("本文を入力してください")
 	}
 	if (params.text.length == 0) {
@@ -16,7 +17,7 @@ export default async (db, params) => {
 		throw new Error(`本文は${config.status.max_text_length}文字以内で入力してください`)
 	}
 
-	if (typeof params.user_id === "string") {
+	if (is_string(params.user_id)) {
 		try {
 			params.user_id = ObjectID(params.user_id)
 		} catch (error) {
@@ -27,7 +28,7 @@ export default async (db, params) => {
 		throw new Error("ログインしてください")
 	}
 
-	if (typeof params.ip_address !== "string") {
+	if (is_string(params.ip_address) === false) {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
@@ -52,7 +53,7 @@ export default async (db, params) => {
 	}
 
 	// ルームへの投稿
-	if (typeof params.hashtag_id === "string") {
+	if (is_string(params.hashtag_id)) {
 		try {
 			params.hashtag_id = ObjectID(params.hashtag_id)
 		} catch (error) {
@@ -64,7 +65,7 @@ export default async (db, params) => {
 	}
 
 	// ユーザーのホームへの投稿
-	if (typeof params.recipient_id === "string") {
+	if (is_string(params.recipient_id)) {
 		try {
 			params.recipient_id = ObjectID(params.recipient_id)
 		} catch (error) {
@@ -76,7 +77,7 @@ export default async (db, params) => {
 	}
 
 	// サーバーの全投稿を表示するTLのためにサーバーIDも記録する
-	if (typeof params.server_id === "string") {
+	if (is_string(params.server_id)) {
 		try {
 			params.server_id = ObjectID(params.server_id)
 		} catch (error) {
@@ -90,7 +91,10 @@ export default async (db, params) => {
 	if (query.recipient_id && query.hashtag_id) {
 		throw new Error("投稿先が重複しています")
 	}
-	if (!query.recipient_id && !query.hashtag_id) {
+	if (query.recipient_id && !!query.server_id === false) {
+		throw new Error("投稿先を指定してください")
+	}
+	if (!!query.recipient_id === false && !!query.hashtag_id === false) {
 		throw new Error("投稿先を指定してください")
 	}
 

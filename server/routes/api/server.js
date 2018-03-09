@@ -24,7 +24,7 @@ module.exports = (fastify, options, next) => {
 	let api_version = "v1"
 	fastify.post(`/api/${api_version}/server/create`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!!session.user_id === false) {
 				throw new Error("ログインしてください")
 			}
@@ -37,7 +37,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/server/members`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!!session.user_id === false) {
 				throw new Error("ログインしてください")
 			}

@@ -1,8 +1,23 @@
 import React, { Component } from "react"
+import { Player, BigPlayButton, ControlBar } from "video-react"
 
 export default class VideoView extends Component {
 	render() {
 		const { width, height, src, poster } = this.props
-		return <video className="status-body-video" ref="img" src={src} width={width} height={height} poster={poster} preload="none" controls />
+		return (
+			<div className="status-body-video">
+				<Player
+					src={src}
+					width="100%"
+					height="auto"
+					poster={poster}
+					preload="none"
+					fluid={false}
+					controls >
+					<BigPlayButton position="center" />
+					<ControlBar autoHide={false} disableDefaultControls={false} />
+				</Player>
+			</div>
+		)
 	}
 }

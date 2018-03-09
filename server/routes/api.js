@@ -1,8 +1,37 @@
 import { sha256 } from "js-sha256"
+import assert, { is_string } from "../assert"
+import model from "../model"
+import AccessTokenSession from "../auth/access_token/session"
 
 module.exports = (fastify, options, next) => {
-	// fastify.addHook("preHandler")はどうやらfastify.postした数だけ呼ばれるみたいなのでhookは使わない
-	fastify.decorate("authenticate_session", async (req, res, _csrf_token) => {
+
+	const authenticate = async (req, res, _csrf_token) => {
+		const { access_token, access_token_secret } = req.body
+		const { oauth_token, oauth_token_secret } = req.body
+		if (access_token && access_token_secret) {
+			return authenticate_access_token(access_token, access_token_secret)
+		}
+		return authenticate_cookie(req, res, _csrf_token)
+	}
+
+	const authenticate_access_token = async (access_token, access_token_secret) => {
+		assert(is_string(access_token), "@access_token must be string")
+		assert(is_string(access_token_secret), "@access_token_secret must be string")
+		try {
+			const user_id = await model.v1.access_token.authenticate(fastify.mongo.db, {
+				"token": access_token,
+				"secret": access_token_secret,
+			})
+			if(user_id){
+				return new AccessTokenSession(user_id)
+			}
+		} catch (error) {
+			
+		}
+		throw new Error("不正なAPIキーです")
+	}
+
+	const authenticate_cookie = async (req, res, _csrf_token) => {
 		const session = await fastify.session.start(req, res)
 		const true_csrf_token = sha256(session.id)
 		const csrf_token = _csrf_token ? _csrf_token : req.body.csrf_token
@@ -10,7 +39,11 @@ module.exports = (fastify, options, next) => {
 			throw new Error("ページの有効期限が切れました。ページを更新してください。")
 		}
 		return session
-	})
+	}
+
+	// fastify.addHook("preHandler")はどうやらfastify.postした数だけ呼ばれるみたいなのでhookは使わない
+	fastify.decorate("authenticate", authenticate)
+	fastify.decorate("authenticate_cookie", authenticate_cookie)
 	fastify.decorate("parse_bool", value => {
 		if (typeof value === "boolean") {
 			return value
@@ -33,24 +66,6 @@ module.exports = (fastify, options, next) => {
 		}
 		return false
 	})
-	// const api_version = "v1"
-	// fastify.post("/api/v1/statuses/hashtag", (req, res) => {
-	// 	const db = fastify.mongo.db
-	// 	const collection = db.collection("statuses")
-	// 	let success = false
-	// 	let statuses = []
-	// 	collection
-	// 		.find({}, { sort: { "created_at": -1 }, limit: 30 })
-	// 		.toArray()
-	// 		.then(documents => {
-	// 			statuses = documents
-	// 			success = true
-	// 		}).catch(error => {
-	// 			success = false
-	// 		}).then(document => {
-	// 			res.send({ success, statuses })
-	// 		})
-	// })
 	fastify.register(require("./api/account"))
 	fastify.register(require("./api/hashtag"))
 	fastify.register(require("./api/media"))
@@ -61,5 +76,6 @@ module.exports = (fastify, options, next) => {
 	fastify.register(require("./api/like"))
 	fastify.register(require("./api/favorite"))
 	fastify.register(require("./api/reaction"))
+	fastify.register(require("./api/access_token"))
 	next()
 }

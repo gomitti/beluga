@@ -12,6 +12,9 @@ export default class PostboxView extends Component {
 		this.state = {
 			"is_ready": false,
 			"show_media_favorites": false,
+			"show_media_history": false,
+			"show_text_actions": false,
+			"show_emoji_picker": false,
 			"drag_entered": false,
 			"uploading_files": [],
 			"uploaded_files": [],
@@ -29,18 +32,6 @@ export default class PostboxView extends Component {
 		this.setState({
 			"show_media_favorites": !this.state.show_media_favorites
 		})
-	}
-	toggleEmojiPicker = event => {
-		event.preventDefault()
-		const { x, y } = event.target.getBoundingClientRect()
-		if (emojipicker.is_hidden) {
-			emojipicker.show(x, y + 40, shortname => {
-				const { textarea } = this.refs
-				this.setText(textarea.value + `:${shortname}:`)
-			})
-		} else {
-			emojipicker.hide()
-		}
 	}
 	appendMediaLink = (event, item) => {
 		event.preventDefault()
@@ -330,6 +321,50 @@ export default class PostboxView extends Component {
 			reader.readAsDataURL(file)
 		}
 	}
+	onClickActionMediaUpload = event => {
+		event.preventDefault()
+		const { file } = this.refs
+		if (file) {
+			file.click()
+		}
+	}
+	onClickActionMediaHistory = event => {
+		event.preventDefault()
+		this.setState({
+			"show_media_history": !this.state.show_media_history
+		})
+	}
+	onClickActionMediaFavorites = event => {
+		event.preventDefault()
+		this.setState({
+			"show_media_favorites": !this.state.show_media_favorites
+		})
+	}
+	onClickActionEmoji = event => {
+		event.preventDefault()
+		const { x, y } = event.target.getBoundingClientRect()
+		if (emojipicker.is_hidden) {
+			emojipicker.show(x, y + 40, shortname => {
+				const { textarea } = this.refs
+				this.setText(textarea.value + `:${shortname}:`)
+			}, () => {
+				this.setState({
+					"show_emoji_picker": false
+				})
+			})
+		} else {
+			emojipicker.hide()
+		}
+		this.setState({
+			"show_emoji_picker": !emojipicker.is_hidden
+		})
+	}
+	onClickActionText = event => {
+		event.preventDefault()
+		this.setState({
+			"show_text_actions": !this.state.show_text_actions
+		})
+	}
 	render() {
 		const { logged_in, media_favorites, media_history } = this.props
 		if (!logged_in) {
@@ -374,10 +409,63 @@ export default class PostboxView extends Component {
 						{uploadProgressView}
 						<div className="postbox-footer">
 							<input className="hidden" type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
-							<div className="panel">
-								<button className="action emojipicker-ignore-click" onClick={this.toggleEmojiPicker}>✌️</button>
-								<button className="action emojipicker-ignore-click" onClick={this.toggleMediaView}>画</button>
-								<button className="action emojipicker-ignore-click" onClick={this.toggleEmojiPicker}>✌️</button>
+							<div className="actions">
+								<div className="unit">
+									<button className="action media-upload" onClick={this.onClickActionMediaUpload}>
+										<span className="tooltip"><span className="text">アップロード</span></span>
+									</button>
+									<button className={classnames("action media-history user-defined-color-active", {
+											"active": this.state.show_media_history
+										})} onClick={this.onClickActionMediaHistory}>
+										<span className="tooltip"><span className="text">アップロード履歴</span></span>
+									</button>
+									<button
+										className={classnames("action media-favorites user-defined-color-active", {
+											"active": this.state.show_media_favorites
+										})} onClick={this.onClickActionMediaFavorites}>
+										<span className="tooltip"><span className="text">お気に入りの画像</span></span>
+									</button>
+									<button className={classnames("action emoji emojipicker-ignore-click user-defined-color-active", {
+										"active": this.state.show_emoji_picker
+									})} onClick={this.onClickActionEmoji}>
+										<span className="tooltip"><span className="text">絵文字を入力</span></span>
+									</button>
+								</div>
+								<div className="unit">
+									<button className="action preview" onClick={this.onClickActionEmoji}>
+										<span className="tooltip"><span className="text">投稿プレビュー</span></span>
+									</button>
+									<button className={classnames("action text-editing user-defined-color-active", {
+										"active": this.state.show_text_actions
+									})} onClick={this.onClickActionText}>
+										<span className="tooltip"><span className="text">テキストの装飾</span></span>
+									</button>
+									<button className="action misc">
+										<span className="tooltip"><span className="text">その他</span></span>
+									</button>
+								</div>
+								{this.state.show_text_actions ?
+									<div className="unit">
+										<button className="action text-big">
+											<span className="tooltip"><span className="text">サイズ</span></span>
+										</button>
+										<button className="action text-bold">
+											<span className="tooltip"><span className="text">太字</span></span>
+										</button>
+										<button className="action text-underline">
+											<span className="tooltip"><span className="text">下線</span></span>
+										</button>
+										<button className="action text-strikethrough">
+											<span className="tooltip"><span className="text">打ち消し線</span></span>
+										</button>
+										<button className="action text-italic">
+											<span className="tooltip"><span className="text">イタリック</span></span>
+										</button>
+										<button className="action text-code">
+											<span className="tooltip"><span className="text">コード</span></span>
+										</button>
+									</div>
+									: null}
 							</div>
 							<div className="submit">
 								<button className={classnames("button meiryo", {
@@ -387,7 +475,20 @@ export default class PostboxView extends Component {
 								})} onClick={this.post}>投稿する</button>
 							</div>
 						</div>
-						{media_favorites ? <PostboxMediaView is_hidden={!this.state.show_media_favorites} media={media_favorites} append={this.appendMediaLink} /> : null}
+						{media_favorites ?
+							<PostboxMediaView
+								is_hidden={!this.state.show_media_favorites}
+								media={media_favorites}
+								title="お気に入りの画像"
+								append={this.appendMediaLink} />
+							: null}
+						{media_history ?
+							<PostboxMediaView
+								is_hidden={!this.state.show_media_history}
+								media={media_history}
+								title="アップロード履歴"
+								append={this.appendMediaLink} />
+							: null}
 					</div>
 				</div>
 			</div>

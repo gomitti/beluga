@@ -8,4 +8,5 @@ import account from "./account"
 import like from "./like"
 import favorite from "./favorite"
 import reaction from "./reaction"
-export default { status, user, server, hashtag, timeline, media, account, like, reaction, favorite }
+import access_token from "./access_token"
+export default { status, user, server, hashtag, timeline, media, account, like, reaction, favorite, access_token }

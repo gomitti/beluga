@@ -7,4 +7,5 @@ import media from "./media"
 import favorite from "./favorite"
 import reaction from "./reaction"
 import status from "./status"
-export default { account, server, hashtag, user, like, media, status, reaction, favorite }
+import access_token from "./access_token"
+export default { account, server, hashtag, user, like, media, status, reaction, favorite, access_token }

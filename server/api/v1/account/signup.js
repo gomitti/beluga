@@ -1,11 +1,11 @@
 import { ObjectID } from "mongodb"
-import assert from "../../../assert"
+import assert, { is_string } from "../../../assert"
 import config from "../../../config/beluga"
 import storage from "../../../config/storage"
 import bcrypt from "bcrypt"
 
 export default async (db, params) => {
-	if (assert.is_string(params.name) === false) {
+	if (is_string(params.name) === false) {
 		throw new Error("ユーザー名を入力してください")
 	}
 	if (params.name.length == 0) {
@@ -18,7 +18,7 @@ export default async (db, params) => {
 		throw new Error(`ユーザー名に使用できない文字が含まれています`)
 	}
 
-	if (assert.is_string(params.raw_password) === false) {
+	if (is_string(params.raw_password) === false) {
 		throw new Error("パスワードを入力してください")
 	}
 	if (params.raw_password.length == 0) {
@@ -34,7 +34,7 @@ export default async (db, params) => {
 		throw new Error(`パスワードに使用できない文字が含まれています`)
 	}
 
-	if (assert.is_string(params.ip_address) === false) {
+	if (is_string(params.ip_address) === false) {
 		throw new Error("サーバーで問題が発生しました")
 	}
 
@@ -46,9 +46,9 @@ export default async (db, params) => {
 	}
 	const collection = db.collection("users")
 
-	const multipost = await collection.findOne({ "_ip_address": params.ip_address })
-	if (multipost !== null) {
-		throw new Error("アカウントの連続作成はできません")
+	const accounts = await collection.find({ "_ip_address": params.ip_address }).toArray()
+	if (accounts.length >= config.account.max_num_accounts_per_ip_address) {
+		throw new Error(`アカウントは1人${config.account.max_num_accounts_per_ip_address}個まで作成できます`)
 	}
 
 	const existing = await collection.findOne({ "name": params.name })

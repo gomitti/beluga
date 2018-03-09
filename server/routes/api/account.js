@@ -9,13 +9,13 @@ module.exports = (fastify, options, next) => {
 		try {
 			const ip_address = req.headers["x-real-ip"]
 			const params = Object.assign({ ip_address }, req.body)
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate_cookie(req, res)
 			const user_id = await model.v1.account.signup(fastify.mongo.db, params)
 			const user = await model.v1.user.show(fastify.mongo.db, { "id": user_id })
 			assert(user, "@user must be object")
 			// セッションを再生成
-			await fastify.session.destroy(res, session)
-			await fastify.session.generate(res, user.id)
+			await fastify.session.destroy(session, res)
+			await fastify.session.generate(req, res, user.id)
 			res.send({ "success": true, user })
 		} catch (error) {
 			res.send({ "success": false, "error": error.toString() })
@@ -23,11 +23,11 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/signin`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate_cookie(req, res)
 			const user = await model.v1.account.signin(fastify.mongo.db, req.body)
 			// セッションを再生成
-			await fastify.session.destroy(res, session)
-			await fastify.session.generate(res, user.id)
+			await fastify.session.destroy(session, res)
+			await fastify.session.generate(req, res, user.id)
 			res.send({ "success": true })
 		} catch (error) {
 			res.send({ "success": false, "error": error.toString() })
@@ -35,7 +35,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/avatar/reset`, async (req, res) => {
 		try {
-			let session = await fastify.authenticate_session(req, res)
+			let session = await fastify.authenticate(req, res)
 			if (!session.user_id) {
 				throw new Error("ログインしてください")
 			}
@@ -52,7 +52,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/avatar/update`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!session.user_id) {
 				throw new Error("ログインしてください")
 			}
@@ -78,14 +78,14 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/profile/update`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!session.user_id) {
 				throw new Error("ログインしてください")
 			}
 			await model.v1.account.profile.update(fastify.mongo.db, Object.assign({}, req.body, {
 				"user_id": session.user_id
 			}))
-			const user = model.v1.user.show(fastify.mongo.db, { "id": session.user_id })
+			const user = await model.v1.user.show(fastify.mongo.db, { "id": session.user_id })
 			res.send({ "success": true, user })
 		} catch (error) {
 			res.send({ "success": false, "error": error.toString() })
@@ -93,7 +93,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/favorite/media/update`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!session.user_id) {
 				throw new Error("ログインしてください")
 			}
@@ -107,7 +107,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/favorite/emoji/update`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!session.user_id) {
 				throw new Error("ログインしてください")
 			}
@@ -121,7 +121,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/profile/background_image/update`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!session.user_id) {
 				throw new Error("ログインしてください")
 			}
@@ -147,7 +147,7 @@ module.exports = (fastify, options, next) => {
 	})
 	fastify.post(`/api/${api_version}/account/profile/background_image/reset`, async (req, res) => {
 		try {
-			const session = await fastify.authenticate_session(req, res)
+			const session = await fastify.authenticate(req, res)
 			if (!session.user_id) {
 				throw new Error("ログインしてください")
 			}

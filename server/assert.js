@@ -10,13 +10,13 @@ export const is_number = value => {
 	return typeof value === "number"
 }
 export const is_array = value => {
-	return value instanceof Array
+	return Array.isArray(value)
 }
 export const key_exists = (key, params) => {
 	return key in params
 }
 
-const assert = (expression, message) => {
+export default (expression, message) => {
 	if (!!expression === true) {
 		return
 	}
@@ -29,11 +29,3 @@ const assert = (expression, message) => {
 	})
 	throw error
 }
-
-assert.is_string = is_string
-assert.is_object = is_object
-assert.is_number = is_number
-assert.is_array = is_array
-assert.key_exists = key_exists
-
-export default assert

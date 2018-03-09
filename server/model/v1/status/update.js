@@ -2,7 +2,6 @@ const axios = require("axios")
 import config from "../../../config/beluga"
 import api from "../../../api"
 import memcached from "../../../memcached"
-import show from "./show"
 
 const request = axios.create({
 	"timeout": config.status.embed.web.timeout * 1000
@@ -118,10 +117,24 @@ export default async (db, params) => {
 		params.server_id = hashtag.server_id
 	}
 
+	let recipient = null
 	if (params.recipient_id) {
-		const recipient = await memcached.v1.user.show(db, { "id": params.recipient_id })
+		recipient = await memcached.v1.user.show(db, { "id": params.recipient_id })
 		if (!recipient) {
 			throw new Error("ユーザーが見つかりません")
+		}
+	}
+
+	let server = null
+	if (params.server_id) {
+		server = await memcached.v1.server.show(db, { "id": params.server_id })
+		if (!server) {
+			throw new Error("サーバーが見つかりません")
+		}
+	}
+	if(recipient){
+		if(!!server === false){
+			throw new Error("ホームへ投稿する場合はサーバーを指定してください")
 		}
 	}
 
@@ -149,12 +162,21 @@ export default async (db, params) => {
 	const status = await api.v1.status.update(db, params)
 
 	if (hashtag) {
+		memcached.v1.delete_timeline_hashtag_from_cache(hashtag)
 		const collection = db.collection("hashtags")
 		const result = await collection.updateOne(
 			{ "_id": hashtag.id },
 			{ "$inc": { "statuses_count": 1 } }
 		)
 		hashtag.statuses_count += 1		// キャッシュを直接変更
+	}
+
+	if (recipient) {
+		memcached.v1.delete_timeline_home_from_cache(recipient, server)
+	}
+
+	if (server) {
+		memcached.v1.delete_timeline_server_from_cache(server)
 	}
 
 	return status.id

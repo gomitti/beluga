@@ -4,6 +4,7 @@ import { observer } from "mobx-react"
 import assert, { is_object, is_array } from "../../../../assert"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
+import warning from "../../../../libs/warning"
 import TimelineView from "../../../../views/desktop/default/timeline"
 import PostboxView from "../../../../views/desktop/default/postbox"
 import NavigationBarView from "../../../../views/desktop/default/navigationbar"
@@ -77,6 +78,9 @@ export default class App extends Component {
 	// ここで返したpropsはクライアント側でも取れる
 	static async getInitialProps({ query }) {
 		return { ...query }
+	}
+	componentDidMount() {
+		warning()
 	}
 	constructor(props) {
 		super(props)

@@ -26,19 +26,21 @@ export class PostboxMediaView extends Component {
 			"preview_url": null
 		}
 	}
-	onMouseOverImage = (event, thumbnail_url) => {
-		if (this.state.preview_url === thumbnail_url){
+	onMouseOverImage = (event, preview_url, width, height) => {
+		if (this.state.preview_url === preview_url){
 			return
 		}
+		const preview_width = 120
+		const preview_height = preview_width / width * height
 		const parent = this.refs.wrapper.getBoundingClientRect()
 		const { x, y } = event.target.getBoundingClientRect()
 		this.setState({
 			"is_preview_hidden": false,
 			"preview_position": {
-				"x": x - parent.x - 50 + event.target.clientWidth / 2, 
-				"y": y - parent.y - 100 - 10
+				"x": x - parent.x - 60 + event.target.clientWidth / 2, 
+				"y": y - parent.y - preview_height - 4
 			},
-			"preview_url": thumbnail_url
+			preview_url
 		})
 	}
 	onMouseOutImage = event => {
@@ -48,7 +50,7 @@ export class PostboxMediaView extends Component {
 		})
 	}
 	render() {
-		const { media, is_hidden, append } = this.props
+		const { media, is_hidden, append, title } = this.props
 		if (is_hidden) {
 			return null
 		}
@@ -68,9 +70,10 @@ export class PostboxMediaView extends Component {
 						continue
 					}
 					const original_url = get_original_url_of_item(item)
+					const sizes = item.suffix.split("-")
 					views.push(
 						<a href={original_url} className="item" onClick={event => append(event, item)}>
-							<img src={thumbnail_url} onMouseOut={this.onMouseOutImage} onMouseOver={event => this.onMouseOverImage(event, thumbnail_url)} />
+							<img className="thumbnail" src={thumbnail_url} onMouseOut={this.onMouseOutImage} onMouseOver={event => this.onMouseOverImage(event, original_url, parseInt(sizes[0]), parseInt(sizes[1]))} />
 						</a>
 					)
 				}
@@ -88,6 +91,7 @@ export class PostboxMediaView extends Component {
 		}
 		return (
 			<div className="postbox-media history scroller-wrapper" ref="wrapper">
+				<p className="title">{title}</p>
 				<div className="scroller">
 					{mediaViews}
 				</div>

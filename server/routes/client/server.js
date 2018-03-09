@@ -251,7 +251,7 @@ module.exports = (fastify, options, next) => {
 				assert(statuses_home instanceof Array)
 			}
 			const params = Object.assign({
-				"server_id": server.id,
+				"id": server.id,
 				"trim_user": false,
 				"trim_server": false,
 				"trim_hashtag": false,

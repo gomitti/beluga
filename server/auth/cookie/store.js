@@ -1,6 +1,6 @@
 import { ObjectID } from "mongodb"
-import assert from "../assert"
-import logger from "../logger"
+import assert, { is_string, is_number } from "../../assert"
+import logger from "../../logger"
 
 export default class Store {
 	constructor(db, options) {
@@ -23,13 +23,10 @@ export default class Store {
 			}
 			return session
 		}
-		const rows = await this.collection.find({ "encrypted_id": encrypted_id }).toArray()
-		if (rows.length !== 1) {
-			// console.log("	rows.length !== 1", rows)
-			await this.destroy(encrypted_id)
+		session = await this.collection.findOne({ "encrypted_id": encrypted_id })
+		if (session === null) {
 			return null
 		}
-		session = rows[0]
 		if (session.expires < Date.now()) {
 			// console.log("	expired", session.expires, Date.now())
 			await this.destroy(encrypted_id)
@@ -41,14 +38,14 @@ export default class Store {
 	async save(session) {
 		// console.log("Store::save", session)
 		try {
-			assert(assert.is_string(session.id), "session.id is not string")
-			assert(assert.is_string(session.encrypted_id), "session.encrypted_id is not string")
+			assert(is_string(session.id), "session.id is not string")
+			assert(is_string(session.encrypted_id), "session.encrypted_id is not string")
 			if (session.user_id !== null) {
-				if (!(session.user_id instanceof ObjectID) ){
+				if (!(session.user_id instanceof ObjectID)) {
 					throw new Error("不正なユーザーIDです")
 				}
 			}
-			assert(assert.is_number(session.expires), "session.expires is not string")
+			assert(is_number(session.expires), "session.expires is not string")
 		} catch (error) {
 			logger.log({
 				"level": "error",
@@ -81,9 +78,9 @@ export default class Store {
 		}
 		return true
 	}
-	async clean(){
+	async clean() {
 		const expires = Date.now()
-		const result = await this.collection.deleteMany({ "expires": { $lt: expires} })
+		const result = await this.collection.deleteMany({ "expires": { $lt: expires } })
 	}
 	clear_cache_if_needed() {
 		if (Object.keys(this.cache).length >= this.options.max_cache_capacity) {
