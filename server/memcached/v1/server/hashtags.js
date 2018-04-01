@@ -1,26 +1,18 @@
-import { ObjectID } from "mongodb"
 import api from "../../../api"
 import { Memcached } from "../../../memcached/v1/memcached"
-import assert from "../../../assert"
+import assert, { is_string, is_number } from "../../../assert"
+import { try_convert_to_hex_string, convert_to_hex_string_or_null } from "../../../lib/object_id"
 
 const memcached = new Memcached(api.v1.server.hashtags, 600)
 
 export const delete_server_hashtags_from_cache = server => {
-	if (typeof server.id === "string") {
-		return memcached.delete(server.id)
-	}
-	if (server.id instanceof ObjectID) {
-		return memcached.delete(server.id.toHexString())
-	}
+    const server_id = try_convert_to_hex_string(server.id, "@serverが不正です")
+    memcached.delete(server_id)
 }
 
 export default async (db, params) => {
-	let primary_key = params.id
-	if (primary_key instanceof ObjectID) {
-		primary_key = primary_key.toHexString()
-	}
-	assert(typeof primary_key === "string", "@primary_key must be string")
-	const threshold = params.threshold
-	assert(typeof threshold === "number", "@threshold must be number")
-	return await memcached.fetch([primary_key, threshold], db, params)
+    const server_id = try_convert_to_hex_string(params.id, "@idを指定してください")
+    const { threshold } = params
+    assert(is_number(threshold), "@threshold must be of type number")
+    return await memcached.fetch([server_id, threshold], db, params)
 }

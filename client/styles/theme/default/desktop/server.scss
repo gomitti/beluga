@@ -1,0 +1,254 @@
+.server-container {
+    background-color: white;
+    margin-bottom: 10px;
+
+    > .content {
+        padding: 20px;
+        border-top: 1px solid rgb(238, 238, 238);
+
+        > .title {
+            font-size: 15px;
+            font-weight: bold;
+            color: rgb(20, 20, 20);
+            padding: 0;
+            margin: 0;
+            margin-bottom: 10px;
+        }
+    }
+
+    > .content:first-child {
+        border-top: none;
+    }
+}
+
+.server-avatar {
+    > a {
+        text-decoration: none;
+        display: block;
+
+        > .image {
+            width: 70px;
+            height: 70px;
+            border-radius: 35px;
+            margin: 0 auto;
+            display: block;
+        }
+    }
+}
+
+.server-name {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    > a {
+        text-decoration: none;
+        text-align: center;
+
+        > h1 {
+            color: black;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        > h2 {
+            color: rgb(153, 153, 153);
+            font-weight: normal;
+            font-size: 16px;
+            margin-top: 6px;
+        }
+    }
+
+    > a:hover {
+        text-decoration: none;
+
+        > h1,
+        > h2 {
+            text-decoration: underline;
+        }
+    }
+}
+
+.server-description {
+    margin-top: 10px;
+    font-size: 15px;
+    text-align: center;
+    word-wrap: break-word;
+    word-break: break-all;
+}
+
+.server-members {}
+
+.server-members-list {
+    overflow: hidden;
+
+    > li {
+        > a {
+            display: block;
+            float: left;
+            margin: 0 5px 5px 0;
+            width: 30px;
+            height: 30px;
+            line-height: 0;
+
+            > img {
+                width: 100%;
+                height: 100%;
+                border-radius: 100%;
+            }
+        }
+    }
+}
+
+.timeline {
+    .server-name {
+        margin-top: 10px;
+    }
+}
+
+.server-settings {
+    .server-name {
+        margin-top: 10px;
+    }
+}
+
+.timeline.hashtags {
+    .server-container {
+        > .content.card {
+            margin-bottom: 10px;
+            padding: 20px 40px;
+
+            > .group {
+                display: flex;
+                justify-content: center;
+            }
+        }
+
+        > .content.additional {
+            display: none;
+        }
+    }
+
+    .server-avatar {
+        float: left;
+    }
+
+    .server-name {
+        float: left;
+        text-align: left;
+        margin-left: 20px;
+    }
+
+    .server-description {
+        margin-top: 20px;
+    }
+}
+
+#app.create-server {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    display: flex;
+}
+
+.create-server-container {
+    padding-top: 100px;
+    flex: 0 0 auto;
+    flex-direction: column;
+    width: 300px;
+    justify-content: center;
+    margin: 0 auto;
+
+    > .title {
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    > .content {
+        width: 100%;
+        margin-top: 20px;
+        border-radius: 6px;
+        background-color: white;
+        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+
+        > .inside {
+            padding: 20px;
+
+            > .create-server-callout {
+                font-size: 15px;
+                margin-top: 10px;
+                line-height: 1;
+            }
+
+            > .create-server-callout:first-child {
+                margin-top: 0;
+            }
+        }
+    }
+}
+
+.create-server-form {
+    > .item {
+        margin-top: 30px;
+
+        > .title {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        > .input-container {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: row;
+
+            > .form-input {
+                font-size: 16px;
+                flex: 1 1 auto;
+            }
+        }
+
+        > .input-container.name {
+            display: flex;
+            flex-direction: row;
+
+            > .prefix {
+                flex: 0 0 auto;
+                font-size: 14px;
+                line-height: 32px;
+            }
+
+            > .form-input {
+                flex: 1 1 auto;
+                margin-left: 4px;
+                width: 100%;
+            }
+        }
+
+        > .hint {
+            margin-top: 4px;
+            font-size: 13px;
+            color: rgb(120, 120, 120);
+        }
+    }
+
+    > .item:first-child {
+        margin-top: 0;
+    }
+
+    > .submit {
+        margin-top: 20px;
+
+        > .button {
+            width: 100%;
+            height: 32px;
+        }
+    }
+}
+
+#app.server-settings {
+    .settings-menu-module {
+        width: 200px;
+    }
+}

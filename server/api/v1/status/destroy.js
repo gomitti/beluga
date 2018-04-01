@@ -1,19 +1,8 @@
-import { ObjectID } from "mongodb"
-import config from "../../../config/beluga"
+import { try_convert_to_object_id } from "../../../lib/object_id"
 
 export default async (db, params) => {
-	if (typeof params.id === "string") {
-		try {
-			params.id = ObjectID(params.id)
-		} catch (error) {
-			throw new Error("投稿を正しく指定してください")
-		}
-	}
-	if (!(params.id instanceof ObjectID)) {
-		throw new Error("投稿を正しく指定してください")
-	}
+    const id = try_convert_to_object_id(params.id, "@idが不正です")
 
-	const collection = db.collection("statuses")
-	await collection.deleteOne({ "_id": params.id })
-	return true
+    await db.collection("statuses").deleteOne({ "_id": id })
+    return true
 }

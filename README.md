@@ -12,45 +12,31 @@ npm install
 
 ### MongoDB
 
-#### macOS
+- macOS
 
 ```bash
 brew install mongodb
 ```
 
-#### Ubuntu
+- Ubuntu
 
 [https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
 
 ### uWebSocket
 
-#### macOS
+- **macOS**
 
 ```bash
 brew install libuv
 ```
 
-#### Ubuntu
+- **Ubuntu**
 
 ```bash
 sudo apt install libssl-dev
 ```
 
-### ffmpeg
-
-#### macOS
-
-```bash
-brew install ffmpeg
-```
-
-#### Ubuntu
-
-```bash
-sudo apt install ffmpeg
-```
-
-#### コンパイル
+- **ビルド**
 
 ```
 git clone https://github.com/uNetworking/uWebSockets
@@ -59,15 +45,29 @@ make
 sudo make install
 ```
 
+### ffmpeg
+
+- macOS
+
+```bash
+brew install ffmpeg
+```
+
+- Ubuntu
+
+```bash
+sudo apt install ffmpeg
+```
+
 ### GraphicsMagick
 
-#### macOS
+- macOS
 
 ```
 brew install graphicsmagick
 ```
 
-#### Ubuntu
+- Ubuntu
 
 ```
 sudo apt install graphicsmagick

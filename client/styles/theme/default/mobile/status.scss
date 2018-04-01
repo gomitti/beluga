@@ -1,0 +1,441 @@
+.status {
+    position: relative;
+    z-index: 0;
+
+    > .inside {
+        padding: 6px 16px 4px 16px;
+        padding-left: 6px;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        position: relative;
+    }
+
+    a {
+        text-decoration: none;
+    }
+}
+
+.status-left {
+    width: 57px;
+    height: 62px;
+    margin-top: -6px;
+    z-index: 1;
+    flex: 0 0 auto;
+
+    > .avatar {
+        position: relative;
+        line-height: 0;
+
+        > img {
+            border-radius: 50%;
+            position: absolute;
+            left: -5px;
+            top: 0;
+            width: 45px;
+            height: 45px;
+            background-color: white;
+            border: 8px solid white;
+        }
+    }
+}
+
+.status-right {
+    flex: 1 1 auto;
+    z-index: 2;
+    min-width: 0;
+}
+
+.status-header {
+    position: relative;
+    z-index: 1;
+    line-height: 1;
+
+    > .inside {
+        > .link {
+            text-decoration: none;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            margin-right: 46px;
+
+            > .display-name {
+                flex: 0 1 auto;
+                color: rgb(50, 50, 50);
+                font-size: 16px;
+                font-weight: bold;
+                padding-right: 5px;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            > .name {
+                flex: 1 1 auto;
+                color: rgb(120, 120, 120);
+                font-size: 16px;
+                font-weight: normal;
+            }
+        }
+
+        > .time {
+            font-weight: normal;
+            position: absolute;
+            top: 2px;
+            right: 0;
+            font-size: 13px;
+            color: rgb(120, 120, 120);
+            text-decoration: none;
+        }
+    }
+}
+
+.status-content {
+    margin-top: 6px;
+
+    > .body {
+        font-size: 17px;
+        line-height: 20px;
+        word-break: break-all;
+        word-wrap: break-word;
+
+        > p {
+            a {
+                font-weight: bold;
+            }
+        }
+    }
+}
+
+.status-body-link::before {
+    font-family: Beluga;
+    content: "\E00B";
+}
+
+.status-body-emoji {
+    width: 20px;
+    height: 20px;
+    margin-right: 1px;
+    margin-bottom: -3px;
+    display: inline-block;
+}
+
+.status-body-hashtag::before {
+    font-family: Beluga;
+    content: "\E01E";
+}
+
+.status-body-mention::before {
+    font-family: Beluga;
+    content: "\E01D";
+}
+
+.status-body-tweet {
+    width: 100%;
+}
+
+.status-favofites {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-top: 6px;
+
+    > .users {
+        display: flex;
+        flex-direction: row;
+        flex: 0 0 auto;
+
+        > a {
+            display: block;
+            width: 24px;
+            height: 24px;
+            margin-right: 4px;
+            line-height: 0;
+
+            > img {
+                width: 100%;
+                height: 100%;
+                border-radius: 100%;
+            }
+        }
+    }
+
+    > .meta {
+        font-size: 12px;
+        position: relative;
+
+        > .sep {
+            position: absolute;
+            border-left: 2px solid rgb(220, 220, 220);
+            height: 16px;
+            top: 4px;
+            left: 6px;
+            display: inline-block;
+        }
+
+        > .count {
+            display: inline-block;
+            margin-top: 4px;
+            font-weight: bold;
+            margin-left: 14px;
+        }
+
+        > .unit {
+            display: inline-block;
+            margin-top: 4px;
+            margin-left: 2px;
+        }
+    }
+}
+
+.status-reactions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 2px 0 -4px -4px;
+
+    > .status-reaction {
+        flex: 0 0 auto;
+        display: flex;
+        border-radius: 4px;
+        margin: 0 0 2px 1px;
+        padding: 4px 4px 4px 3px;
+        cursor: pointer;
+        background-color: white;
+        box-sizing: border-box;
+        border: 1px solid white;
+        transition: border-color 50ms ease-in 0s;
+
+        > .emoji {
+            flex: 0 0 auto;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        > .count {
+            flex: 0 0 auto;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 3px;
+            margin-top: 3px;
+        }
+    }
+}
+
+.status-body-gallery {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    margin: 3px 0;
+
+    > a {
+        flex: 0 1 auto;
+        margin-right: 6px;
+        display: block;
+        line-height: 0;
+
+        > img {
+            width: 100%;
+            border-radius: 6px;
+        }
+    }
+
+    > .status-body-gif {
+        flex: 0 1 auto;
+        margin-right: 6px;
+    }
+}
+
+.status-body-gallery:first-child {
+    margin-top: 0;
+}
+
+.status-body-website {
+    display: flex;
+    flex-direction: row;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid rgb(220, 220, 220);
+    margin: 4px 0;
+
+    > .image {
+        width: 80px;
+        flex: 0 0 auto;
+        margin-right: 12px;
+        line-height: 0;
+
+        > img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+    }
+
+    > .content {
+        > .title {
+            font-size: 17px;
+            line-height: 18px;
+            font-weight: bold;
+        }
+
+        > .description {
+            margin-top: 4px;
+            font-size: 13px;
+            line-height: 16px;
+        }
+
+        > .domain {
+            margin-top: 4px;
+            font-weight: bold;
+            color: rgb(50, 50, 50);
+            font-size: 13px;
+            line-height: 13px;
+        }
+    }
+}
+
+@media (max-width: 1024px) {
+    .status-body-website {
+        > .image {
+            display: none;
+        }
+    }
+}
+
+.status-body-video {
+    width: 100%;
+}
+
+.status-action {
+    z-index: 4;
+    overflow: hidden;
+    height: 28px;
+    margin-top: 6px;
+
+    > .inside {
+        display: flex;
+        flex-wrap: nowrap;
+
+        > .left {
+            flex: 0 1 auto;
+
+            > .belonging {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 14px;
+                font-weight: normal;
+                line-height: 28px;
+                color: rgb(100, 100, 100);
+                margin-right: 10px;
+                max-width: 200px;
+                overflow: hidden;
+            }
+        }
+
+        > .right {
+            flex: 1 1 auto;
+            display: flex;
+            flex-wrap: nowrap;
+            justify-content: space-around;
+
+            > button {
+                flex: 0 0 auto;
+                width: 28px;
+                height: 28px;
+                background: transparent;
+                margin-right: 2px;
+                font-family: Beluga;
+                font-size: 20px;
+                color: rgb(100, 100, 100);
+            }
+
+            > .like::before {
+                content: "\E003";
+            }
+
+            > .favorite::before {
+                content: "\E008";
+            }
+
+            > .emoji::before {
+                content: "\E000";
+            }
+
+            > .comment::before {
+                content: "\E00A";
+            }
+
+            > .destroy::before {
+                content: "\E009";
+            }
+        }
+    }
+}
+
+.status-likes {
+    margin-top: 4px;
+
+    > p {
+        width: 16px;
+        height: 16px;
+        font-size: 18px;
+        line-height: 1;
+        display: inline-block;
+        margin: 0 0 3px 0px;
+        color: rgb(254, 197, 46);
+    }
+
+    > p::before {
+        font-family: Beluga;
+        content: "\E002";
+    }
+}
+
+.status-body-gif {
+    position: relative;
+
+    > a {
+        display: block;
+        width: 100%;
+        color: rgba(0, 0, 0, 0.7);
+        list-style: 0;
+
+        > img {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+    }
+
+    > .watermark {
+        padding: 3px 3px 3px 4px;
+        border-radius: 4px;
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.7);
+        top: 4px;
+        right: 4px;
+
+        > i {
+            background-image: url("/asset/default/gif.svg?v=0.1.55");
+            background-size: 15px 10px;
+            background-repeat: no-repeat;
+            width: 15px;
+            height: 10px;
+            display: block;
+        }
+    }
+}
+
+.status-header {
+    > .inside {
+        > .link {
+            > .display-name {
+                > .status-body-emoji {
+                    width: 18px;
+                    height: 18px;
+                }
+            }
+        }
+    }
+}

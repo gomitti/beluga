@@ -4,9 +4,10 @@ import server from "./server"
 import hashtag from "./hashtag"
 import timeline from "./timeline"
 import media from "./media"
+import mentions from "./mentions"
 import account from "./account"
 import like from "./like"
 import favorite from "./favorite"
 import reaction from "./reaction"
 import access_token from "./access_token"
-export default { status, user, server, hashtag, timeline, media, account, like, reaction, favorite, access_token }
+export default { status, user, server, hashtag, timeline, media, account, like, reaction, favorite, access_token, mentions }

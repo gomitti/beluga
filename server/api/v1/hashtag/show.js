@@ -1,59 +1,54 @@
-import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
+import { try_convert_to_object_id } from "../../../lib/object_id"
+import { is_string } from "../../../assert"
+
+const build_query_by_id = params => {
+    const id = try_convert_to_object_id(params.id, "@idが不正です")
+    return {
+        "_id": params.id
+    }
+}
+
+const build_query_by_tagname = params => {
+    const server_id = try_convert_to_object_id(params.server_id, "@server_idが不正です")
+
+    const { tagname } = params
+    if (is_string(tagname) === false) {
+        throw new Error("@tagnameが不正です")
+    }
+    if (tagname.length == 0) {
+        throw new Error("@tagnameを指定してください")
+    }
+    if (tagname.length > config.hashtag.max_tagname_length) {
+        throw new Error(`@tagnameは${config.hashtag.max_tagname_length}文字を超えてはいけません`)
+    }
+
+    return { tagname, server_id }
+}
+
+const build_query = params => {
+    if (params.id) {
+        return build_query_by_id(params)
+    }
+    if (params.tagname) {
+        return build_query_by_tagname(params)
+    }
+    throw new Error("パラメータが不正です")
+}
 
 export default async (db, params) => {
-	if (typeof params.id === "string") {
-		try {
-			params.id = ObjectID(params.id)
-		} catch (error) {
-			throw new Error("idが不正です")
-		}
-	}
+    const query = build_query(params)
 
-	let query = null
-
-	if (params.id instanceof ObjectID) {
-		query = {
-			"_id": params.id
-		}
-	} else {
-		if (typeof params.tagname !== "string") {
-			throw new Error("tagnameが不正です")
-		}
-		if (params.tagname.length == 0) {
-			throw new Error("tagnameを指定してください")
-		}
-		if (params.tagname.length > config.hashtag.max_tagname_length) {
-			throw new Error(`tagnameは${config.hashtag.max_tagname_length}文字を超えてはいけません`)
-		}
-
-		if (typeof params.server_id === "string") {
-			try {
-				params.server_id = ObjectID(params.server_id)
-			} catch (error) {
-				throw new Error("server_idが不正です")
-			}
-		}
-		if (!(params.server_id instanceof ObjectID)) {
-			throw new Error("server_idが不正です")
-		}
-		
-		query = {
-			"tagname": params.tagname,
-			"server_id": params.server_id,
-		}
-	}
-
-	const collection = db.collection("hashtags")
-	const hashtag = await collection.findOne(query)
-	if (hashtag === null) {
-		return null
-	}
-	hashtag.id = hashtag._id
-	for (const key in hashtag) {
-		if (key.indexOf("_") == 0) {
-			delete hashtag[key]
-		}
-	}
-	return hashtag
+    const collection = db.collection("hashtags")
+    const hashtag = await collection.findOne(query)
+    if (hashtag === null) {
+        return null
+    }
+    hashtag.id = hashtag._id
+    for (const key in hashtag) {
+        if (key.indexOf("_") == 0) {
+            delete hashtag[key]
+        }
+    }
+    return hashtag
 }

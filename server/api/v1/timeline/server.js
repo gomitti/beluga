@@ -1,20 +1,11 @@
-import { ObjectID } from "mongodb"
-import config from "../../../config/beluga"
 import fetch from "./fetch"
+import { try_convert_to_object_id } from "../../../lib/object_id"
 
 export default async (db, params) => {
-	if (typeof params.id === "string") {
-		try {
-			params.id = ObjectID(params.id)
-		} catch (error) {
-			throw new Error("server_idが不正です")
-		}
-	}
-	if (!(params.id instanceof ObjectID)) {
-		throw new Error("server_idが不正です")
-	}
+    const server_id = try_convert_to_object_id(params.server_id, "@server_idが不正です")
 
-	return fetch(db, {
-		"server_id": params.id
-	}, params)
+    return fetch(db, {
+        server_id,
+        "is_public": true,
+    }, params)
 }

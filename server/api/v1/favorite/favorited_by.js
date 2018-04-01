@@ -1,22 +1,15 @@
-import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
 import assert from "../../../assert"
+import { try_convert_to_object_id } from "../../../lib/object_id"
 
 export default async (db, params) => {
-	if (typeof params.status_id === "string") {
-		try {
-			params.status_id = ObjectID(params.status_id)
-		} catch (error) {
-			throw new Error("投稿が見つかりません")
-		}
-	}
-	assert(params.status_id instanceof ObjectID, "投稿が見つかりません")
+    const status_id = try_convert_to_object_id(params.status_id, "@status_idが不正です")
 
-	const collection = db.collection("favorites")
-	const rows = await collection.find({ "status_id": params.status_id }).sort({ "created_at": -1 }).toArray()
-	const user_ids = []
-	for (const row of rows) {
-		user_ids.push(row.user_id)
-	}
-	return user_ids
+    const collection = db.collection("favorites")
+    const rows = await collection.find({ status_id }).sort({ "created_at": -1 }).toArray()
+    const user_ids = []
+    for (const row of rows) {
+        user_ids.push(row.user_id)
+    }
+    return user_ids
 }

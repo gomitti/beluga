@@ -14,7 +14,7 @@ export default async (db, params) => {
 	if (params.name.length > config.user.max_name_length) {
 		throw new Error(`ユーザー名は${config.user.max_name_length}文字を超えてはいけません`)
 	}
-	if (params.name.match(config.user.name_regexp) === null) {
+	if (params.name.match(new RegExp(`^${config.user.name_regexp}$`)) === null) {
 		throw new Error(`ユーザー名に使用できない文字が含まれています`)
 	}
 

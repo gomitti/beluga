@@ -1,3 +1,3 @@
 module.exports = {
-	distDir: "../www/next"
+    distDir: "../www/next"
 }

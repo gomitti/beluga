@@ -1,53 +1,36 @@
-import { ObjectID } from "mongodb"
 import config from "../../../config/beluga"
+import { try_convert_to_object_id } from "../../../lib/object_id"
+import { is_string } from "../../../assert"
 
 export default async (db, params) => {
-	if (typeof params.user_id === "string") {
-		try {
-			params.user_id = ObjectID(params.user_id)
-		} catch (error) {
-			throw new Error("ログインしてください")
-		}
-	}
-	if (!(params.user_id instanceof ObjectID)) {
-		throw new Error("ログインしてください")
-	}
+    const user_id = try_convert_to_object_id(params.user_id, "@user_idが不正です")
+    const status_id = try_convert_to_object_id(params.status_id, "@status_idが不正です")
 
-	if (typeof params.status_id === "string") {
-		try {
-			params.status_id = ObjectID(params.status_id)
-		} catch (error) {
-			throw new Error("投稿が見つかりません")
-		}
-	}
-	if (!(params.status_id instanceof ObjectID)) {
-		throw new Error("投稿が見つかりません")
-	}
+    const { shortname } = params
+    if (is_string(shortname) === false) {
+        throw new Error("追加するリアクションを指定してください")
+    }
+    if (!!shortname.match(/[a-zA-Z0-9_\-+]+/) === false) {
+        throw new Error("追加するリアクションを指定してください")
+    }
 
-	if (typeof params.shortname !== "string") {
-		throw new Error("追加するリアクションを指定してください")
-	}
-	if (!!params.shortname.match(/[a-zA-Z0-9_\-+]+/) === false) {
-		throw new Error("追加するリアクションを指定してください")
-	}
+    const collection = db.collection("reactions")
 
-	const collection = db.collection("reactions")
+    const count = await collection.find({ user_id, status_id }).count()
+    if (count >= config.status.reaction.limit) {
+        throw new Error("これ以上リアクションを追加することはできません")
+    }
 
-	const count = await collection.find({ "user_id": params.user_id, "status_id": params.status_id }).count()
-	if(count >= config.status.reaction.limit){
-		throw new Error("これ以上リアクションを追加することはできません")
-	}
+    const existing = await collection.findOne({ user_id, status_id, shortname })
+    if (existing) {
+        throw new Error("同じリアクションを追加することはできません")
+    }
 
-	const existing = await collection.findOne({ "user_id": params.user_id, "status_id": params.status_id, "shortname": params.shortname })
-	if (existing) {
-		throw new Error("同じリアクションを追加することはできません")
-	}
-
-	const result = await collection.insertOne({
-		"status_id": params.status_id,
-		"user_id": params.user_id,
-		"shortname": params.shortname,
-		"created_at": Date.now()
-	})
-	return 0
+    const result = await collection.insertOne({
+        user_id,
+        status_id,
+        shortname,
+        "created_at": Date.now()
+    })
+    return 0
 }

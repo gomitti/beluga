@@ -1,0 +1,80 @@
+#app.account {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    display: flex;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.account-content {
+    padding-top: 20px;
+    flex: 0 0 auto;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+    margin: 0 auto;
+
+    > .title {
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    > .wrapper {
+        width: 100%;
+        margin-top: 20px;
+        border-radius: 6px;
+        background-color: white;
+        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+
+        > .inside {
+            padding: 20px;
+
+            > .create-account-callout {
+                font-size: 15px;
+            }
+        }
+    }
+}
+
+.account-form {
+    > .item {
+        margin-top: 20px;
+
+        > .title {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        > .input-wrapper {
+            margin-top: 2px;
+            display: flex;
+            flex-direction: row;
+
+            > .form-input {
+                font-size: 16px;
+                flex: 1 1 auto;
+            }
+        }
+
+        > .hint {
+            margin-top: 4px;
+            font-size: 13px;
+            color: rgb(120, 120, 120);
+        }
+    }
+
+    > .item:first-child {
+        margin-top: 0;
+    }
+
+    > .submit {
+        margin-top: 20px;
+
+        > .button {
+            width: 100%;
+            height: 32px;
+        }
+    }
+}
