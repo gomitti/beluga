@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../../../beluga.config"
-import { map_shortname_fname } from "../parser/emoji"
+import { map_shortname_fname } from "../../../../../stores/emoji"
 
 @observer
 export default class ReactionsView extends Component {
@@ -16,7 +16,7 @@ export default class ReactionsView extends Component {
         }
         const buttons = []
         for (const shortname in status.reactions.list) {
-            const fname = map_shortname_fname[`:${shortname}:`]
+            const fname = map_shortname_fname[shortname]
             if (!fname) {
                 continue
             }

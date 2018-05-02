@@ -111,7 +111,7 @@ export default class NavigationBarView extends Component {
                                             <li><a href="/settings/favorites" target="_blank">お気に入り</a></li>
                                             <li><a href="/settings/uploads" target="_blank">アップロード</a></li>
                                             <li><a href="/settings/security" target="_blank">セキュリティ</a></li>
-                                            <li><a href="/settings/two_factor_authentication" target="_blank">2段階認証</a></li>
+                                            <li><a href="/settings/authenticator" target="_blank">スマホ認証</a></li>
                                             <li><a href="/settings/desktop" target="_blank">デスクトップ</a></li>
                                         </ul>
                                     </li>

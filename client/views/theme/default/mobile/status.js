@@ -1,7 +1,7 @@
 import { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../../beluga.config"
-import parse, { split_emoji_unicode, parse_emoji_unicode } from "../desktop/parser"
+import parse, { split_emoji_unicode, parse_emoji_unicode, generate_image_from_emoji_shortname } from "../desktop/parser"
 import ReactionsView from "../desktop/status/reactions"
 import { request } from "../../../../api"
 import assert, { is_object, is_string } from "../../../../assert"
@@ -134,10 +134,11 @@ export default class StatusView extends Component {
         }
         this.bodyView = bodyView
 
+        const { user } = status
         // ユーザー名（絵文字を使う場合があるため）
         this.displayNameView = null
-        if (is_string(status.user.display_name)) {
-            const components = split_emoji_unicode([status.user.display_name])
+        if (is_string(user.display_name) && user.display_name.length > 0) {
+            const components = split_emoji_unicode([user.display_name])
             const subviews = []
             for (const substr of components) {
                 // 絵文字（ユニコード）
@@ -147,7 +148,16 @@ export default class StatusView extends Component {
                 // それ以外
                 subviews.push(substr)
             }
-            this.displayNameView = subviews
+            this.displayNameView = <span className="display-name element">{subviews}</span>
+        }
+
+        // ユーザーのステータス
+        this.userStatusView = null
+        if (is_string(user.status_emoji_shortname)) {
+            const imageView = generate_image_from_emoji_shortname(user.status_emoji_shortname, "emoji-image")
+            if (imageView) {
+                this.userStatusView = <span className="user-status element">{imageView}</span>
+            }
         }
 
         this.state = {
@@ -264,9 +274,10 @@ export default class StatusView extends Component {
                     <div className="status-right">
                         <div className="status-header">
                             <div className="inside">
-                                <a href="/user/" className="avatar link">
-                                    <span className="display-name">{this.displayNameView}</span>
-                                    <span className="name verdana">@{user.name}</span>
+                                <a href="/user/" className="link">
+                                    {this.displayNameView}
+                                    {this.userStatusView}
+                                    <span className="name verdana element">@{user.name}</span>
                                 </a>
                                 <a href={`/status/${user.name}/${status.id}`} className="time meiryo">{this.state.elapsed_time_str}</a>
                             </div>

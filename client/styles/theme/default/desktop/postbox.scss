@@ -1,4 +1,7 @@
 .postbox-module {
+    position: relative;
+    z-index: 1;
+
     > .inside {
         min-height: 65px;
         padding: 6px 16px;
@@ -99,77 +102,77 @@
                 line-height: 1;
                 padding: 0;
                 color: rgb(120, 120, 120);
-            }
 
-            > .action:first-child {
-                border-top-left-radius: 3px;
-                border-bottom-left-radius: 3px;
-            }
+                &:first-child {
+                    border-top-left-radius: 3px;
+                    border-bottom-left-radius: 3px;
+                }
 
-            > .action:last-child {
-                border-top-right-radius: 3px;
-                border-bottom-right-radius: 3px;
-                border-width: 1px;
-            }
+                &:last-child {
+                    border-top-right-radius: 3px;
+                    border-bottom-right-radius: 3px;
+                    border-width: 1px;
+                }
 
-            > .action:hover {
-                background-color: #f6f6f6;
-            }
+                &:hover {
+                    background-color: #f6f6f6;
+                }
 
-            > .action.active {
-                background-color: #f6f6f6;
-            }
+                &.active {
+                    background-color: #f6f6f6;
+                }
 
-            > .action.media-upload::before {
-                content: "\E020";
-            }
+                &.media-upload::before {
+                    content: "\E020";
+                }
 
-            > .action.media-history::before {
-                content: "\E021";
-            }
+                &.media-history::before {
+                    content: "\E021";
+                }
 
-            > .action.media-favorites::before {
-                content: "\E01F";
-            }
+                &.media-favorites::before {
+                    content: "\E01F";
+                }
 
-            > .action.emoji::before {
-                content: "\E02A";
-            }
+                &.emoji::before {
+                    content: "\E02A";
+                }
 
-            > .action.preview::before {
-                content: "\E029";
-            }
+                &.preview::before {
+                    content: "\E029";
+                }
 
-            > .action.text-editing::before {
-                content: "\E022";
-            }
+                &.text-editing::before {
+                    content: "\E022";
+                }
 
-            > .action.misc::before {
-                content: "\E004";
-            }
+                &.misc::before {
+                    content: "\E004";
+                }
 
-            > .action.text-big::before {
-                content: "\E023";
-            }
+                &.text-big::before {
+                    content: "\E023";
+                }
 
-            > .action.text-bold::before {
-                content: "\E024";
-            }
+                &.text-bold::before {
+                    content: "\E024";
+                }
 
-            > .action.text-underline::before {
-                content: "\E025";
-            }
+                &.text-underline::before {
+                    content: "\E025";
+                }
 
-            > .action.text-strikethrough::before {
-                content: "\E026";
-            }
+                &.text-strikethrough::before {
+                    content: "\E026";
+                }
 
-            > .action.text-italic::before {
-                content: "\E027";
-            }
+                &.text-italic::before {
+                    content: "\E027";
+                }
 
-            > .action.text-code::before {
-                content: "\E028";
+                &.text-code::before {
+                    content: "\E028";
+                }
             }
         }
     }
@@ -226,11 +229,11 @@
                     width: 100%;
                     border-radius: 4px;
                 }
-            }
 
-            > .item:hover {
-                > .thumbnail {
-                    opacity: 0.8;
+                &:hover {
+                    > .thumbnail {
+                        opacity: 0.8;
+                    }
                 }
             }
         }
@@ -265,9 +268,48 @@
     font-size: 13px;
     padding: 4px 0;
 
-    > p {
-        > .filename {
-            font-weight: bold;
+    > .file {
+        margin-top: 10px;
+
+        &:first {
+            margin-top: 0;
+        }
+
+        > .metadata {
+            display: flex;
+            flex-direction: row;
+
+            > .name {
+                flex: 1 1 auto;
+            }
+
+            > .size {
+                flex: 0 0 auto;
+            }
+        }
+
+        > .progress-bar {
+            width: 100%;
+            margin-top: 3px;
+            position: relative;
+
+            > .bar {
+                height: 3px;
+                display: block;
+                position: relative;
+                z-index: 2;
+            }
+
+            > .track {
+                z-index: 1;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                display: block;
+                background-color: rgb(240, 240, 240);
+                height: 3px;
+            }
         }
     }
 }

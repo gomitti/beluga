@@ -9,9 +9,7 @@ export default class App extends Component {
     }
     constructor(props) {
         super(props)
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
     }
     signin = event => {
         event.preventDefault()

@@ -20,9 +20,7 @@ export default class App extends Component {
             "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
             "column_target": null	// ここで設定すると正しく表示されないのでhackする
         }
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
     }
     componentDidMount() {
         // 謎hack

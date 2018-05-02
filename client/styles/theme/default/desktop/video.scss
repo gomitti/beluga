@@ -822,6 +822,13 @@ body.video-react-full-window .video-react-fullscreen {
     bottom: 0;
     right: 0;
     z-index: 9999;
+
+    .video-react-video {
+        width: auto;
+        height: calc(100% - 30px);
+        display: block;
+        margin: 0 auto;
+    }
 }
 
 .video-react .video-react-time-control {

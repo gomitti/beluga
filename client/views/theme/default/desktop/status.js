@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../../beluga.config"
-import parse, { split_emoji_unicode, parse_emoji_unicode } from "./parser"
+import parse, { split_emoji_unicode, parse_emoji_unicode, generate_image_from_emoji_shortname } from "./parser"
 import ReactionsView from "./status/reactions"
 import { request } from "../../../../api"
 import assert, { is_object, is_string } from "../../../../assert"
@@ -101,10 +101,11 @@ export default class StatusView extends Component {
         }
         this.bodyView = bodyView
 
+        const { user } = status
         // ユーザー名（絵文字を使う場合があるため）
         this.displayNameView = null
-        if (is_string(status.user.display_name) && status.user.display_name.length > 0) {
-            const components = split_emoji_unicode([status.user.display_name])
+        if (is_string(user.display_name) && user.display_name.length > 0) {
+            const components = split_emoji_unicode([user.display_name])
             const subviews = []
             for (const substr of components) {
                 // 絵文字（ユニコード）
@@ -114,7 +115,27 @@ export default class StatusView extends Component {
                 // それ以外
                 subviews.push(substr)
             }
-            this.displayNameView = subviews
+            this.displayNameView = <span className="display-name element">{subviews}</span>
+        }
+
+        // ユーザーのステータス
+        this.userStatusView = null
+        if (is_string(user.status_emoji_shortname)) {
+            const imageView = generate_image_from_emoji_shortname(user.status_emoji_shortname, "emoji-image")
+            if (imageView) {
+                const status_text = user.status_text ? user.status_text : imageView
+                this.userStatusView =
+                    <button className="tooltip-button user-status element">
+                        {imageView}
+                        <span className="tooltip">
+                            {user.status_text ?
+                                <span className="text">{imageView}<span className="string">{user.status_text}</span></span>
+                                :
+                                <span className="text">{status_text}</span>
+                            }
+                        </span>
+                    </button>
+            }
         }
 
         this.state = {
@@ -163,9 +184,13 @@ export default class StatusView extends Component {
         event.preventDefault()
         const { status } = this.props
         const { x, y } = event.target.getBoundingClientRect()
-        emojipicker.show(x, y + window.pageYOffset + event.target.clientHeight, shortname => {
-            status.reactions.toggle(shortname)
-        })
+        if (emojipicker.is_hidden) {
+            emojipicker.show(x, y + window.pageYOffset + event.target.clientHeight, shortname => {
+                status.reactions.toggle(shortname)
+            })
+        } else {
+            emojipicker.hide()
+        }
     }
     destroy = event => {
         event.preventDefault()
@@ -194,7 +219,7 @@ export default class StatusView extends Component {
         })
     }
     render() {
-        const { status, options, onClickHashtag, onClickMention } = this.props
+        const { status, options, onClickHashtag, onClickMention, logged_in } = this.props
         const { user } = status
         let likesView = null
         if (status.likes.count > 0) {
@@ -248,9 +273,10 @@ export default class StatusView extends Component {
                     <div className="status-right">
                         <div className="status-header">
                             <div className="inside">
-                                <a href="/user/" className="avatar link">
-                                    {this.displayNameView ? <span className="display-name">{this.displayNameView}</span> : null}
-                                    <span className="name verdana">@{user.name}</span>
+                                <a href="/user/" className="link">
+                                    {this.displayNameView}
+                                    {this.userStatusView}
+                                    <span className="name verdana element">@{user.name}</span>
                                 </a>
                                 <a href={`/status/${user.name}/${status.id}`} className="time meiryo">{this.state.elapsed_time_str}</a>
                             </div>
@@ -266,15 +292,23 @@ export default class StatusView extends Component {
                             <a href={`/status/${user.name}/${status.id}`} className="time verdana">{this.state.created_at_str}</a>
                         </div>
                     </div>
-                    <div className="status-action" ref="action">
-                        <div className="inside">
-                            <button className="like user-defined-color-hover" onClick={this.createLike}></button>
-                            <button className="favorite user-defined-color-hover" onClick={this.toggleFavorite}></button>
-                            <button className="emoji emojipicker-ignore-click user-defined-color-hover" onClick={this.toggleReaction}></button>
-                            <button className="comment user-defined-color-hover"></button>
-                            <button className="destroy user-defined-color-hover" onClick={this.destroy}></button>
+                    {logged_in ?
+                        <div className="status-action" ref="action">
+                            <div className="inside">
+                                <button className="like user-defined-color-hover" onClick={this.createLike}></button>
+                                <button className="favorite user-defined-color-hover" onClick={this.toggleFavorite}></button>
+                                <button className="emoji emojipicker-ignore-click user-defined-color-hover" onClick={this.toggleReaction}></button>
+                                <button className="comment user-defined-color-hover"></button>
+                                {logged_in.id === status.user.id ?
+                                    <button className="destroy user-defined-color-hover" onClick={this.destroy}></button>
+                                    :
+                                    null
+                                }
+                            </div>
                         </div>
-                    </div>
+                        :
+                        null
+                    }
                 </div>
             </div>
         );

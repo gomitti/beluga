@@ -35,7 +35,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/server/members`, async (req, res) => {
+    fastify.get(`/api/v1/server/members`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (!!session.user_id === false) {
@@ -56,18 +56,20 @@ module.exports = (fastify, options, next) => {
                 throw new Error("ログインしてください")
             }
 
+            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
+            if (user === null) {
+                throw new Error("ユーザーが見つかりません")
+            }
+
             const server = await memcached.v1.server.show(fastify.mongo.db, { "id": req.body.server_id })
             if (server === null) {
                 throw new Error("サーバーが見つかりません")
             }
 
-            if (user_id.equals(server.created_by) === false) {
-                throw new Error("権限がありません")
-            }
-
             const remote = storage.servers[0]
             const url = await model.v1.server.avatar.reset(fastify.mongo.db, {
                 "server_id": server.id,
+                "user_id": user.id,
                 "storage": remote
             })
             res.send({ "success": true, "avatar_url": url })
@@ -83,6 +85,11 @@ module.exports = (fastify, options, next) => {
                 throw new Error("ログインしてください")
             }
 
+            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
+            if (user === null) {
+                throw new Error("ユーザーが見つかりません")
+            }
+
             if (!!req.body.data === false || typeof req.body.data !== "string") {
                 throw new Error("画像がありません")
             }
@@ -90,10 +97,6 @@ module.exports = (fastify, options, next) => {
             const server = await memcached.v1.server.show(fastify.mongo.db, { "id": req.body.server_id })
             if (server === null) {
                 throw new Error("サーバーが見つかりません")
-            }
-
-            if (user_id.equals(server.created_by) === false) {
-                throw new Error("権限がありません")
             }
 
             const base64_components = req.body.data.split(",")
@@ -104,6 +107,7 @@ module.exports = (fastify, options, next) => {
             const url = await model.v1.server.avatar.update(fastify.mongo.db, {
                 data,
                 "server_id": server.id,
+                "user_id": user.id,
                 "storage": remote
             })
             res.send({ "success": true, "avatar_url": url })
@@ -119,21 +123,25 @@ module.exports = (fastify, options, next) => {
                 throw new Error("ログインしてください")
             }
 
+            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
+            if (user === null) {
+                throw new Error("ユーザーが見つかりません")
+            }
+
             const server = await memcached.v1.server.show(fastify.mongo.db, { "id": req.body.server_id })
             if (server === null) {
                 throw new Error("サーバーが見つかりません")
             }
 
-            if (user_id.equals(server.created_by) === false) {
-                throw new Error("権限がありません")
-            }
-
             await model.v1.server.profile.update(fastify.mongo.db, Object.assign({}, req.body, {
                 "server_id": server.id,
+                "user_id": user.id
             }))
+
             const updated_server = await model.v1.server.show(fastify.mongo.db, { "id": server.id })
             res.send({ "success": true, "server": updated_server })
         } catch (error) {
+            console.log(error)
             res.send({ "success": false, "error": error.toString() })
         }
     })

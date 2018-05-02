@@ -56,7 +56,7 @@ module.exports = plugin((fastify, options, next) => {
         if (url.indexOf(_cookie_options.path || "/") !== 0) {
             return null
         }
-        let encrypted_session_id = request.cookies[cookie_name]
+        const encrypted_session_id = request.cookies[cookie_name]
         // console.log("cookie", encrypted_session_id)
         if (typeof encrypted_session_id !== "string") {
             // console.log(1)

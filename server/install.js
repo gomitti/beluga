@@ -7,7 +7,7 @@ const MongoClient = require("mongodb").MongoClient
 async function register_reserved_user_names(db) {
     const collection = db.collection("users")
     const reserved_names = [
-        "admin", "beluga", "me"
+        "admin", "beluga", "me", "here"
     ]
     for (const name of reserved_names) {
         try {

@@ -10,7 +10,7 @@ button {
 
 .button {
     cursor: pointer;
-    font-weight: bold;
+    font-weight: normal;
     font-size: 13px;
     display: inline-block;
     text-align: center;
@@ -33,18 +33,51 @@ button {
         text-align: center;
         width: calc(100% - 24px);
     }
-}
 
-.button.neutral {
-    // background: #6C7A89;
-    color: rgb(141, 141, 141);
-    background: linear-gradient(to bottom, rgb(252, 251, 247) 0%, rgb(247, 246, 242) 100%);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    border-color: rgba(0, 0, 0, 0.2);
-}
+    &.neutral {
+        // background: #6C7A89;
+        color: rgb(141, 141, 141);
+        background: linear-gradient(to bottom, rgb(252, 251, 247) 0%, rgb(247, 246, 242) 100%);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        border-color: rgba(0, 0, 0, 0.2);
+    }
 
-.button:hover {
-    transform: translateY(-1px);
+    &:hover {
+        transform: translateY(-1px);
+    }
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:active {
+        outline: 0;
+        box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+    }
+
+    &.ready {
+        color: white; // background: -moz-linear-gradient(top, #fcfbf7 0%, #edece8 100%);
+        // background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fcfbf7), color-stop(100%,#edece8));
+        // background: -webkit-linear-gradient(top, #fcfbf7 0%, #edece8 100%);
+        // background: linear-gradient(to bottom, #fcfbf7 0%, #edece8 100%);
+   
+    }
+
+    &.in-progress,
+    &.in-progress:hover {
+        box-shadow: none;
+        -webkit-animation: progress-bar-stripes 1s linear infinite;
+        -moz-animation: progress-bar-stripes 1s linear infinite;
+        animation: progress-bar-stripes 1s linear infinite;
+        color: #888;
+        background: -webkit-linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), -webkit-linear-gradient(top, #f6f5f0, #e1e0dc);
+        background: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), -moz-linear-gradient(top, #f6f5f0, #e1e0dc);
+        background: linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), linear-gradient(top, #f6f5f0, #e1e0dc);
+        background-repeat: repeat;
+        -webkit-background-size: 50px 50px;
+        -moz-background-size: 50px 50px;
+        background-size: 50px 50px;
+    }
 }
 
 .tooltip-button {
@@ -80,45 +113,13 @@ button {
             border-color: black transparent transparent transparent;
         }
     }
-}
 
-.tooltip-button:hover {
-    > .tooltip {
-        visibility: visible;
-        opacity: 1;
+    &:hover {
+        > .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
     }
-}
-
-.button:focus {
-    outline: 0;
-}
-
-.button:active {
-    outline: 0;
-    box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
-}
-
-.button.ready {
-    color: white; // background: -moz-linear-gradient(top, #fcfbf7 0%, #edece8 100%);
-    // background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fcfbf7), color-stop(100%,#edece8));
-    // background: -webkit-linear-gradient(top, #fcfbf7 0%, #edece8 100%);
-    // background: linear-gradient(to bottom, #fcfbf7 0%, #edece8 100%);
-}
-
-.button.in-progress,
-.button.in-progress:hover {
-    box-shadow: none;
-    -webkit-animation: progress-bar-stripes 1s linear infinite;
-    -moz-animation: progress-bar-stripes 1s linear infinite;
-    animation: progress-bar-stripes 1s linear infinite;
-    color: #888;
-    background: -webkit-linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), -webkit-linear-gradient(top, #f6f5f0, #e1e0dc);
-    background: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), -moz-linear-gradient(top, #f6f5f0, #e1e0dc);
-    background: linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), linear-gradient(top, #f6f5f0, #e1e0dc);
-    background-repeat: repeat;
-    -webkit-background-size: 50px 50px;
-    -moz-background-size: 50px 50px;
-    background-size: 50px 50px;
 }
 
 @-webkit-keyframes progress-bar-stripes {

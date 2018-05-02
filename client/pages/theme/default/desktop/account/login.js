@@ -10,9 +10,7 @@ export default class App extends Component {
     }
     constructor(props) {
         super(props)
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
     }
     signin = event => {
         event.preventDefault()
@@ -60,7 +58,7 @@ export default class App extends Component {
                 <div className="account-container">
                     <h1 className="title">{config.site.name}にログイン</h1>
                     <div className="content">
-                        <div className="inside account-form">
+                        <form className="inside account-form" method="post" onSubmit={this.signin}>
                             <div className="item">
                                 <h3 className="title">ユーザー名</h3>
                                 <p className="input-container">
@@ -74,9 +72,9 @@ export default class App extends Component {
                                 </p>
                             </div>
                             <div className="submit">
-                                <button className="button user-defined-bg-color" onClick={this.signin}>ログイン</button>
+                                <button className="button user-defined-bg-color">ログイン</button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                     <div className="content">
                         <div className="inside">

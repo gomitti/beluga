@@ -1,7 +1,7 @@
 import config from "../../../../beluga.config"
 import parser from "./parser/index"
 import assert, { is_object } from "../../../../assert"
-import { map_unicode_fname, map_shortname_fname, unicode_emoji_regexp } from "./parser/emoji"
+import { map_unicode_fname_and_shortname, map_shortname_fname, unicode_emoji_regexp } from "../../../../stores/emoji"
 
 const split_regexp = (components, regexp) => {
     const result = []
@@ -163,7 +163,7 @@ export const parse_tags = (substr, subviews, status, handlers) => {
 
 export const parse_emoji_unicode = (substr, subviews) => {
     if (substr.match(/[\u0023\u00AE\u00A9\u2049\u203C\u2122-\u21AA\u2328-\u23FA\u24C2\u25AA-\u25FE\u2600-\u26FF\u2700-\u27bf\u2935\u2934\u3030\u303D\u3297\u3299\uD800-\uDBFF]/g)) {
-        const metadata = map_unicode_fname[substr]
+        const metadata = map_unicode_fname_and_shortname[substr]
         if (metadata) {
             const fname = metadata[0]
             const shortname = metadata.length == 2 ? metadata[1] : null
@@ -177,11 +177,21 @@ export const parse_emoji_unicode = (substr, subviews) => {
     return false
 }
 
+export const generate_image_from_emoji_shortname = (shortname, classname) => {
+    const fname = map_shortname_fname[shortname]
+    if (fname) {
+        return <img alt={shortname} className={classname} src={`/asset/emoji/64x64/${fname}.png`} />
+    }
+    return null
+}
+
 export const parse_emoji_shortname = (substr, subviews) => {
-    if (substr.match(/^:[a-zA-Z0-9_]+:$/)) {
-        const fname = map_shortname_fname[substr]
-        if (fname) {
-            subviews.push(<img alt={substr} className="status-body-emoji" src={`/asset/emoji/64x64/${fname}.png`} />)
+    const m = substr.match(/^:([a-zA-Z0-9_]+):$/)
+    if (m) {
+        const shortname = m[1]
+        const image = generate_image_from_emoji_shortname(shortname, "status-body-emoji")
+        if (image) {
+            subviews.push(image)
             return true
         }
         subviews.push(substr)

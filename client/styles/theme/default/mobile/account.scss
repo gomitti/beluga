@@ -63,10 +63,10 @@
             font-size: 13px;
             color: rgb(120, 120, 120);
         }
-    }
 
-    > .item:first-child {
-        margin-top: 0;
+        &:first-child {
+            margin-top: 0;
+        }
     }
 
     > .submit {

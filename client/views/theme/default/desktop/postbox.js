@@ -1,11 +1,14 @@
 import React, { Component } from "react"
+import { observer } from "mobx-react"
 import assert from "../../../../assert"
 import assign from "../../../../libs/assign"
 import { request } from "../../../../api"
 import { PostboxMediaView } from "./postbox/media"
 import classnames from "classnames"
 import { sync as uid } from "uid-safe"
+import { convert_bytes_to_optimal_unit } from "../../../../libs/functions"
 
+@observer
 export default class PostboxView extends Component {
     constructor(props) {
         super(props)
@@ -16,16 +19,25 @@ export default class PostboxView extends Component {
             "show_text_actions": false,
             "show_emoji_picker": false,
             "drag_entered": false,
-            "uploading_files": [],
-            "uploaded_files": [],
         }
     }
-    componentDidMount() {
+    componentDidMount = () => {
         const { textarea } = this.refs
         if (textarea) {
             textarea.focus()
         }
+        const { uploader } = this.props
+        uploader.error_callback = () => {
 
+        }
+        uploader.uploaded_callback = url => {
+            const { textarea } = this.refs
+            if (textarea.value.length == 0) {
+                this.setText(url)
+            } else {
+                this.setText(textarea.value + "\n" + url)
+            }
+        }
     }
     toggleMediaView = event => {
         event.preventDefault()
@@ -132,10 +144,10 @@ export default class PostboxView extends Component {
             return
         }
     }
-    setText(str) {
+    setText(string) {
         const { textarea } = this.refs
-        textarea.value = str
-        if (str.length === 0) {
+        textarea.value = string
+        if (string.length === 0) {
             return this.setState({
                 "is_post_button_active": false
             })
@@ -210,119 +222,30 @@ export default class PostboxView extends Component {
             this.setState({ "drag_entered": false })
         }
     }
-    fileWillUpload = file => {
-        const { uploading_files } = this.state
-        uploading_files.push(file)
-        this.setState({
-            uploading_files
-        })
-    }
-    fileDidUpload = uploaded_file => {
-        let index = -1
-        for (let i = 0; i < this.state.uploading_files.length; i++) {
-            const file = this.state.uploading_files[i]
-            if (uploaded_file.identifier === file.identifier) {
-                index = i
-                break
-            }
-        }
-        assert(index !== -1)
-        let { uploaded_files, uploading_files } = this.state
-        uploading_files.splice(index, 1)
-        uploaded_files.push(uploaded_file)
-        if (uploading_files.length === 0) {
-            uploading_files = []
-            uploaded_files = []
-        }
-        this.setState({
-            uploading_files, uploaded_files
-        })
-    }
     onDrop = event => {
-        const transfer = event.dataTransfer;
-        if (!transfer) {
-            return true;
+        const transfer = event.dataTransfer
+        if (!!transfer === false) {
+            return true
         }
-        const str = transfer.getData("text")	// テキストのドロップは無視
-        if (str) {
-            return true;
+        const string = transfer.getData("text")	// テキストのドロップは無視
+        if (string) {
+            return true
         }
-        event.preventDefault();
-        if (transfer.files.length == 0) {
-            alert("ファイルを取得できません")
-            return false;
+        const { files } = transfer
+        if (files.length == 0) {
+            return true
         }
-        for (let file of transfer.files) {
-            file.identifier = uid(12)
-            this.fileWillUpload(file)
-            const reader = new FileReader()
-            reader.onerror = event => {
-                alert(`${file.name}を読み込めませんでした`)
-            }
-            reader.onload = event => {
-                const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
-                request
-                    .post(endpoint, {
-                        "data": reader.result
-                    })
-                    .then(res => {
-                        const data = res.data
-                        if (data.error) {
-                            alert(data.error)
-                            return
-                        }
-                        const url = data.urls.original
-                        const { textarea } = this.refs
-                        if (textarea.value.length == 0) {
-                            this.setText(url)
-                        } else {
-                            this.setText(textarea.value + "\n" + url)
-                        }
-                    })
-                    .catch(error => {
-                        alert(error)
-                    })
-                    .then(_ => {
-                        this.fileDidUpload(file)
-                    })
-            }
-            reader.readAsDataURL(file)
+        event.preventDefault()
+        const { uploader } = this.props
+        for (const file of files) {
+            uploader.add(file)
         }
     }
     onFileChange = event => {
-        const files = event.target.files
+        const { uploader } = this.props
+        const { files } = event.target
         for (const file of files) {
-            file.identifier = uid(12)
-            this.fileWillUpload(file)
-            const reader = new FileReader()
-            reader.onload = event => {
-                const endpoint = reader.result.indexOf("data:video") === 0 ? "/media/video/upload" : "/media/image/upload"
-                request
-                    .post(endpoint, {
-                        "data": reader.result
-                    })
-                    .then(res => {
-                        const data = res.data
-                        if (data.error) {
-                            alert(data.error)
-                            return
-                        }
-                        const url = data.urls.original
-                        const { textarea } = this.refs
-                        if (textarea.value.length == 0) {
-                            this.setText(url)
-                        } else {
-                            this.setText(textarea.value + "\n" + url)
-                        }
-                    })
-                    .catch(error => {
-                        alert(error)
-                    })
-                    .then(_ => {
-                        this.fileDidUpload(file)
-                    })
-            }
-            reader.readAsDataURL(file)
+            uploader.add(file)
         }
     }
     onClickActionMediaUpload = event => {
@@ -341,7 +264,8 @@ export default class PostboxView extends Component {
             return
         }
         this.setState({
-            "show_media_history": !this.state.show_media_history
+            "show_media_history": !this.state.show_media_history,
+            "show_media_favorites": false,
         })
     }
     onClickActionMediaFavorites = event => {
@@ -350,7 +274,8 @@ export default class PostboxView extends Component {
             return
         }
         this.setState({
-            "show_media_favorites": !this.state.show_media_favorites
+            "show_media_favorites": !this.state.show_media_favorites,
+            "show_media_history": false
         })
     }
     onClickActionEmoji = event => {
@@ -392,17 +317,27 @@ export default class PostboxView extends Component {
             )
         }
         let uploadProgressView = null
-        if (this.state.uploading_files.length > 0) {
+        const { uploader } = this.props
+        const { uploading_file_metadatas } = uploader
+        if (uploading_file_metadatas.length > 0) {
             uploadProgressView =
                 <div className="postbox-upload-progress">
-                    <p>
-                        <span className="filename">{this.state.uploading_files[0].name}</span>
-                        <span>をアップロードしています...</span>
-                        {this.state.uploading_files.length + this.state.uploaded_files.length === 1 ?
-                            null :
-                            <span>({this.state.uploaded_files.length + 1}/{this.state.uploading_files.length + this.state.uploaded_files.length})</span>
-                        }
-                    </p>
+                    {uploading_file_metadatas.map(metadata => {
+                        const { name, size, percent } = metadata
+                        const size_str = convert_bytes_to_optimal_unit(size)
+                        return (
+                            <div className="file">
+                                <p className="metadata">
+                                    <span className="name">{name}</span>
+                                    <span className="size">{size_str}</span>
+                                </p>
+                                <p className="progress-bar">
+                                    <span className="bar user-defined-bg-color" style={{ "width": `${percent * 100}%` }}></span>
+                                    <span className="track"></span>
+                                </p>
+                            </div>
+                        )
+                    })}
                 </div>
         }
         return (

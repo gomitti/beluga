@@ -133,30 +133,30 @@
                         font-size: 14px;
                         padding: 0 20px;
                         font-weight: bold;
-                    }
 
-                    > a.arrow::after {
-                        font-family: Beluga;
-                        content: "\E00E";
-                        font-size: 13px;
-                        margin-left: 4px;
-                    }
+                        &.arrow::after {
+                            font-family: Beluga;
+                            content: "\E00E";
+                            font-size: 13px;
+                            margin-left: 4px;
+                        }
 
-                    > a:hover {
-                        text-decoration: none;
-                        background-color: rgb(244, 244, 244);
-                        color: rgb(30, 30, 30);
+                        &:hover {
+                            text-decoration: none;
+                            background-color: rgb(244, 244, 244);
+                            color: rgb(30, 30, 30);
+                        }
                     }
                 }
-            }
 
-            > .block:first-child {
-                padding-top: 0;
-            }
+                &:first-child {
+                    padding-top: 0;
+                }
 
-            > .block:last-child {
-                border-bottom: none;
-                padding-bottom: 0;
+                &:last-child {
+                    border-bottom: none;
+                    padding-bottom: 0;
+                }
             }
         }
 
@@ -250,40 +250,40 @@
                             color: rgb(30, 30, 30);
                             text-decoration: none;
                             font-weight: normal;
-                        }
 
-                        > .link:hover {
-                            text-decoration: none;
-                        }
-                    }
-
-                    > .item.current-server {
-                        margin-left: 20px;
-
-                        > .link {
-                            display: flex;
-                            flex-direction: row;
-                            align-items: center;
-
-                            > .avatar {
-                                flex: 0 0 auto;
-                                width: 20px;
-                                height: 20px;
-                                border-radius: 20px;
-                            }
-
-                            > .name {
-                                margin-left: 4px;
-                                flex: 0 0 auto;
-                                overflow: hidden;
-                                white-space: nowrap;
-                                text-overflow: ellipsis;
+                            &:hover {
+                                text-decoration: none;
                             }
                         }
-                    }
 
-                    > .item.active {
-                        border-bottom: 2px solid;
+                        &.current-server {
+                            margin-left: 20px;
+
+                            > .link {
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+
+                                > .avatar {
+                                    flex: 0 0 auto;
+                                    width: 20px;
+                                    height: 20px;
+                                    border-radius: 20px;
+                                }
+
+                                > .name {
+                                    margin-left: 4px;
+                                    flex: 0 0 auto;
+                                    overflow: hidden;
+                                    white-space: nowrap;
+                                    text-overflow: ellipsis;
+                                }
+                            }
+                        }
+
+                        &.active {
+                            border-bottom: 2px solid;
+                        }
                     }
                 }
             }
@@ -299,25 +299,25 @@
             .timeline {
                 height: 100%;
             }
-        }
 
-        > .timeline-container.global-active {
-            > .timeline.global {
-                display: block;
+            &.global-active {
+                > .timeline.global {
+                    display: block;
+                }
+
+                > .timeline.server {
+                    display: none;
+                }
             }
 
-            > .timeline.server {
-                display: none;
-            }
-        }
+            &.server-active {
+                > .timeline.global {
+                    display: none;
+                }
 
-        > .timeline-container.server-active {
-            > .timeline.global {
-                display: none;
-            }
-
-            > .timeline.server {
-                display: block;
+                > .timeline.server {
+                    display: block;
+                }
             }
         }
     }
@@ -424,16 +424,16 @@
                 font-family: Beluga;
                 content: "\E004";
             }
-        }
 
-        > li:hover {
-            > a {
-                color: rgb(250, 250, 250);
-            }
+            &:hover {
+                > a {
+                    color: rgb(250, 250, 250);
+                }
 
-            > .navigationbar-pulldown-menu {
-                visibility: visible;
-                opacity: 1;
+                > .navigationbar-pulldown-menu {
+                    visibility: visible;
+                    opacity: 1;
+                }
             }
         }
     }
@@ -462,11 +462,11 @@
             font-size: 12px;
             line-height: 12px;
             padding: 8px 15px;
-        }
 
-        > a:hover {
-            color: rgb(250, 250, 250);
-            background-color: rgb(60, 60, 60);
+            &:hover {
+                color: rgb(250, 250, 250);
+                background-color: rgb(60, 60, 60);
+            }
         }
     }
 }

@@ -39,22 +39,22 @@
             margin-top: 6px;
             display: flex;
             flex-direction: row;
-            
+
             > .form-input {
                 font-size: 16px;
                 flex: 1 1 auto;
             }
         }
-        
+
         > .hint {
             margin-top: 4px;
             font-size: 13px;
             color: rgb(120, 120, 120);
         }
-    }
 
-    > .item:first-child {
-        margin-top: 0;
+        &:first-child {
+            margin-top: 0;
+        }
     }
 
     > .submit {

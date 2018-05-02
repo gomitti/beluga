@@ -283,9 +283,7 @@ export default class App extends Component {
         this.state = {
             "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
         }
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
     }
     onUpdateThemeColor = color => {
         this.setState({ color })

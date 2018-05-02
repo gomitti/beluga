@@ -5,11 +5,87 @@ import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import Head from "../../../../../views/theme/default/desktop/head"
 import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
 import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
+import EmojiPickerView, { EmojiPicker } from "../../../../../views/theme/default/desktop/emoji"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
+import { map_shortname_fname, map_fname_category } from "../../../../../stores/emoji"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
+
+class ModuleItemStatus extends Component {
+    constructor(props) {
+        super(props)
+        const { logged_in } = this.props
+        const shortname = logged_in.status_emoji_shortname
+        this.state = {
+            "selected_emoji": null,
+            "text": logged_in.status_text
+        }
+        if (shortname) {
+            const fname = map_shortname_fname[shortname]
+            const category = map_fname_category[fname]
+            this.state.selected_emoji = { shortname, fname, category }
+        }
+    }
+    onSelectEmoji = event => {
+        event.preventDefault()
+        let { target } = event
+        if(target.tagName === "I"){
+            target = target.parentElement
+        }
+        const { x, y } = target.getBoundingClientRect()
+        const body_rect = document.body.getBoundingClientRect()
+        const width = target.clientWidth
+        if (emojipicker.is_hidden) {
+            emojipicker.show(x, y - body_rect.y + 36, (shortname, category, fname) => {
+                this.setState({
+                    "selected_emoji": { shortname, category, fname }
+                })
+                emojipicker.hide()
+            })
+        } else {
+            emojipicker.hide()
+        }
+    }
+    onChangeText = event => {
+        this.setState({ "text": event.target.value })
+    }
+    onClear = event => {
+        event.preventDefault()
+        this.setState({
+            "selected_emoji": null,
+            "text": ""
+        })
+    }
+    render() {
+        const { selected_emoji, text } = this.state
+        return (
+            <div className="item status">
+                <h3 className="title">ステータス</h3>
+                <div className="editor">
+                    <button className={classnames("select-button", { "not-selected": selected_emoji === null })} onClick={this.onSelectEmoji}>
+                        {(() => {
+                            if (selected_emoji) {
+                                const { fname } = selected_emoji
+                                return <img className="image" src={`/asset/emoji/64x64/${fname}.png`} />
+                            } else {
+                                return <i className="emojipicker-ignore-click image"></i>
+                            }
+                        })()}
+                    </button>
+                    <input className={classnames("form-input", { "user-defined-border-color-focus": selected_emoji !== null })}
+                        type="text"
+                        readOnly={selected_emoji === null ? true : null}
+                        value={text}
+                        onChange={this.onChangeText} />
+                    {selected_emoji ? <a className="delete-button" onClick={this.onClear}>デフォルトに戻す</a> : null}
+                </div>
+                <p className="hint">テキストは絵文字が設定されている場合のみ反映されます</p>
+            </div>
+        )
+    }
+}
 
 export default class App extends Component {
     static async getInitialProps({ query }) {
@@ -35,8 +111,11 @@ export default class App extends Component {
             "pending_update": false,
             "pending_reset": false,
         }
-        if (request) {
-            request.csrf_token = this.props.csrf_token
+        request.set_csrf_token(this.props.csrf_token)
+        this.emojipicker = null
+        if (typeof window !== "undefined") {
+            window.emojipicker = new EmojiPicker()
+            this.emojipicker = emojipicker
         }
         if (typeof history !== "undefined") {
             history.scrollRestoration = "manual"
@@ -216,19 +295,28 @@ export default class App extends Component {
         reader.readAsDataURL(file)
     }
     onUpdateProfile = event => {
+        event.preventDefault()
         const display_name = this.refs.display_name.value
         const description = this.refs.description.value
         const location = this.refs.location.value
+        const status = this.refs.status
         if (this.pending === true) {
             return
         }
         this.pending = true
+        const params = {
+            display_name,
+            description,
+            location
+        }
+        const { selected_emoji, text } = status.state
+        if (selected_emoji) {
+            const { shortname } = selected_emoji
+            params.status_emoji_shortname = shortname
+            params.status_text = text
+        }
         request
-            .post("/account/profile/update", {
-                display_name,
-                description,
-                location
-            })
+            .post("/account/profile/update", params)
             .then(res => {
                 const data = res.data
                 if (data.success == false) {
@@ -245,7 +333,7 @@ export default class App extends Component {
             })
     }
     render() {
-        const { profile_image_size, platform, logged_in } = this.props
+        const { profile_image_size, platform, logged_in, emoji_favorites } = this.props
         const { preview_src } = this.state
         if (!logged_in.profile) {
             return null
@@ -273,6 +361,8 @@ export default class App extends Component {
                                     <h3 className="title">自己紹介</h3>
                                     <textarea className="form-input user-defined-border-color-focus" ref="description"></textarea>
                                 </div>
+
+                                <ModuleItemStatus ref="status" logged_in={logged_in} />
 
                                 <div className="item">
                                     <h3 className="title">場所</h3>
@@ -323,6 +413,7 @@ export default class App extends Component {
                         </div>
                     </div>
                 </div>
+                <EmojiPickerView picker={this.emojipicker} favorites={emoji_favorites} />
             </div>
         )
     }

@@ -13,10 +13,16 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
+        let emoji_favorites = null
+        if (logged_in) {
+            emoji_favorites = await model.v1.account.favorite.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+            assert(Array.isArray(emoji_favorites), "@emoji_favorites must be of type array")
+        }
+
         const profile_image_size = config.user.profile.image_size
         const device = fastify.device(req)
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/profile`, {
-            csrf_token, profile_image_size, logged_in, device,
+            csrf_token, profile_image_size, logged_in, device, emoji_favorites,
             "platform": fastify.platform(req),
         })
     })
@@ -66,7 +72,7 @@ module.exports = (fastify, options, next) => {
             "platform": fastify.platform(req),
         })
     })
-    fastify.next("/settings/two_factor_authentication", async (app, req, res) => {
+    fastify.next("/settings/authenticator", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
         const logged_in = await fastify.logged_in(req, res, session)
@@ -74,7 +80,7 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
         const device = fastify.device(req)
-        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/two_factor_authentication`, {
+        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/authenticator`, {
             csrf_token, logged_in, device,
             "platform": fastify.platform(req),
         })

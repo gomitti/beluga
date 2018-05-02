@@ -12,6 +12,7 @@ import HashtagTimelineHeaderView from "./timeline/header/hashtag"
 import ServerTimelineHeaderView from "./timeline/header/server"
 import settings from "../../../../settings/desktop"
 import { request } from "../../../../api"
+import UploadManager from "../../../../stores/theme/default/common/uploader"
 
 export default class ColumnView extends Component {
     loadMoreStatuses = () => {
@@ -32,13 +33,14 @@ export default class ColumnView extends Component {
             const { server } = column.params
             headerView = <ServerTimelineHeaderView column={column} serialize={serialize} server={server} onClose={this.onClose} onBack={this.onBack} />
         }
+        const uploader = new UploadManager()
         return (
             <div className="column timeline">
                 <div className="inside timeline-container round">
                     {headerView}
                     <div className="content">
                         <div className="vertical"></div>
-                        {column.options.postbox.is_hidden ? null : <PostboxView logged_in={logged_in} {...column.params} media_favorites={media_favorites} media_history={media_history} />}
+                        {column.options.postbox.is_hidden ? null : <PostboxView logged_in={logged_in} uploader={uploader} {...column.params} media_favorites={media_favorites} media_history={media_history} />}
                         <TimelineView
                             timeline={column.timeline}
                             request_query={request_query}

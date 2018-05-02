@@ -32,6 +32,9 @@ export default {
         ["#fad0c4", "#ff9a9e"], ["#fbc2eb", "#a18cd1"], ["#fee140", "#fa709a"], ["#89f7fe", "#66a6ff"],
         ["#56ccf2", "#2f80ed"], ["#f8ffae", "#43c6ac"], ["#ffe259", "#ffa751"]
     ],
+    "emoji":{
+        "max_shortname_length": 100
+    },
     "memcached": {
         "capacity": 1000,
         "max_age": 86400
@@ -45,6 +48,7 @@ export default {
     "user": {
         "max_name_length": 32,
         "max_display_name_length": 32,
+        "max_status_text_length": 32,
         "name_regexp": "[a-zA-Z0-9_]+",
         "profile": {
             "background_image": {
@@ -122,9 +126,9 @@ export default {
             }
         },
         "video": {
-            "allowed_file_types": ["mp4", "mov"],
+            "allowed_file_types": ["mp4", "mov", "webm"],
             "unsupported_codecs": ["MPEG-4 part 2"],
-            "max_filesize": 1024 * 1024 * 40,
+            "max_filesize": 1024 * 1024 * 200,
             "max_width": 3840,
             "max_height": 3840
         },

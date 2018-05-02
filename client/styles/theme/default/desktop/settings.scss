@@ -50,10 +50,10 @@
             margin-right: 4px;
         }
     }
-}
 
-.settings-menu-container:first-child {
-    margin-top: 0;
+    &:first-child {
+        margin-top: 0;
+    }
 }
 
 .settings-menu {
@@ -73,23 +73,23 @@
             height: 38px;
             line-height: 38px;
             border-right: 4px solid transparent;
+
+            &.active::after {
+                font-family: Beluga;
+                content: "\E00E";
+                margin-left: 2px;
+            }
+
+            &:hover::after {
+                font-family: Beluga;
+                content: "\E00E";
+                margin-left: 2px;
+            }
         }
 
-        > .item.active::after {
-            font-family: Beluga;
-            content: "\E00E";
-            margin-left: 2px;
+        &:last-child {
+            border: none;
         }
-
-        > .item:hover::after {
-            font-family: Beluga;
-            content: "\E00E";
-            margin-left: 2px;
-        }
-    }
-
-    > li:last-child {
-        border: none;
     }
 }
 
@@ -130,10 +130,10 @@
             margin-right: 10px;
         }
     }
-}
 
-.settings-module:first-child {
-    margin-top: 0;
+    &:first-child {
+        margin-top: 0;
+    }
 }
 
 .settings-module.form {
@@ -166,14 +166,15 @@
         }
 
         > .hint {
-            margin-top: 4px;
+            margin-top: 6px;
             font-size: 12px;
             color: rgb(160, 160, 160);
+            text-align: right;
         }
-    }
 
-    > .item:first-child {
-        margin: 0;
+        &:first-child {
+            margin: 0;
+        }
     }
 }
 
@@ -181,6 +182,73 @@
     > .item {
         > .title {
             margin-bottom: 6px;
+        }
+    }
+}
+
+.settings-module.profile {
+    > .item.status {
+        > .editor {
+            display: flex;
+            flex-direction: row;
+            margin-top: 8px;
+            position: relative;
+
+            > .select-button {
+                width: 36px;
+                height: 36px;
+                flex: 0 0 auto;
+                border: 1px solid rgb(220, 220, 220);
+                border-right-width: 0;
+                border-radius: 4px 0 0 4px;
+                padding: 0;
+
+                > .image {
+                    width: 20px;
+                    height: 20px;
+                    margin: auto;
+                }
+
+                &.not-selected {
+                    > .image {
+                        width: 100%;
+                        height: 100%;
+                        font-family: Beluga;
+                        font-size: 20px;
+                        color: rgb(100, 100, 100);
+
+                        &::before {
+                            content: "\E000";
+                        }
+                    }
+                }
+            }
+
+            > .form-input {
+                height: 36px;
+                line-height: 36px;
+                flex: 1 1 auto;
+                border-top-left-radius: 0;
+                border-bottom-left-radius: 0;
+
+                &:read-only {
+                    background: rgb(247, 247, 247);
+
+                    &:focus {
+                        border-width: 1px;
+                        border-color: rgb(220, 220, 220);
+                    }
+                }
+            }
+
+            > .delete-button {
+                position: absolute;
+                left: 0;
+                bottom: -18px;
+                font-size: 12px;
+                line-height: 12px;
+                cursor: pointer;
+            }
         }
     }
 }
@@ -309,17 +377,17 @@
                     padding: 4px 4px;
                     border-radius: 20px;
                 }
-            }
 
-            > .item:hover {
-                > .overlay-bg {
-                    border-color: white;
+                &:hover {
+                    > .overlay-bg {
+                        border-color: white;
+                    }
                 }
-            }
 
-            > .item.active {
-                > .overlay-bg {
-                    border-color: white;
+                &.active {
+                    > .overlay-bg {
+                        border-color: white;
+                    }
                 }
             }
         }
@@ -352,10 +420,10 @@
                 box-sizing: padding-box;
                 height: 32px;
                 width: 32px;
-            }
 
-            > button:hover {
-                background-color: rgb(236, 236, 236);
+                &:hover {
+                    background-color: rgb(236, 236, 236);
+                }
             }
         }
 
@@ -457,16 +525,16 @@
                         color: rgb(120, 120, 120);
                         margin-top: 5px;
                     }
-                }
 
-                > .row:first-child {
-                    margin-top: 0;
+                    &:first-child {
+                        margin-top: 0;
+                    }
                 }
             }
-        }
 
-        > .item:last-child {
-            border-bottom: none;
+            &:last-child {
+                border-bottom: none;
+            }
         }
     }
 }

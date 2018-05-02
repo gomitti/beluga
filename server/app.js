@@ -5,7 +5,7 @@ import { websocket, bridge } from "./websocket"
 import mongo from "./mongo"
 import config from "./config/beluga"
 const app = require("fastify")({
-    "bodyLimit": 1024 * 1024 * 100,
+    "bodyLimit": 1024 * 1024 * 1024 * 1024,
     "maxParamLength": config.hashtag.max_tagname_length * 10
 })
 

@@ -22,7 +22,7 @@ class App extends Component {
         super(props)
         const { server, statuses_server, request_query } = props
         this.column = new ColumnStore(
-            { "id": server.id },
+            { "server_id": server.id },
             { server },
             {
                 "type": enums.column.type.server,
@@ -38,9 +38,7 @@ class App extends Component {
             },
             statuses_server
         )
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
     }
     render() {
         const { server, logged_in, platform, device } = this.props

@@ -32,9 +32,7 @@ class App extends Component {
             },
             statuses
         )
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
     }
     render() {
         const { server, logged_in, hashtag, platform, device, statuses } = this.props

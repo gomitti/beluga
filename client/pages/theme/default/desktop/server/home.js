@@ -81,10 +81,8 @@ export default class App extends Component {
     }
     constructor(props) {
         super(props)
+        request.set_csrf_token(this.props.csrf_token)
         this.emojipicker = null
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
         if (typeof window !== "undefined") {
             window.emojipicker = new EmojiPicker()
             this.emojipicker = emojipicker

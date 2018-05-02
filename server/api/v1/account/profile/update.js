@@ -20,10 +20,12 @@ export default async (db, params) => {
         "description": "",
         "theme_color": config.user.profile.default_theme_color,
         "use_background_image": false,
+        "status_emoji_shortname": null,
+        "status_text": null,
         "tags": []
     }, user.profile)
 
-    const { display_name, theme_color, description, location, tags } = params
+    const { display_name, theme_color, description, location, tags, status_text, status_emoji_shortname } = params
 
     if (is_string(display_name)) {
         if (display_name.length > config.user.max_display_name_length) {
@@ -51,6 +53,25 @@ export default async (db, params) => {
         }
         profile.location = location
     }
+
+    if (is_string(status_emoji_shortname) && status_emoji_shortname.length > 0) {
+        if (status_emoji_shortname.length > config.emoji.max_shortname_length) {
+            throw new Error(`ステータスの絵文字コードを${config.emoji.max_shortname_length}文字以内で入力してください。（${status_emoji_shortname.length} > ${config.emoji.max_shortname_length}）`)
+        }
+        query.status_emoji_shortname = status_emoji_shortname
+
+        // 絵文字がない場合ステータスのテキストは設定されない
+        if (is_string(status_text)) {
+            if (status_text.length > config.user.max_status_text_length) {
+                throw new Error(`ステータスを${config.user.max_status_text_length}文字以内で入力してください。（${status_text.length} > ${config.user.max_status_text_length}）`)
+            }
+            query.status_text = status_text
+        }
+    } else {
+        query.status_emoji_shortname = null
+        query.status_text = null
+    }
+
 
     if (Array.isArray(tags)) {
         for (const tag of tags) {

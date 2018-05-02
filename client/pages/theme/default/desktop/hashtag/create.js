@@ -17,9 +17,7 @@ export default class App extends Component {
         this.state = {
             "pending_create": false
         }
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
     }
 
     verify = (tagname) => {

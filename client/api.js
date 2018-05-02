@@ -1,16 +1,15 @@
 import config from "./beluga.config"
-let request = null
 
 class Request {
     constructor() {
         const _axios = require("axios")
-        const protocol = location.href.match(/https?/)[0]
+        const protocol = typeof location !== "undefined" ? location.href.match(/https?/)[0] : "http"
         this.request = _axios.create({
-            baseURL: `${protocol}://${config.domain}/api/v1/`,
-            headers: {
+            "baseURL": `${protocol}://${config.domain}/api/v1/`,
+            "headers": {
                 "Content-Type": "application/json"
             },
-            responseType: "json"
+            "responseType": "json"
         })
     }
     post(endpoint, query, config) {
@@ -21,10 +20,9 @@ class Request {
         query = Object.assign({ "csrf_token": this.csrf_token }, query)
         return this.request.get(endpoint, query, config)
     }
+    set_csrf_token = csrf_token => {
+        this.csrf_token = csrf_token
+    }
 }
 
-if (typeof window != "undefined") {
-    request = new Request()
-}
-
-export { request }
+export const request = new Request()

@@ -125,16 +125,16 @@
             box-sizing: padding-box;
             height: 32px;
             width: 32px;
-        }
 
-        > button:hover {
-            background-color: rgb(236, 236, 236);
+            &:hover {
+                background-color: rgb(236, 236, 236);
+            }
         }
     }
-}
 
-.emoji-category:first-child {
-    margin-top: 0;
+    &:first-child {
+        margin-top: 0;
+    }
 }
 
 .emoji-people {

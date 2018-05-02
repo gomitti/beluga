@@ -1,5 +1,6 @@
 import { Component } from "react"
 import { configure } from "mobx"
+import classnames from "classnames"
 import TimelineView from "../../../../../views/theme/default/desktop/timeline"
 import PostboxView from "../../../../../views/theme/default/desktop/postbox"
 import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
@@ -26,9 +27,7 @@ export default class App extends Component {
 
     constructor(props) {
         super(props)
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
         if (typeof history !== "undefined") {
             history.scrollRestoration = "manual"
         }
@@ -40,7 +39,7 @@ export default class App extends Component {
             <div id="app" className="timeline hashtags">
                 <Head title={`みつける / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} device={device} />
                 <NavigationBarView server={server} logged_in={logged_in} active="hashtags" />
-                <div id="content" className="timeline hashtags">
+                <div id="content" className={classnames("timeline hashtags", { "logged_in": !!logged_in })}>
                     <div className="inside column-container">
                         <div className="column left">
                             <HashtagsCardView hashtags={hashtags} server={server} />

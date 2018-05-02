@@ -14,6 +14,9 @@ const get_extension = format_name => {
     if (format_name.indexOf("mp4") !== -1) {
         return "mp4"
     }
+    if (format_name.indexOf("webm") !== -1) {
+        return "webm"
+    }
     return null
 }
 
@@ -59,10 +62,10 @@ const verify_data = async video_filepath => {
     const metadata = await ff_metadata(video_filepath)
 
     // ファイルチェック
-    if (!metadata) {
+    if (!!metadata === false) {
         reject(null, video_filepath, "動画の情報を取得できません")
     }
-    if (!metadata.streams) {
+    if (!!metadata.streams === false) {
         reject(metadata, video_filepath, "動画を読み込めません")
     }
 
@@ -266,7 +269,6 @@ export default async (db, params) => {
             "error": error.toString(),
             directory,
             user_id,
-            metadata
         })
         throw new Error(error.toString())
     }

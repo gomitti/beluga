@@ -5,14 +5,15 @@
     "main": "index.js",
     "scripts": {
         "build": "sh ./build.sh",
-        "build_server": "node_modules/.bin/babel server -d www",
-        "build_client": "node_modules/.bin/next build client;cp -r client/sounds www;cp -r client/asset www",
+        "build_server": "babel server -d www",
+        "build_client": "next build client;cp -r client/sounds www;cp -r client/asset www",
         "build_sass": "sh ./build_sass.sh",
-        "watch_scss": "node_modules/.bin/node-sass client/styles/theme/default/desktop/style.scss www/css/theme/default/desktop/style.css --watch  --output-style compressed",
+        "watch_sass_desktop": "node-sass client/styles/theme/default/desktop/style.scss www/css/theme/default/desktop/style.css --watch  --output-style compressed",
+        "watch_sass_mobile": "node-sass client/styles/theme/default/mobile/style.scss www/css/theme/default/mobile/style.css --watch  --output-style compressed",
         "start": "env NODE_ENV=production node www/app.js",
-        "initial_settings": "node_modules/.bin/babel-node server/install.js",
-        "benchmark": "node_modules/.bin/babel-node server/benchmark.js",
-        "test": "env NODE_ENV=test node_modules/.bin/jest"
+        "initial_settings": "babel-node server/install.js",
+        "benchmark": "babel-node server/benchmark.js",
+        "test": "env NODE_ENV=test jest"
     },
     "repository": {
         "type": "git",
@@ -32,6 +33,7 @@
         "fastify": "^1.1.1",
         "fastify-cookie": "^2.0.1",
         "fastify-mongodb": "^0.5.0",
+        "fastify-multipart": "^0.5.0",
         "fastify-react": "^2.0.0",
         "fastify-ws": "^0.4.0",
         "file-type": "^7.4.0",

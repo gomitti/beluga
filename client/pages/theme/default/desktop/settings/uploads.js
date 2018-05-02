@@ -7,6 +7,7 @@ import config from "../../../../../beluga.config"
 import assert, { is_string } from "../../../../../assert"
 import { request } from "../../../../../api"
 import { created_at_to_elapsed_time } from "../../../../../libs/date"
+import { convert_bytes_to_optimal_unit } from "../../../../../libs/functions"
 
 const get_thumbnail_url_from_media = item => {
     if (item.is_video) {
@@ -15,23 +16,6 @@ const get_thumbnail_url_from_media = item => {
     if (item.is_image) {
         return `${item.uri}/${item.directory}/${item.prefix}.small.${item.extension}`
     }
-}
-
-const convert_bytes_to_optimal_unit = bytes => {
-    bytes /= 1024
-    if (bytes < 1024) {
-        return `${Math.floor(bytes)} KiB`
-    }
-    bytes /= 1024
-    if (bytes < 1024) {
-        return `${Math.floor(bytes)} MiB`
-    }
-    bytes /= 1024
-    if (bytes < 1024) {
-        return `${Math.floor(bytes)} GiB`
-    }
-    bytes /= 1024
-    return `${Math.floor(bytes)} TiB`
 }
 
 // mobxの状態をaction内でのみ変更可能にする
@@ -45,9 +29,7 @@ export default class App extends Component {
         super(props)
         const { media } = props
         this.state = { media }
-        if (request) {
-            request.csrf_token = this.props.csrf_token
-        }
+        request.set_csrf_token(this.props.csrf_token)
         if (typeof history !== "undefined") {
             history.scrollRestoration = "manual"
         }
@@ -147,7 +129,7 @@ export default class App extends Component {
                                     </div>
                                 </div>
                                 : null}
-                                
+
                         </div>
                     </div>
                 </div>

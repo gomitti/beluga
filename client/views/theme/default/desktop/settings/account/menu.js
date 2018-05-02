@@ -16,7 +16,7 @@ export default class SettingsMenuView extends Component {
                             <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "favorites" })} href="/settings/favorites">お気に入り</a></li>
                             <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "uploads" })} href="/settings/uploads">アップロード</a></li>
                             <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "security" })} href="/settings/security">セキュリティ</a></li>
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "two_factor_authentication" })} href="/settings/two_factor_authentication">2段階認証</a></li>
+                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "authenticator" })} href="/settings/authenticator">スマホ認証</a></li>
                             <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "desktop" })} href="/settings/desktop">デスクトップ</a></li>
                         </ul>
                     </div>

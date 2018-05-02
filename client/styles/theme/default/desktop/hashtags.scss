@@ -18,10 +18,10 @@
                 font-size: 12px;
                 font-weight: bold;
                 text-decoration: none;
-            }
 
-            > .create:hover {
-                text-decoration: underline;
+                &:hover {
+                    text-decoration: underline;
+                }
             }
         }
     }
@@ -47,15 +47,15 @@
                 white-space: nowrap;
                 overflow: hidden;
                 display: block;
-            }
 
-            > a::before {
-                font-family: Beluga;
-                content: "\E01E";
-            }
+                &::before {
+                    font-family: Beluga;
+                    content: "\E01E";
+                }
 
-            > a:hover {
-                text-decoration: underline;
+                &:hover {
+                    text-decoration: underline;
+                }
             }
         }
 
@@ -64,9 +64,9 @@
             font-size: 12px;
             color: rgb(119, 119, 119);
         }
-    }
 
-    > li:last-child {
-        margin-bottom: 0;
+        &:last-child {
+            margin-bottom: 0;
+        }
     }
 }
