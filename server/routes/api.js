@@ -14,5 +14,8 @@ module.exports = (fastify, options, next) => {
         .register(require("./api/v1/favorite"))
         .register(require("./api/v1/reaction"))
         .register(require("./api/v1/access_token"))
+        .register(require("./api/v1/desktop"))
+        .register(require("./api/v1/hashtags"))
+        .register(require("./api/v1/emoji"))
     next()
 }

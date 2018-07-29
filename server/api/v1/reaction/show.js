@@ -4,18 +4,27 @@ export default async (db, params) => {
     const status_id = try_convert_to_object_id(params.status_id, "@status_idが不正です")
 
     const collection = db.collection("reactions")
-    const rows = await collection.find({ status_id }).toArray()
+    const rows = await collection.find({ status_id }).sort({ "created_at": 1 }).toArray()
     if (rows === null) {
         return []
     }
-    const result = {}
+    const map_shortname_count = {}
+    const sorted_shortnames = []
     for (const row of rows) {
         const { shortname } = row
-        if (!(shortname in result)) {
-            result[shortname] = 1
+        if (!!(shortname in map_shortname_count) === false) {
+            sorted_shortnames.push(shortname)
+            map_shortname_count[shortname] = 1
             continue
         }
-        result[shortname] += 1
+        map_shortname_count[shortname] += 1
     }
-    return result
+    const ret = []
+    for (const shortname of sorted_shortnames) {
+        const count = map_shortname_count[shortname]
+        ret.push({
+            shortname, count
+        })
+    }
+    return ret
 }

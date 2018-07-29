@@ -38,7 +38,7 @@ export default async (db, params) => {
 
     await api.v1.media.destroy(db, { "id": params.id })
 
-    const favorites = await api.v1.account.favorite.media.list(db, { "user_id": user.id })
+    const favorites = await api.v1.account.pin.media.list(db, { "user_id": user.id })
     const new_favorites = []
     for (const id of favorites) {
         if (id.equals(media.id)) {
@@ -46,7 +46,7 @@ export default async (db, params) => {
         }
         new_favorites.push(id)
     }
-    await api.v1.account.favorite.media.update(db, { "user_id": user.id, "media_ids": new_favorites })
+    await api.v1.account.pin.media.update(db, { "user_id": user.id, "media_ids": new_favorites })
 
     const ftp = new Ftp({
         "host": remote.host,
@@ -57,10 +57,10 @@ export default async (db, params) => {
     await delete_remote_files(ftp, media)
 
     // キャッシュの消去
-    memcached.v1.delete_media_from_cache(media)
-    memcached.v1.delete_media_list_from_cache(user)
-    memcached.v1.delete_media_aggregation_from_cache(user)
-    memcached.v1.delete_account_favorite_media_from_cache(user)
+    memcached.v1.delete_media_from_cache(media.id)
+    memcached.v1.delete_media_list_from_cache(user.id)
+    memcached.v1.delete_media_aggregation_from_cache(user.id)
+    memcached.v1.delete_account_pin_media_from_cache(user.id)
 
     return true
 }

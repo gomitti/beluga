@@ -3,9 +3,8 @@ import { try_convert_to_object_id } from "../../../lib/object_id"
 import { is_string } from "../../../assert"
 
 const build_query_by_id = params => {
-    const id = try_convert_to_object_id(params.id, "@idが不正です")
     return {
-        "_id": params.id
+        "_id": try_convert_to_object_id(params.id, "@idが不正です")
     }
 }
 

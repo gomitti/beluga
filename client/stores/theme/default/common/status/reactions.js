@@ -1,18 +1,19 @@
 import { observable, action } from "mobx"
 import { request } from "../../../../../api"
 import ws from "../../../../../websocket"
+import assert, { is_array } from "../../../../../assert"
 
 export default class ReactionsStore {
-    @observable list = {}
+    @observable.shallow list = []
     constructor(status) {
         this.is_pending = false
         this.status_id = status.id
-        if (typeof status.reactions === "object") {
+        if (is_array(status.reactions)) {
             this.list = status.reactions
         }
         if (ws) {		// サーバーサイドではやる意味がない
-            ws.addEventListener("message", (e) => {
-                const data = JSON.parse(e.data)
+            ws.addEventListener("message", event => {
+                const data = JSON.parse(event.data)
                 if (data.reaction_added) {
                     const { status } = data
                     if (status.id === this.status_id) {
@@ -23,10 +24,11 @@ export default class ReactionsStore {
         }
     }
     get count() {
-        return Object.keys(this.list).length
+        return this.list.length
     }
     @action.bound
     set(reactions) {
+        assert(is_array(reactions), "@reactions must be a type of array")
         this.list = reactions
     }
     @action.bound

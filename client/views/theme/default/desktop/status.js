@@ -1,164 +1,45 @@
-import React, { Component } from "react"
+import { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../../beluga.config"
-import parse, { split_emoji_unicode, parse_emoji_unicode, generate_image_from_emoji_shortname } from "./parser"
+import { build_status_body_views } from "./parser"
 import ReactionsView from "./status/reactions"
 import { request } from "../../../../api"
 import assert, { is_object, is_string } from "../../../../assert"
 import { created_at_to_elapsed_time, time_from_create_at } from "../../../../libs/date"
-
-// 主に画像をまとめる
-export const preprocess_text = text => {
-    const lines = text.split("\n")
-    const components = []
-    for (const sentence of lines) {
-        const new_line = true
-        const array = sentence.split(/(https?:\/\/[^\s 　]+)/g)
-        for (const component of array) {
-            if (component.length === 0) {
-                continue
-            }
-            if (new_line) {
-                components.push(component)
-                new_line = false
-                continue
-            }
-            if (component.match(/\.(jpg|gif|png|jpeg)(:orig)?$/)) {
-                components.push(component)
-                continue
-            }
-            const last = components[components.length - 1]
-            components[components.length - 1] = last + component
-        }
-    }
-    const body = []
-    let images = []
-    for (const sentence of components) {
-        if (sentence.match(/^https?:\/\/.+?\.(jpg|png|gif|jpeg)/)) {
-            images.push(sentence)
-            continue
-        }
-        if (sentence.match(/^[  ]$/)) {
-            if (images.length > 0) {
-                continue
-            }
-        }
-        if (images.length > 0) {
-            body.push(images)
-            images = []
-        }
-        body.push(sentence)
-    }
-    if (images.length > 0) {
-        body.push(images)
-    }
-    return body
-}
+import { StatusHeaderDisplayNameView, StatusHeaderUserStatusView } from "./status/header"
 
 @observer
 export default class StatusView extends Component {
     constructor(props) {
         super(props)
-        const { status, onClickHashtag, onClickMention } = props
+        const { status, handle_click_hashtag, handle_click_mention } = props
         assert(is_object(status), "@status must be of type object")
 
         // 本文のビューを構築しておく
-        const body = preprocess_text(status.text)
-        const bodyView = []
-        for (const contents of body) {
-            // 画像以外
-            if (typeof contents === "string") {
-                bodyView.push(<p>{parse(contents, status, { onClickHashtag, onClickMention })}</p>)
-                continue
-            }
-            // 連続する画像
-            if (Array.isArray(contents)) {
-                if (contents.length <= 3) {
-                    const imageViews = []
-                    for (const image_source of contents) {
-                        const nodes = parse(image_source, status, {})
-                        for (const view of nodes) {
-                            imageViews.push(view)
-                        }
-                    }
-                    bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
-                    continue
-                }
-                const div = parseInt(Math.ceil(contents.length / 3))
-                for (let n = 0; n < div; n++) {
-                    const end = Math.min((n + 1) * 3, contents.length)
-                    const subset = contents.slice(n * 3, end)
-                    const imageViews = []
-                    for (const image_source of subset) {
-                        const nodes = parse(image_source, status, {})
-                        for (const view of nodes) {
-                            imageViews.push(view)
-                        }
-                    }
-                    bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
-                }
-            }
-        }
-        this.bodyView = bodyView
-
-        const { user } = status
-        // ユーザー名（絵文字を使う場合があるため）
-        this.displayNameView = null
-        if (is_string(user.display_name) && user.display_name.length > 0) {
-            const components = split_emoji_unicode([user.display_name])
-            const subviews = []
-            for (const substr of components) {
-                // 絵文字（ユニコード）
-                if (parse_emoji_unicode(substr, subviews)) {
-                    continue
-                }
-                // それ以外
-                subviews.push(substr)
-            }
-            this.displayNameView = <span className="display-name element">{subviews}</span>
-        }
-
-        // ユーザーのステータス
-        this.userStatusView = null
-        if (is_string(user.status_emoji_shortname)) {
-            const imageView = generate_image_from_emoji_shortname(user.status_emoji_shortname, "emoji-image")
-            if (imageView) {
-                const status_text = user.status_text ? user.status_text : imageView
-                this.userStatusView =
-                    <button className="tooltip-button user-status element">
-                        {imageView}
-                        <span className="tooltip">
-                            {user.status_text ?
-                                <span className="text">{imageView}<span className="string">{user.status_text}</span></span>
-                                :
-                                <span className="text">{status_text}</span>
-                            }
-                        </span>
-                    </button>
-            }
-        }
+        const { text, server, entities, created_at } = status
+        this.bodyViews = build_status_body_views(text, server, entities, { handle_click_hashtag, handle_click_mention })
 
         this.state = {
-            "elapsed_time_str": created_at_to_elapsed_time(status.created_at),
-            "created_at_str": time_from_create_at(status.created_at)
+            "elapsed_time_str": created_at_to_elapsed_time(created_at),
+            "created_at_str": time_from_create_at(created_at)
         }
     }
     componentDidMount() {
-        // const footer = this.refs.footer
-        // const action = this.refs.action
-        // action.style.top = `${footer.offsetTop - 6}px`
         this.updateTime()
     }
     onMouseEnter = event => {
-        const footer = this.refs.footer
-        const action = this.refs.action
-        action.style.top = `${footer.offsetTop - 7}px`
-        this.prev_footer_offset_top = footer.offsetTop
+        const { footer, action } = this.refs
+        if (action) {
+            action.style.top = `${footer.offsetTop - 7}px`
+            this.prev_footer_offset_top = footer.offsetTop
+        }
     }
     onMouseMove = event => {
-        const footer = this.refs.footer
+        const { footer, action } = this.refs
+        if (!!action == false) {
+            return
+        }
         if (footer.offsetTop !== this.prev_footer_offset_top) {
-            const action = this.refs.action
             action.style.top = `${footer.offsetTop - 7}px`
             this.prev_footer_offset_top = footer.offsetTop
         }
@@ -169,6 +50,7 @@ export default class StatusView extends Component {
     toggleFavorite = event => {
         event.preventDefault()
         const { status } = this.props
+        console.log(status)
         if (status.favorited) {
             status.favorites.destroy()
         } else {
@@ -219,7 +101,7 @@ export default class StatusView extends Component {
         })
     }
     render() {
-        const { status, options, onClickHashtag, onClickMention, logged_in } = this.props
+        const { status, options, handle_click_hashtag, handle_click_mention, logged_in } = this.props
         const { user } = status
         let likesView = null
         if (status.likes.count > 0) {
@@ -256,10 +138,10 @@ export default class StatusView extends Component {
         const { server, hashtag, recipient } = status
         if (options.show_belonging) {
             if (hashtag && server) {
-                belongingView = <a href={`/server/${server.name}/${hashtag.tagname}`} onClick={onClickHashtag} className="belonging hashtag meiryo" data-tagname={hashtag.tagname}>#{hashtag.tagname}</a>
+                belongingView = <a href={`/server/${server.name}/${hashtag.tagname}`} onClick={handle_click_hashtag} className="belonging hashtag meiryo" data-tagname={hashtag.tagname}>#{hashtag.tagname}</a>
             }
             if (recipient && server) {
-                belongingView = <a href={`/server/${server.name}/@${recipient.name}`} onClick={onClickMention} className="belonging recipient meiryo" data-name={recipient.name}>@{recipient.name}</a>
+                belongingView = <a href={`/server/${server.name}/@${recipient.name}`} onClick={handle_click_mention} className="belonging recipient meiryo" data-name={recipient.name}>@{recipient.name}</a>
             }
         }
         return (
@@ -267,26 +149,26 @@ export default class StatusView extends Component {
                 <div className="inside">
                     <div className="status-left">
                         <a href="/user/" className="avatar link">
-                            <img src={user.avatar_url} />
+                            <img src={user.avatar_url} className="image" />
                         </a>
                     </div>
                     <div className="status-right">
                         <div className="status-header">
                             <div className="inside">
                                 <a href="/user/" className="link">
-                                    {this.displayNameView}
-                                    {this.userStatusView}
+                                    <StatusHeaderDisplayNameView user={user} />
+                                    <StatusHeaderUserStatusView user={user} />
                                     <span className="name verdana element">@{user.name}</span>
                                 </a>
                                 <a href={`/status/${user.name}/${status.id}`} className="time meiryo">{this.state.elapsed_time_str}</a>
                             </div>
                         </div>
                         <div className="status-content">
-                            <div className="body">{this.bodyView}</div>
+                            <div className="body">{this.bodyViews}</div>
                         </div>
                         {likesView}
                         {favoritesView}
-                        <ReactionsView status={status} />
+                        <ReactionsView status={status} server={server} />
                         <div className="status-footer" ref="footer">
                             {belongingView}
                             <a href={`/status/${user.name}/${status.id}`} className="time verdana">{this.state.created_at_str}</a>
@@ -311,6 +193,6 @@ export default class StatusView extends Component {
                     }
                 </div>
             </div>
-        );
+        )
     }
 }

@@ -8,9 +8,9 @@ const memcached = {
     "names": new Memcached(api.v1.server.show),
 }
 
-export const delete_server_from_cache = server => {
-    const server_id = try_convert_to_hex_string(server.id, "@serverが不正です")
-    const { name } = server
+export const delete_server_from_cache = (server_id, name) => {
+    server_id = try_convert_to_hex_string(server_id, "@server_idが不正です")
+    assert(is_string(name), "@name must be of type string")
     memcached.ids.delete(server_id)
     memcached.names.delete(name)
 }

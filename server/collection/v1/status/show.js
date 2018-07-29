@@ -1,16 +1,14 @@
 import model from "../../../model"
+import { is_object } from "../../../assert"
 
 export default async (db, params) => {
-    params = Object.assign({
-        "trim_user": true,
-        "trim_recipient": true,
-        "trim_server": true,
-        "trim_hashtag": true,
-    }, params)
-
     const status = await model.v1.status.show(db, params)
     if (status === null) {
         return status
+    }
+    
+    if (is_object(status.entities) === false) {
+        status.entities = {}
     }
 
     if (params.trim_user === false) {

@@ -35,7 +35,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/account/avatar/reset`, async (req, res) => {
         try {
             let session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
 
@@ -52,7 +52,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/account/avatar/update`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
 
@@ -78,7 +78,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/account/profile/update`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             await model.v1.account.profile.update(fastify.mongo.db, Object.assign({}, req.body, {
@@ -93,10 +93,10 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/account/favorite/media/update`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            await model.v1.account.favorite.media.update(fastify.mongo.db, Object.assign({}, req.body, {
+            await model.v1.account.pin.media.update(fastify.mongo.db, Object.assign({}, req.body, {
                 "user_id": session.user_id
             }))
             res.send({ "success": true })
@@ -107,10 +107,10 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/account/favorite/emoji/update`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            await model.v1.account.favorite.emoji.update(fastify.mongo.db, Object.assign({}, req.body, {
+            await model.v1.account.pin.emoji.update(fastify.mongo.db, Object.assign({}, req.body, {
                 "user_id": session.user_id
             }))
             res.send({ "success": true })
@@ -121,7 +121,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/account/profile/background_image/update`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
 
@@ -147,7 +147,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/account/profile/background_image/reset`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             await model.v1.account.background_image.reset(fastify.mongo.db, {

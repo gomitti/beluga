@@ -93,14 +93,14 @@ export class Memcached {
         assert(is_array(keys), "@keys must be of type array")
 
         const obj = this.fetch_recursively(keys)
-        if (obj) {
+        if (obj !== null) {
             const { data, expires } = obj
             if (expires > Date.now()) {
                 obj.hit += 1
                 if (is_array(data)) {
                     return data
                 }
-                if (is_object(obj)) {
+                if (is_object(data)) {
                     return assign(data)	// コピーを送る
                 }
                 return data

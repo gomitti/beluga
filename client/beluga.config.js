@@ -16,7 +16,7 @@ export default {
     },
     "emoji": {
         "history": {
-            "capacity": 20
+            "capacity": 30
         }
     }
 }

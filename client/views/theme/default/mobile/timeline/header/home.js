@@ -5,12 +5,12 @@ import { observer } from "mobx-react"
 @observer
 class HeaderView extends Component {
     render() {
-        const { recipient } = this.props
+        const { user } = this.props
         return (
             <div className="header">
                 <div className="inside">
                     <h1 className="header-title">
-                        @{recipient.name}
+                        @{user.name}
                     </h1>
                 </div>
             </div>
@@ -18,7 +18,7 @@ class HeaderView extends Component {
     }
 }
 HeaderView.propTypes = {
-    "recipient": PropTypes.object,
+    "user": PropTypes.object,
     "server": PropTypes.object,
 }
 export default HeaderView

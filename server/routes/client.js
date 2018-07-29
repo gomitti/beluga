@@ -1,6 +1,9 @@
 import { sha256 } from "js-sha256"
 import model from "../model"
+import timeline from "../timeline"
 import config from "../config/beluga"
+import assign from "../lib/assign"
+
 const next = require("next")
 const dev = process.env.NODE_ENV !== "production"
 const handle = next({ dev }).getRequestHandler()
@@ -20,7 +23,7 @@ module.exports = (fastify, options, next) => {
         if (!!session === false) {
             session = await fastify.session.start(req, res)
         }
-        if (!!session.user_id === false) {
+        if (session.user_id === null) {
             return null
         }
         try {
@@ -50,11 +53,76 @@ module.exports = (fastify, options, next) => {
         }
         return "desktop"
     })
+    fastify.decorate("build_columns", async (stored_columns, logged_in, source_server, source_hashtag, source_recipient) => {
+        const columns = []
+        for (const column of stored_columns) {
+            const { type, param_ids } = column
+            const params = {
+                "trim_user": false,
+                "trim_server": false,
+                "trim_hashtag": false,
+                "trim_favorited_by": false,
+                "trim_recipient": false,
+                "requested_by": logged_in.id
+            }
+
+            if (type === "server") {
+                const statuses = await timeline.v1.server(fastify.mongo.db, assign(params, {
+                    "server_id": param_ids.server_id
+                }))
+                column.statuses = statuses
+                const server = await model.v1.server.show(fastify.mongo.db, {
+                    "id": param_ids.server_id
+                })
+                if (server === null) {
+                    continue
+                }
+                column.params = { server }
+            }
+            if (type === "hashtag") {
+                const statuses = await timeline.v1.hashtag(fastify.mongo.db, assign(params, {
+                    "hashtag_id": param_ids.hashtag_id
+                }))
+                column.statuses = statuses
+                const hashtag = await model.v1.hashtag.show(fastify.mongo.db, {
+                    "id": param_ids.hashtag_id,
+                    "requested_by": logged_in.id
+                })
+                if (hashtag === null) {
+                    continue
+                }
+                column.params = { hashtag }
+            }
+            if (type === "home") {
+                const statuses = await timeline.v1.home(fastify.mongo.db, assign(params, {
+                    "user_id": param_ids.user_id,
+                    "server_id": param_ids.server_id
+                }))
+                column.statuses = statuses
+                const user = await model.v1.user.show(fastify.mongo.db, {
+                    "id": param_ids.user_id
+                })
+                if (user === null) {
+                    continue
+                }
+                const server = await model.v1.server.show(fastify.mongo.db, {
+                    "id": param_ids.server_id
+                })
+                if (server === null) {
+                    continue
+                }
+                column.params = { server, user }
+            }
+            columns.push(column)
+        }
+        return columns
+    })
     fastify
         .register(require("./client/account"))
         .register(require("./client/server"))
         .register(require("./client/hashtag"))
         .register(require("./client/settings"))
+        .register(require("./client/customize"))
 
     fastify.next("/", async (app, req, res) => {
         try {

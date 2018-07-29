@@ -43,7 +43,7 @@ export default class StatusStore {
                         alsert(data.error)
                         return
                     }
-                    setDeleted(true)
+                    this.setDeleted(true)
                 })
                 .catch(error => {
                 })

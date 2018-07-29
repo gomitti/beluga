@@ -11,12 +11,11 @@ import * as notification from "../../../../../../notification"
 export default class HeaderView extends Component {
     constructor(props) {
         super(props)
-        const { server, column, serialize } = props
+        const { server, column } = props
         assert(is_object(server), "@server must be of type object")
         assert(column instanceof ColumnStore, "@column must be an instance of ColumnStore")
         assert(is_object(column.options), "@column.options must be of type object")
         assert(is_object(column.settings), "@column.settings must be of type object")
-        assert(is_function(serialize), "@serialize must be function")
         this.state = {
             "is_settings_hidden": true
         }
@@ -47,11 +46,10 @@ export default class HeaderView extends Component {
         })
     }
     toggleNotification = event => {
-        const { column, serialize } = this.props
+        const { column } = this.props
         column.update_settings({
             "enable_desktop_notification": event.target.checked
         })
-        serialize()
     }
     toggleSettings = event => {
         event.preventDefault()
@@ -61,14 +59,14 @@ export default class HeaderView extends Component {
         })
     }
     render() {
-        const { server, onBack, column } = this.props
+        const { server, handle_close, handle_back, column } = this.props
         return (
             <div className="header">
                 <div className="inside">
                     <h1 className="header-title">
                         {server.display_name}
                         <div className="header-options">
-                            {column.history.length > 1 ? <a className="back-button" onClick={onBack}>戻る</a> : null}
+                            {column.history.length > 1 ? <a className="back-button" onClick={handle_back}>戻る</a> : null}
                             <button className={classnames("settings-button user-defined-color-active user-defined-color-hover", {
                                 "active": !this.state.is_settings_hidden
                             })} onClick={this.toggleSettings}></button>
@@ -84,7 +82,7 @@ export default class HeaderView extends Component {
                             </label>
                         </section>
                         <section className="column-operations clearfix">
-                            {column.options.is_closable ? <a className="close user-defined-color-hover" onClick={onClose}>閉じる</a> : null}
+                            {column.options.is_closable ? <a className="close user-defined-color-hover" onClick={handle_close}>閉じる</a> : null}
                             <p className="move">
                                 <a className="left user-defined-color-hover"></a>
                                 <a className="right user-defined-color-hover"></a>

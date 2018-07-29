@@ -98,8 +98,8 @@ export default async (db, params) => {
         logger.log({
             "level": "error",
             "error": error.toString(),
-            directory,
-            user_id,
+            "directory": directory,
+            "user_id": user_id,
         })
         throw new Error("サーバーで問題が発生しました")
     }
@@ -108,7 +108,7 @@ export default async (db, params) => {
     const url = `${protocol}://${storage.url_prefix}.${storage.domain}/${directory}/${filename}`
 
     const collection = db.collection("users")
-    const user = await collection.findOne({ "_id": params.user_id })
+    const user = await collection.findOne({ "_id": user_id })
     assert(user, "ユーザーが存在しません")
 
     if (!!user.profile === false) {
@@ -124,7 +124,7 @@ export default async (db, params) => {
     profile.use_background_image = true
     profile.background_image = url
 
-    await collection.updateOne({ "_id": params.user_id }, {
+    await collection.updateOne({ "_id": user_id }, {
         "$set": { profile }
     })
 

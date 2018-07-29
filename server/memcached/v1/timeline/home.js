@@ -9,9 +9,9 @@ const fetch = api.v1.timeline.home
 const memcached_diff = new Memcached(fetch)
 const memcached_whole = new Memcached(fetch)
 
-export const delete_timeline_home_from_cache = (recipient, server) => {
-    const server_id = try_convert_to_hex_string(server.id, "@serverが不正です")
-    const user_id = try_convert_to_hex_string(recipient.id, "@recipientが不正です")
+export const delete_timeline_home_from_cache = (user_id, server_id) => {
+    server_id = try_convert_to_hex_string(server_id, "@server_idが不正です")
+    user_id = try_convert_to_hex_string(user_id, "@user_idが不正です")
     memcached_diff.delete([server_id, user_id])
     memcached_whole.delete([server_id, user_id])
 }

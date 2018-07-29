@@ -25,7 +25,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/server/create`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const params = Object.assign({ "user_id": session.user_id }, req.body)
@@ -38,7 +38,7 @@ module.exports = (fastify, options, next) => {
     fastify.get(`/api/v1/server/members`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const server = await memcached.v1.server.show(fastify.mongo.db, { "name": req.body.name })

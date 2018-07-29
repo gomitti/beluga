@@ -45,7 +45,6 @@ async function register_reserved_server_names(db) {
 (async () => {
     try {
         const client = await MongoClient.connect(mongo.url)
-        console.log("MongoDBへ接続")
         const db = client.db(mongo.database.production)
         await register_reserved_user_names(db)
         await register_reserved_server_names(db)
@@ -67,7 +66,16 @@ async function register_reserved_server_names(db) {
         db.collection("media").createIndex({ "is_image": -1 })
         db.collection("media").createIndex({ "is_video": -1 })
         db.collection("sessions").createIndex({ "encrypted_id": -1 }, { "unique": true })
+        db.collection("hashtag_members").createIndex({ "hashtag_id": -1 })
+        db.collection("hashtag_members").createIndex({ "server_id": -1 })
+        db.collection("hashtag_members").createIndex({ "server_id": -1, "user_id": -1 })
+        db.collection("hashtag_members").createIndex({ "hashtag_id": -1, "user_id": -1 }, { "unique": true })
         db.collection("access_tokens").createIndex({ "user_id": -1 }, { "unique": true })
+        db.collection("desktop").createIndex({ "user_id": -1, "pathname": -1 }, { "unique": true })
+        db.collection("emojis").createIndex({ "server_id": -1 })
+        db.collection("emojis").createIndex({ "added_by": -1 })
+        db.collection("emojis").createIndex({ "server_id": -1, "added_by": -1 })
+        db.collection("emojis").createIndex({ "server_id": -1, "shortname": -1 }, { "unique": true })
 
         client.close()
     } catch (error) {

@@ -6,8 +6,8 @@ import model from "../model"
 
 module.exports = plugin((fastify, options, next) => {
     const authenticate = async (req, res, _csrf_token) => {
-        const { access_token, access_token_secret } = req.body ? req.body : {}
-        const { oauth_token, oauth_token_secret } = req.body ? req.body : {}
+        const { access_token, access_token_secret } = (req.body ? req.body : req.query) || {}
+        const { oauth_token, oauth_token_secret } = (req.body ? req.body : req.query) || {}
         if (access_token && access_token_secret) {
             return authenticate_access_token(access_token, access_token_secret)
         }
@@ -32,7 +32,8 @@ module.exports = plugin((fastify, options, next) => {
     const authenticate_cookie = async (req, res, _csrf_token) => {
         const session = await fastify.session.start(req, res)
         const true_csrf_token = sha256(session.id)
-        const csrf_token = _csrf_token ? _csrf_token : req.body.csrf_token
+        const body = (req.body ? req.body : req.query) || {}
+        const csrf_token = _csrf_token ? _csrf_token : body.csrf_token
         if (csrf_token !== true_csrf_token) {
             throw new Error("ページの有効期限が切れました。ページを更新してください。")
         }

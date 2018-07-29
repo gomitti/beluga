@@ -15,8 +15,8 @@ export default async (db, params) => {
             "level": "error",
             "message": "Failed to signup",
             "error": error.toString(),
-            remote,
-            user_id,
+            "remote": remote,
+            "user_id": user_id,
         })
         throw new Error("アカウントの作成処理が異常終了しました。サイト管理者にお知らせください。")
     }

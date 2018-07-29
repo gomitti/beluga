@@ -1,13 +1,13 @@
 import { Component } from "react"
 import classnames from "classnames"
-import CardView from "../../card/server"
+import ServerDetailView from "../../column/server"
 
 export default class SettingsMenuView extends Component {
     render() {
         const { active, server, hashtag } = this.props
         return (
             <div className="settings-menu-module clearfix">
-                <CardView server={server} is_description_hidden={true} is_members_hidden={true} />
+                <ServerDetailView server={server} is_members_hidden={true} ellipsis_description={true} collapse_members={true} />
                 <h1 className="tagname">
                     <a href={`/server/${server.name}/${hashtag.tagname}`}>#{hashtag.tagname}</a>
                 </h1>

@@ -1,13 +1,13 @@
 import { Component } from "react"
 import classnames from "classnames"
-import CardView from "../../card/server"
+import ServerDetailView from "../../column/server"
 
 export default class SettingsMenuView extends Component {
     render() {
         const { active, server } = this.props
         return (
             <div className="settings-menu-module clearfix">
-                <CardView server={server} is_description_hidden={true} is_members_hidden={true} />
+                <ServerDetailView server={server} is_members_hidden={true} ellipsis_description={true} collapse_members={true} />
                 <div className="settings-menu-container clearfix">
                     <div className="inside">
                         <h2 className="title settings">設定</h2>

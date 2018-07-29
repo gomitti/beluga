@@ -89,8 +89,8 @@ export default async (db, params) => {
         logger.log({
             "level": "error",
             "error": error.toString(),
-            directory,
-            user_id,
+            "directory": directory,
+            "user_id": user_id,
         })
         throw new Error("サーバーで問題が発生しました")
     }

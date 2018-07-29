@@ -1,164 +1,24 @@
 import { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../../beluga.config"
-import parse, { split_emoji_unicode, parse_emoji_unicode, generate_image_from_emoji_shortname } from "../desktop/parser"
+import { build_status_body_views } from "../desktop/parser"
 import ReactionsView from "../desktop/status/reactions"
 import { request } from "../../../../api"
 import assert, { is_object, is_string } from "../../../../assert"
+import { created_at_to_elapsed_time, time_from_create_at } from "../../../../libs/date"
+import { StatusHeaderDisplayNameView, StatusHeaderUserStatusView } from "./status/header"
 import Button from "./button"
-
-const created_at_to_elapsed_time = created_at => {
-    let diff = Math.floor((Date.now() - created_at) / 1000)
-    if (diff < 60) {
-        return diff + "秒前"
-    }
-    diff = Math.floor(diff / 60)
-    if (diff < 59) {
-        return diff + "分前"
-    }
-    diff = Math.floor(diff / 60)
-    if (diff < 24) {
-        return diff + "時間前"
-    }
-    diff = Math.floor(diff / 24)
-    if (diff < 7) {
-        return diff + "日前"
-    }
-    diff = Math.floor(diff / 7)
-    if (diff < 52) {
-        return diff + "週前"
-    }
-    diff = Math.floor(diff / 52)
-    return diff + "年前"
-}
-
-const time_from_create_at = created_at => {
-    const date = new Date(created_at)
-    const hours = date.getHours();
-    const minutes = "0" + date.getMinutes();
-    const formatted_time = hours + ":" + minutes.substr(-2)
-    return formatted_time
-}
-
-// 主に画像をまとめる
-export const preprocess_text = text => {
-    const lines = text.split("\n")
-    const components = []
-    for (const sentence of lines) {
-        const new_line = true
-        const array = sentence.split(/(https?:\/\/[^\s 　]+)/g)
-        for (const component of array) {
-            if (component.length === 0) {
-                continue
-            }
-            if (new_line) {
-                components.push(component)
-                new_line = false
-                continue
-            }
-            if (component.match(/\.(jpg|gif|png|jpeg)(:orig)?$/)) {
-                components.push(component)
-                continue
-            }
-            const last = components[components.length - 1]
-            components[components.length - 1] = last + component
-        }
-    }
-    const body = []
-    let images = []
-    for (const sentence of components) {
-        if (sentence.match(/^https?:\/\/.+?\.(jpg|png|gif|jpeg)/)) {
-            images.push(sentence)
-            continue
-        }
-        if (sentence.match(/^[  ]$/)) {
-            if (images.length > 0) {
-                continue
-            }
-        }
-        if (images.length > 0) {
-            body.push(images)
-            images = []
-        }
-        body.push(sentence)
-    }
-    if (images.length > 0) {
-        body.push(images)
-    }
-    return body
-}
 
 @observer
 export default class StatusView extends Component {
     constructor(props) {
         super(props)
-        const { status, onClickHashtag, onClickMention } = props
+        const { status, server, handle_click_hashtag, handle_click_mention } = props
         assert(is_object(status), "@status must be of type object")
 
         // 本文のビューを構築しておく
-        const body = preprocess_text(status.text)
-        const bodyView = []
-        for (const contents of body) {
-            // 画像以外
-            if (typeof contents === "string") {
-                bodyView.push(<p>{parse(contents, status, { onClickHashtag, onClickMention })}</p>)
-                continue
-            }
-            // 連続する画像
-            if (Array.isArray(contents)) {
-                if (contents.length <= 3) {
-                    const imageViews = []
-                    for (const image_source of contents) {
-                        const nodes = parse(image_source, status, {})
-                        for (const view of nodes) {
-                            imageViews.push(view)
-                        }
-                    }
-                    bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
-                    continue
-                }
-                const div = parseInt(Math.ceil(contents.length / 3))
-                for (let n = 0; n < div; n++) {
-                    const end = Math.min((n + 1) * 3, contents.length)
-                    const subset = contents.slice(n * 3, end)
-                    const imageViews = []
-                    for (const image_source of subset) {
-                        const nodes = parse(image_source, status, {})
-                        for (const view of nodes) {
-                            imageViews.push(view)
-                        }
-                    }
-                    bodyView.push(<div className="status-body-gallery">{imageViews}</div>)
-                }
-            }
-        }
-        this.bodyView = bodyView
-
-        const { user } = status
-        // ユーザー名（絵文字を使う場合があるため）
-        this.displayNameView = null
-        if (is_string(user.display_name) && user.display_name.length > 0) {
-            const components = split_emoji_unicode([user.display_name])
-            const subviews = []
-            for (const substr of components) {
-                // 絵文字（ユニコード）
-                if (parse_emoji_unicode(substr, subviews)) {
-                    continue
-                }
-                // それ以外
-                subviews.push(substr)
-            }
-            this.displayNameView = <span className="display-name element">{subviews}</span>
-        }
-
-        // ユーザーのステータス
-        this.userStatusView = null
-        if (is_string(user.status_emoji_shortname)) {
-            const imageView = generate_image_from_emoji_shortname(user.status_emoji_shortname, "emoji-image")
-            if (imageView) {
-                this.userStatusView = <span className="user-status element">{imageView}</span>
-            }
-        }
+        const { text, entities } = status
+        this.bodyViews = build_status_body_views(text, server, entities, { handle_click_hashtag, handle_click_mention })
 
         this.state = {
             "elapsed_time_str": created_at_to_elapsed_time(status.created_at),
@@ -166,9 +26,6 @@ export default class StatusView extends Component {
         }
     }
     componentDidMount() {
-        // const footer = this.refs.footer
-        // const action = this.refs.action
-        // action.style.top = `${footer.offsetTop - 6}px`
         this.updateTime()
     }
     toggleFavorite = event => {
@@ -220,7 +77,7 @@ export default class StatusView extends Component {
         })
     }
     render() {
-        const { status, options } = this.props
+        const { status, server, options } = this.props
         const { user } = status
         let likesView = null
         if (status.likes.count > 0) {
@@ -254,7 +111,7 @@ export default class StatusView extends Component {
         }
 
         let belongingView = null
-        const { server, hashtag, recipient } = status
+        const { hashtag, recipient } = status
         if (options.show_belonging) {
             if (hashtag && server) {
                 belongingView = <a href={`/server/${server.name}/${hashtag.tagname}`} className="belonging hashtag meiryo">#{hashtag.tagname}</a>
@@ -275,19 +132,19 @@ export default class StatusView extends Component {
                         <div className="status-header">
                             <div className="inside">
                                 <a href="/user/" className="link">
-                                    {this.displayNameView}
-                                    {this.userStatusView}
+                                    <StatusHeaderDisplayNameView user={user} />
+                                    <StatusHeaderUserStatusView user={user} />
                                     <span className="name verdana element">@{user.name}</span>
                                 </a>
                                 <a href={`/status/${user.name}/${status.id}`} className="time meiryo">{this.state.elapsed_time_str}</a>
                             </div>
                         </div>
                         <div className="status-content">
-                            <div className="body">{this.bodyView}</div>
+                            <div className="body">{this.bodyViews}</div>
                         </div>
                         {likesView}
                         {favoritesView}
-                        <ReactionsView status={status} />
+                        <ReactionsView status={status} server={server} />
                         <div className="status-action" ref="action">
                             <div className="inside">
                                 {belongingView ?

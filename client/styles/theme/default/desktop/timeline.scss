@@ -19,8 +19,16 @@
         flex: 0 1 540px;
     }
 
+    > .column.hashtags {
+        flex: 0 1 250px;
+    }
+
     > .column.server {
-        flex: 0 1 285px;
+        flex: 0 1 250px;
+    }
+
+    .column.server-about {
+        flex: 0 0 600px;
     }
 }
 
@@ -255,5 +263,27 @@
         color: rgb(60, 60, 60);
         text-decoration: none;
         font-size: 14px;
+    }
+}
+
+.timeline-join {
+    text-align: center;
+    padding: 20px;
+
+    > .hint {
+        font-size: 15px;
+        line-height: 18px;
+    }
+
+    > .submit {
+        margin-top: 10px;
+
+        > .button {
+            margin-right: 10px;
+
+            &:last-child {
+                margin: 0;
+            }
+        }
     }
 }

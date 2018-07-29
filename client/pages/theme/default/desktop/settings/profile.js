@@ -5,10 +5,10 @@ import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import Head from "../../../../../views/theme/default/desktop/head"
 import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
 import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
-import EmojiPickerView, { EmojiPicker } from "../../../../../views/theme/default/desktop/emoji"
+import { EmojiPickerWindow, EmojiPickerStore } from "../../../../../views/theme/default/desktop/emoji"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
-import { map_shortname_fname, map_fname_category } from "../../../../../stores/emoji"
+import { get_category_from_shortname, get_image_url_from_shortname } from "../../../../../stores/emoji"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
@@ -23,24 +23,23 @@ class ModuleItemStatus extends Component {
             "text": logged_in.status_text
         }
         if (shortname) {
-            const fname = map_shortname_fname[shortname]
-            const category = map_fname_category[fname]
-            this.state.selected_emoji = { shortname, fname, category }
+            const category = get_category_from_shortname(shortname)
+            this.state.selected_emoji = { shortname, category }
         }
     }
     onSelectEmoji = event => {
         event.preventDefault()
         let { target } = event
-        if(target.tagName === "I"){
+        if (target.tagName === "I") {
             target = target.parentElement
         }
         const { x, y } = target.getBoundingClientRect()
         const body_rect = document.body.getBoundingClientRect()
         const width = target.clientWidth
         if (emojipicker.is_hidden) {
-            emojipicker.show(x, y - body_rect.y + 36, (shortname, category, fname) => {
+            emojipicker.show(x, y - body_rect.y + 36, (shortname, category) => {
                 this.setState({
-                    "selected_emoji": { shortname, category, fname }
+                    "selected_emoji": { shortname, category }
                 })
                 emojipicker.hide()
             })
@@ -67,8 +66,8 @@ class ModuleItemStatus extends Component {
                     <button className={classnames("select-button", { "not-selected": selected_emoji === null })} onClick={this.onSelectEmoji}>
                         {(() => {
                             if (selected_emoji) {
-                                const { fname } = selected_emoji
-                                return <img className="image" src={`/asset/emoji/64x64/${fname}.png`} />
+                                const { shortname } = selected_emoji
+                                return <img className="image" src={get_image_url_from_shortname(shortname)} />
                             } else {
                                 return <i className="emojipicker-ignore-click image"></i>
                             }
@@ -95,6 +94,7 @@ export default class App extends Component {
         super(props)
         const { logged_in } = props
         this.state = {
+            "emojipicker": null,
             "crop": {
                 x: 0,
                 y: 0,
@@ -112,24 +112,24 @@ export default class App extends Component {
             "pending_reset": false,
         }
         request.set_csrf_token(this.props.csrf_token)
-        this.emojipicker = null
-        if (typeof window !== "undefined") {
-            window.emojipicker = new EmojiPicker()
-            this.emojipicker = emojipicker
-        }
         if (typeof history !== "undefined") {
             history.scrollRestoration = "manual"
         }
     }
     componentDidMount() {
+        window.emojipicker = new EmojiPickerStore()
+        this.setState({
+            "emojipicker": window.emojipicker
+        })
         // stateで管理するのはあまり好きではない
         const { logged_in } = this.props
-        if (!logged_in.profile) {
+        if (!!logged_in.profile == false) {
             return
         }
         this.refs.display_name.value = logged_in.display_name || ""
         this.refs.description.value = logged_in.profile.description || ""
         this.refs.location.value = logged_in.profile.location || ""
+
     }
     onImageLoaded = image => {
         console.log("onImageLoaded, image:", image)
@@ -333,7 +333,7 @@ export default class App extends Component {
             })
     }
     render() {
-        const { profile_image_size, platform, logged_in, emoji_favorites } = this.props
+        const { profile_image_size, platform, logged_in, pinned_emoji } = this.props
         const { preview_src } = this.state
         if (!logged_in.profile) {
             return null
@@ -413,7 +413,7 @@ export default class App extends Component {
                         </div>
                     </div>
                 </div>
-                <EmojiPickerView picker={this.emojipicker} favorites={emoji_favorites} />
+                <EmojiPickerWindow picker={this.state.emojipicker} pinned={pinned_emoji} />
             </div>
         )
     }

@@ -3,49 +3,68 @@ import classnames from "classnames"
 import { observer } from "mobx-react"
 import { observable, action } from "mobx"
 import config from "../../../../beluga.config"
-import { is_string } from "../../../../assert"
-import { map_fname_category, map_shortname_fname, map_fname_shortname, map_category_fname, map_category_title } from "../../../../stores/emoji"
+import assert, { is_string, is_object } from "../../../../assert"
+import { map_category_ids, map_id_shortname, map_category_title, get_category_from_shortname } from "../../../../stores/emoji"
 
-class EmojiHistory {
+class EmojiHistoryStore {
     @observable.shallow list = []
-    constructor() {
-        const history_str = localStorage.getItem("emojipicker.history")
-        if (!history_str) {
+    constructor(server) {
+        if (!!server === false) {
             return
         }
-        const history = JSON.parse(history_str)
-        if (Array.isArray(history) === false) {
+        assert(is_object(server), "@server must be of type object")
+        this.server = server
+
+        const history_str = localStorage.getItem(`emoji.history.${server.id}`)
+        if (!!history_str == false) {
             return
         }
-        if (history.length > 0) {
-            this.list = history
+        const shortnames = JSON.parse(history_str)
+        if (Array.isArray(shortnames) === false) {
+            return
+        }
+        if (shortnames.length > 0) {
+            for (const emoji of shortnames) {
+                const { shortname, category } = emoji
+                this.list.push({
+                    shortname, category
+                })
+            }
         }
     }
     @action.bound
-    add(emoji) {
+    add(shortname, category) {
+        assert(is_string(shortname))
+        assert(is_string(category))
         const list = []
-        for (const _emoji of this.list) {
-            if (emoji.shortname === _emoji.shortname) {
+        for (const item of this.list) {
+            if (shortname === item.shortname) {
                 continue
             }
-            list.push(_emoji)
+            list.push(item)
         }
-        list.unshift(emoji)
+        list.unshift({ shortname, category })
         if (list.length > config.emoji.history.capacity) {
             list.pop()
         }
         this.list = list
-        localStorage.setItem("emojipicker.history", JSON.stringify(list))
+        localStorage.setItem(`emoji.history.${this.server.id}`, JSON.stringify(list))
     }
 }
 
-export class EmojiPicker {
+export class EmojiPickerStore {
     @observable top = 0
     @observable left = 0
     @observable is_hidden = true
-    @observable.shallow history = new EmojiHistory()
+    @observable.shallow history = null
+    constructor(server) {
+        if (server) {
+            this.server = server
+            this.history = new EmojiHistoryStore(server)
+        }
+    }
     @action.bound
-    show(left, top, callback_pick, callback_hide) {
+    show = (left, top, callback_pick, callback_hide) => {
         this.top = top
         this.left = left
         this.callback_pick = callback_pick
@@ -53,7 +72,7 @@ export class EmojiPicker {
         this.is_hidden = false
     }
     @action.bound
-    hide() {
+    hide = () => {
         this.is_hidden = true
         if (this.callback_hide) {
             this.callback_hide()
@@ -61,22 +80,55 @@ export class EmojiPicker {
         this.callback_pick = null
         this.callback_hide = null
     }
+    pick = (shortname, category) => {
+        if (this.history) {
+            this.history.add(shortname, category)
+        }
+        if (this.callback_pick) {
+            this.callback_pick(shortname, category)
+        }
+    }
+    get_emoji_history = () => {
+        if (this.history) {
+            return this.history.list
+        }
+        return []
+    }
 }
 
 @observer
 class EmojiListView extends Component {
     render() {
-        const { emojis, pick, title, category } = this.props
-        if (!emojis) {
+        const { emojis, handle_pick, title, category, server } = this.props
+        if (!!emojis === false) {
             return null
         }
         if (emojis.length === 0) {
             return null
         }
+        console.log(emojis)
         const buttons = []
         for (const emoji of emojis) {
-            const { shortname, category, fname } = emoji
-            buttons.push(<button onClick={event => pick(shortname, category, fname)} className="emojipicker-ignore-click" ><i className={`emojipicker-ignore-click emoji-${category} _${fname}`}></i></button>)
+            const { shortname, category } = emoji
+            if (category === "custom") {
+                buttons.push(
+                    <button
+                        onClick={event => handle_pick(shortname, category)}
+                        className="emojipicker-ignore-click" >
+                        <img className={`emojipicker-ignore-click emoji-${category} shortname-${shortname}`}
+                            src={`/asset/emoji/shortnames/${server.id}/${shortname}`} />
+                    </button>
+                )
+            } else {
+                buttons.push(
+                    <button
+                        onClick={event => handle_pick(shortname, category)}
+                        className="emojipicker-ignore-click" >
+                        <i className={`emojipicker-ignore-click emoji-${category} shortname-${shortname}`}>
+                        </i>
+                    </button>
+                )
+            }
         }
         return (
             <div className={`emoji-category ${category}`}>
@@ -89,21 +141,30 @@ class EmojiListView extends Component {
     }
 }
 
+@observer
 export class EmojiPickerView extends Component {
     constructor(props) {
         super(props)
-        const { pick } = props
+        const { picker } = props
         this.state = {
-            "current_category": "favorites"
+            "current_category": "pinned"
         }
         this.categoryViews = []
-        for (const category in map_category_fname) {
+        for (const category of Object.keys(map_category_ids)) {
+            const ids = map_category_ids[category]
             const title = map_category_title[category]
             const buttons = []
-            const array = map_category_fname[category]
-            for (const fname of array) {
-                const shortname = map_fname_shortname[fname]
-                buttons.push(<button onClick={event => pick(shortname, category, fname)} className="emojipicker-ignore-click" ><i className={`emojipicker-ignore-click emoji-${category} _${fname}`}></i></button>)
+            for (const id of ids) {
+                const shortname = map_id_shortname[id]
+                if (!!shortname == false) {
+                    throw new Error(`絵文字${id}が見つかりません`)
+                }
+                buttons.push(
+                    <button onClick={event => this.onPick(shortname, category)}
+                        className="emojipicker-ignore-click" >
+                        <i className={`emojipicker-ignore-click emoji-${category} shortname-${shortname}`}></i>
+                    </button>
+                )
             }
             this.categoryViews.push(
                 <div className={`emoji-category ${category}`}>
@@ -113,6 +174,27 @@ export class EmojiPickerView extends Component {
                     </div>
                 </div>
             )
+        }
+
+        const { pinned } = props
+        this.pinned_emojis = []
+        if (Array.isArray(pinned)) {
+            for (const shortname of pinned) {
+                const category = get_category_from_shortname(shortname)
+                if (category === null) {
+                    continue
+                }
+                this.pinned_emojis.push({ shortname, category })
+            }
+        }
+
+        const { custom } = props
+        this.custom_emojis = []
+        if (Array.isArray(custom)) {
+            for (const shortname of custom) {
+                const category = "custom"
+                this.custom_emojis.push({ shortname, category })
+            }
         }
     }
     componentDidMount() {
@@ -134,45 +216,46 @@ export class EmojiPickerView extends Component {
             })
         }
     }
-    render() {
-        const { pick, history, favorites } = this.props
-        const emoji_favorites = []
-        if (Array.isArray(favorites)) {
-            for (const shortname of favorites) {
-                const fname = map_shortname_fname[shortname]
-                const category = map_fname_category[fname]
-                if (fname && category) {
-                    emoji_favorites.push({ shortname, category, fname })
-                }
-            }
+    onPick = (shortname, category) => {
+        const { picker } = this.props
+        if (!!picker === false) {
+            return
         }
+        picker.pick(shortname, category)
+    }
+    render() {
+        const { picker, server } = this.props
+
+        const categories = ["pinned", "history"]
+        for (const category in map_category_title) {
+            categories.push(category)
+        }
+        const menuViews = []
+        for (const category of categories) {
+            menuViews.push(
+                <button
+                    className={classnames(`${category} item user-defined-color-active user-defined-border-color-active emojipicker-ignore-click`, { "active": category === this.state.current_category })}
+                    onClick={event => this.onClickMenuItem(event, category)}>
+                </button>
+            )
+        }
+
         return (
             <div className="emoji-picker scroller-wrapper emojipicker-ignore-click">
                 <div className="menu emojipicker-ignore-click">
-                    {(() => {
-                        const categories = ["favorites", "history"]
-                        for (const category in map_category_title) {
-                            categories.push(category)
-                        }
-                        const menuViews = []
-                        for (const category of categories) {
-                            menuViews.push(
-                                <button
-                                    className={classnames(`${category} item user-defined-color-active user-defined-border-color-active emojipicker-ignore-click`, { "active": category === this.state.current_category })}
-                                    onClick={event => this.onClickMenuItem(event, category)}>
-                                </button>
-                            )
-                        }
-                        return menuViews
-                    })()}
+                    {menuViews}
                 </div>
                 <div className="categories scroller" ref="categories">
-                    {(() => {
-                        if (emoji_favorites.length > 0) {
-                            return <EmojiListView emojis={emoji_favorites} pick={pick} title="お気に入り" category="favorites" />
-                        }
-                    })()}
-                    <EmojiListView emojis={history} pick={pick} title="履歴" category="history" />
+                    {this.pinned_emojis.length === 0 ? null :
+                        <EmojiListView emojis={this.pinned_emojis} handle_pick={this.onPick} title="よく使う絵文字" category="pinned" />
+                    }
+                    {server ?
+                        <EmojiListView emojis={picker.get_emoji_history()} server={server} handle_pick={this.onPick} title="履歴" category="history" />
+                        : null
+                    }
+                    {(server && this.custom_emojis.length === 0) ? null :
+                        <EmojiListView emojis={this.custom_emojis} server={server} handle_pick={this.onPick} title="カスタム" category="custom" />
+                    }
                     {this.categoryViews}
                 </div>
             </div>
@@ -181,23 +264,24 @@ export class EmojiPickerView extends Component {
 }
 
 @observer
-export default class EmojiPickerWindow extends Component {
+export class EmojiPickerWindow extends Component {
     constructor(props) {
         super(props)
-        if (typeof window !== "undefined") {
-            window.addEventListener("scroll", event => {
-                const { picker } = this.props
-                if (picker && picker.is_hidden === false) {
-                    picker.hide()
-                }
-            })
+        this.state = {
+            "available": false
         }
     }
     componentDidMount() {
-        const { picker } = this.props
+        window.addEventListener("scroll", event => {
+            const { picker } = this.props
+            if (picker.is_hidden === false) {
+                picker.hide()
+            }
+        })
         document.body.addEventListener("click", event => {
+            const { picker } = this.props
             const { target } = event
-            if (!target) {
+            if (!!target === false) {
                 picker.hide()
                 return true
             }
@@ -206,41 +290,48 @@ export default class EmojiPickerWindow extends Component {
             }
             picker.hide()
         })
-    }
-    pick = (shortname, category, fname) => {
-        const { picker } = this.props
-        picker.history.add({ shortname, category, fname })
-        if (picker.callback_pick) {
-            picker.callback_pick(shortname, category, fname)
-        }
+        this.setState({
+            "available": true
+        })
     }
     render() {
+        const empty = <div ref="component"></div>
+        if (this.state.available === false) {
+            return empty
+        }
         // pickerはlocalStorageを使う都合でサーバーサイドでは存在しない
-        const { picker, favorites } = this.props
-        const is_hidden = picker ? picker.is_hidden : true
-        let top = picker ? picker.top : 0
-        let left = picker ? picker.left : 0
-        const component = this.refs.component
-        if (picker && document && component) {
-            const padding = 10
-            const { body } = document
-            const width = component.clientWidth
-            const height = component.clientHeight
-            if (left + width + padding > body.clientWidth) {
-                left = body.clientWidth - width - padding
-            }
-            console.log(top, height, padding)
-            console.log(window.innerHeight, window.pageYOffset)
-            if (top + height + padding > window.innerHeight + window.pageYOffset) {
-                top = window.innerHeight + window.pageYOffset - height - padding
-            }
+        // クライアント側でも一部ページには存在しない
+        const { picker, pinned, custom, server } = this.props
+        if (!!picker === false) {
+            return empty
+        }
+        const { body } = document
+        if (!!body === false) {
+            return empty
+        }
+        const { component } = this.refs
+        if (!!component === false) {
+            return empty
+        }
+        let top = picker.top
+        let left = picker.left
+        const padding = 10
+        const width = component.clientWidth
+        const height = component.clientHeight
+        if (left + width + padding > body.clientWidth) {
+            left = body.clientWidth - width - padding
+        }
+        console.log(top, height, padding)
+        console.log(window.innerHeight, window.pageYOffset)
+        if (top + height + padding > window.innerHeight + window.pageYOffset) {
+            top = window.innerHeight + window.pageYOffset - height - padding
         }
         return (
             <div className="emoji-module" ref="component" style={{
                 top, left,
-                "visibility": is_hidden === false ? "visible" : "hidden"
+                "visibility": picker.is_hidden === false ? "visible" : "hidden"
             }}>
-                {picker ? <EmojiPickerView pick={this.pick} favorites={favorites} history={picker.history.list} /> : null}
+                <EmojiPickerView picker={picker} server={server} pinned={pinned} custom={custom} />
             </div>
         )
     }

@@ -11,7 +11,7 @@ export default async (db, params) => {
     if (deleted_token) {
         memcached.v1.delete_access_token_from_cache(deleted_token)
     }
-    memcached.v1.delete_access_token_list_from_cache(user)
+    memcached.v1.delete_access_token_list_from_cache(user.id)
     
     return { token, secret }
 }

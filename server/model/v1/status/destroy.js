@@ -27,15 +27,15 @@ export default async (db, params) => {
     await api.v1.mentions.destroy(db, { "status_id": status.id })
 
     // キャッシュの消去
-    memcached.v1.delete_status_from_cache(status)
+    memcached.v1.delete_status_from_cache(status.id)
     if (hashtag) {
-        memcached.v1.delete_timeline_hashtag_from_cache(hashtag)
+        memcached.v1.delete_timeline_hashtag_from_cache(hashtag.id)
     }
     if (server) {
-        memcached.v1.delete_timeline_server_from_cache(server)
+        memcached.v1.delete_timeline_server_from_cache(server.id)
     }
     if (recipient && server) {
-        memcached.v1.delete_timeline_home_from_cache(recipient, server)
+        memcached.v1.delete_timeline_home_from_cache(recipient.id, server.id)
     }
 
     return true

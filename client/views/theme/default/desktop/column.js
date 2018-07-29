@@ -1,30 +1,30 @@
 import { Component } from "react"
 import { observable, action } from "mobx"
 import { observer } from "mobx-react"
+import classnames from "classnames"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
-import assert, { is_object, is_array, is_string, is_function } from "../../../../assert"
-import { ColumnStore, default_options as column_options, default_settings as column_settings } from "../../../../stores/theme/default/desktop/column"
+import assert, { is_object, is_array, is_string, is_function, is_number } from "../../../../assert"
+import { ColumnStore } from "../../../../stores/theme/default/desktop/column"
 import StatusView from "./status"
 import PostboxView from "./postbox"
 import TimelineView from "./timeline"
 import HomeTimelineHeaderView from "./timeline/header/home"
 import HashtagTimelineHeaderView from "./timeline/header/hashtag"
 import ServerTimelineHeaderView from "./timeline/header/server"
+import JoinedHashtagsListView from "../../../../views/theme/default/desktop/column/hashtags"
+import ServerDetailView from "../../../../views/theme/default/desktop/column/server"
 import settings from "../../../../settings/desktop"
 import { request } from "../../../../api"
 import UploadManager from "../../../../stores/theme/default/common/uploader"
 
 @observer
-export class ColumnContainer extends Component {
+export class MultipleColumnsContainerView extends Component {
     @observable.shallow columns = []
-    componentDidMount() {
-        this.restore()
-    }
     equals = (a, b) => {
         assert(is_object(a), "@a must be of type object")
         assert(is_object(b), "@b must be of type object")
-        if (a.options.type !== b.options.type) {
+        if (a.type !== b.type) {
             return false
         }
         if (a.params.hashtag && b.params.hashtag) {
@@ -32,8 +32,8 @@ export class ColumnContainer extends Component {
                 return true
             }
         }
-        if (a.params.recipient && b.params.recipient) {
-            if (a.params.recipient.id === b.params.recipient.id) {
+        if (a.params.user && b.params.user) {
+            if (a.params.user.id === b.params.user.id) {
                 return true
             }
         }
@@ -45,123 +45,105 @@ export class ColumnContainer extends Component {
         return false
     }
     serialize = () => {
-        const pickles = []
+        const columns = []
         for (const column of this.columns) {
-            const { history, target, settings } = column
-            pickles.push({ history, target, settings })
-        }
-        const pickles_json = JSON.stringify(pickles)
-        const pathname = location.pathname
-        localStorage.setItem(`columns.serialization.${pathname}`, pickles_json)
-    }
-    restore = () => {
-        const pathname = location.pathname
-        const pickles_json = localStorage.getItem(`columns.serialization.${pathname}`)
-        if (!pickles_json) {
-            return false
-        }
-        try {
-            const pickles = JSON.parse(pickles_json)
-            assert(is_array(pickles), "@pickles must be of type array")
-            assert(pickles.length >= this.columns.length, "the number of restored columns is wrong")
-
-            // デフォルトで開かれているカラムを追跡する必要がある
-            let column_index = 0
-            for (let pickle_index = 0; pickle_index < pickles.length; pickle_index++) {
-                const { history, target, settings } = pickles[pickle_index]
-                assert(is_string(target), "@target must be of type string")
-                assert(is_object(settings), "@settings must be of type object")
-                assert(history.length > 0, "length of @history must be greater than 0")
-                const item = history[0]
-                const { request_query, params, options } = item
-                if (column_index < this.columns.length) {
-                    const column = this.columns[column_index]
-                    if (this.equals(item, column)) {
-                        column.restore(history, assign(column_settings, settings))
-                        column_index += 1
-                        continue
-                    }
-                }
-                assert(pickle_index > 0, "@pickle_index must be greater than 0")	// 通常あり得ない
-                const column = this.insert(
-                    request_query,
-                    params,
-                    options,
-                    null,
-                    target,
-                    pickle_index
-                )
-                column.restore(history, assign(column_settings, settings))
-                column_index += 1
+            const { type, params } = column
+            const param_ids = {}
+            if (type === enums.column.type.hashtag) {
+                const { hashtag } = params
+                param_ids.hashtag_id = hashtag.id
             }
-            return true
-        } catch (error) {
-            console.log(error)
-            console.log(error.stack)
-            this.serialize()
+            if (type === enums.column.type.server) {
+                const { server } = params
+                param_ids.server_id = server.id
+            }
+            if (type === enums.column.type.home) {
+                const { server, user } = params
+                param_ids.server_id = server.id
+                param_ids.user_id = user.id
+            }
+            columns.push({ param_ids, type })
         }
-        return false
+        const { pathname } = location
+        request
+            .post("/desktop/columns/store", { columns, pathname })
+            .then(res => {
+                const data = res.data
+                if (data.success == false) {
+                    alert(data.error)
+                }
+            })
+            .catch(error => {
+                alert(error)
+            })
     }
     // 初期カラムを追加
     // @insert_position	この位置の左隣に追加する
     @action.bound
-    insert(request_query, params, options, initial_statuses, target, insert_position) {
-        assert(is_object(request_query), "@request_query must be of type object")
+    insert(type, params, options, initial_statuses, target, insert_position) {
         assert(is_object(params), "@params must be of type object")
         assert(is_object(options), "@options must be of type object")
-        assert(is_array(initial_statuses) || initial_statuses === null, "@initial_statuses must be of type array or null")
-        target = target || settings.column.target
+        assert(is_array(initial_statuses), "@initial_statuses must be of type array")
+        assert(is_number(insert_position), "@insert_position must be of type number")
+        target = target || settings.new_column_target
         const column = new ColumnStore(target)
-        column.push(request_query, params, options, initial_statuses)
-        if (typeof insert_position === "number") {
-            assert(insert_position >= 1, "@insert_position must be greater than or equal to 1")
-            this.columns.splice(insert_position, 0, column)
-        } else {
+        column.push(type, params, options, initial_statuses)
+        if (insert_position === -1) {
             this.columns.push(column)
+        } else {
+            this.columns.splice(insert_position, 0, column)
         }
         return column
     }
     // ユーザー操作で追加
     @action.bound
-    open = (request_query, params, options, initial_statuses, target, source_column) => {
-        const column = (() => {
-            assert(is_object(request_query), "@request_query must be of type object")
-            assert(is_object(params), "@params must be of type object")
-            assert(is_object(options), "@options must be of type object")
-            assert(is_array(initial_statuses) || initial_statuses === null, "@initial_statuses must be of type array or null")
-            target = target || settings.column.target
+    open = (type, params, options, initial_statuses, target, source_column) => {
+        assert(is_string(type), "@type must be of type string")
+        assert(is_object(params), "@params must be of type object")
+        assert(is_object(options), "@options must be of type object")
+        assert(is_array(initial_statuses), "@initial_statuses must be of type array")
+        assert(is_string(target), "@target must be of type string")
 
+        if (settings.multiple_columns_enabled === false) {
+            if (type === "home") {
+                const { server, user } = params
+                return location.href = `/server/${server.name}/@${user.name}`
+            }
+            if (type === "server") {
+                const { server } = params
+                return location.href = `/server/${server.name}/statuses`
+            }
+            if (type === "hashtag") {
+                const { server, hashtag } = params
+                return location.href = `/server/${server.name}/${hashtag.tagname}`
+            }
+        }
+
+        const column = (() => {
             if (target === enums.column.target.new) {
                 for (const column of this.columns) {	// 一度開いたカラムに上書き
                     if (column.target === enums.column.target.new) {
-                        column.push(request_query, params, options, initial_statuses)
+                        column.push(type, params, options, initial_statuses)
                         return column
                     }
                 }
-            }
-
-            if (target === enums.column.target.self) {
-                if (source_column instanceof ColumnStore) {
-                    source_column.push(request_query, params, options, initial_statuses)
-                    return source_column
-                }
-                for (const column of this.columns) {	// 一度開いたカラムに上書き
-                    if (column.target === enums.column.target.self) {
-                        column.push(request_query, params, options, initial_statuses)
-                        return column
-                    }
+                // ない場合は2番目のカラムに上書き
+                if (this.columns.length >= 2) {
+                    const column = this.columns[1]
+                    column.push(type, params, options, initial_statuses)
+                    return column
                 }
             }
 
             // 新しいカラムを作る
             const column = new ColumnStore(target)
-            column.push(request_query, params, options, initial_statuses)
+            column.push(type, params, options, initial_statuses)
 
             if (this.columns.length === 0) {
                 this.columns.push(column)
                 return column
             }
-            if (!source_column) {
+            if (!!source_column === false) {
                 this.columns.push(column)
                 return column
             }
@@ -203,11 +185,17 @@ export class ColumnContainer extends Component {
         }
     }
     onClickHashtag = (event, source_column) => {
+        if (settings.multiple_columns_enabled === false) {
+            return true
+        }
         event.preventDefault()
+
         const { server } = this.props
         assert(is_object(server), "@server must be of type object")
+
         const tagname = event.target.getAttribute("data-tagname")
         assert(is_string(tagname), "@tagname must be of type string")
+
         for (const column of this.columns) {
             if (column.params.hashtag && column.params.hashtag.tagname === tagname) {
                 alert("すでに開いています")
@@ -215,25 +203,23 @@ export class ColumnContainer extends Component {
             }
         }
         request
-            .post("/hashtag/show", { tagname, "server_id": server.id })
+            .get("/hashtag/show", { tagname, "server_id": server.id })
             .then(res => {
                 const data = res.data
                 const { hashtag, success } = data
-                if (success == false) {
+                if (success === false) {
                     alert(data.error)
                     return
                 }
-                if (!hashtag) {
+                if (!!hashtag === false) {
                     alert("ルームが見つかりません")
                     return
                 }
-                this.open({ "id": hashtag.id },
-                    { hashtag },
-                    Object.assign({}, column_options, {
-                        "type": enums.column.type.hashtag,
-                    }),
-                    null,
-                    settings.column.target,
+                this.open("hashtag",
+                    { hashtag, server },
+                    {},
+                    [],
+                    settings.new_column_target,
                     source_column)
             })
             .catch(error => {
@@ -241,19 +227,25 @@ export class ColumnContainer extends Component {
             })
     }
     onClickMention = (event, source_column) => {
+        if (settings.multiple_columns_enabled === false) {
+            return true
+        }
         event.preventDefault()
+
         const { server } = this.props
         assert(is_object(server), "@server must be of type object")
+
         const name = event.target.getAttribute("data-name")
         assert(is_string(name), "@name must be of type string")
+
         for (const column of this.columns) {
-            if (column.params.recipient && column.params.recipient.name === name) {
+            if (column.params.user && column.params.user.name === name) {
                 alert("すでに開いています")
                 return
             }
         }
         request
-            .post("/user/show", { name })
+            .get("/user/show", { name })
             .then(res => {
                 const data = res.data
                 const { user, success } = data
@@ -265,27 +257,55 @@ export class ColumnContainer extends Component {
                     alert("ユーザーが見つかりません")
                     return
                 }
-                this.open({ "user_id": user.id, "server_id": server.id },
-                    { "recipient": user, server },
-                    Object.assign({}, column_options, { "type": enums.column.type.home }),
-                    null,
-                    settings.column.target,
+                this.open("home",
+                    { user, server },
+                    {},
+                    [],
+                    settings.new_column_target,
                     source_column)
             })
             .catch(error => {
                 alert(error)
             })
     }
+    render() {
+        const { server, joined_hashtags, logged_in, request_query, pinned_media, recent_uploads } = this.props
+        const columnViews = []
+        for (const column of this.columns) {
+            columnViews.push(
+                <ColumnView
+                    key={column.identifier}
+                    column={column}
+                    close={this.close}
+                    logged_in={logged_in}
+                    pinned_media={pinned_media}
+                    recent_uploads={recent_uploads}
+                    request_query={request_query}
+                    handle_click_hashtag={this.onClickHashtag}
+                    handle_click_mention={this.onClickMention} />
+            )
+        }
+        return (
+            <div className="inside column-container">
+                <div className="column hashtags">
+                    <JoinedHashtagsListView hashtags={joined_hashtags} server={server} handle_click_hashtag={this.onClickHashtag} />
+                </div>
+                {columnViews}
+                <div className="column server">
+                    <ServerDetailView server={server} handle_click_hashtag={this.onClickHashtag} handle_click_mention={this.onClickMention} is_members_hidden={false} ellipsis_description={true} collapse_members={true} />
+                </div>
+            </div>
+        )
+    }
 }
 
 @observer
-export class ColumnView extends Component {
+class ColumnView extends Component {
     onClose = event => {
         event.preventDefault()
-        const { close, column, serialize } = this.props
+        const { close, column } = this.props
         assert(is_object(column), "@column must be of type object")
         assert(is_function(close), "@close must be function")
-        assert(is_function(serialize), "@serialize must be function")
         close(column.identifier)
     }
     onBack = () => {
@@ -295,12 +315,12 @@ export class ColumnView extends Component {
         column.pop()
     }
     onClickHashtag = event => {
-        const { column, onClickHashtag } = this.props
-        onClickHashtag(event, column)
+        const { column, handle_click_hashtag } = this.props
+        handle_click_hashtag(event, column)
     }
     onClickMention = event => {
-        const { column, onClickMention } = this.props
-        onClickMention(event, column)
+        const { column, handle_click_mention } = this.props
+        handle_click_mention(event, column)
     }
     loadMoreStatuses = () => {
         const { column } = this.props
@@ -308,34 +328,206 @@ export class ColumnView extends Component {
         timeline.more()
     }
     render() {
-        const { column, logged_in, onClickHashtag, onClickMention, media_favorites, media_history, serialize, request_query } = this.props
-        let headerView = null
-        if (column.options.type === enums.column.type.home) {
-            const { recipient } = column.params
-            headerView = <HomeTimelineHeaderView column={column} serialize={serialize} recipient={recipient} onClose={this.onClose} onBack={this.onBack} />
-        } else if (column.options.type === enums.column.type.hashtag) {
-            const { hashtag } = column.params
-            headerView = <HashtagTimelineHeaderView column={column} serialize={serialize} hashtag={hashtag} onClose={this.onClose} onBack={this.onBack} />
-        } else if (column.options.type === enums.column.type.server) {
-            const { server } = column.params
-            headerView = <ServerTimelineHeaderView column={column} serialize={serialize} server={server} onClose={this.onClose} onBack={this.onBack} />
+        const { column } = this.props
+        const props = {
+            "handle_click_hashtag": this.onClickHashtag,
+            "handle_click_mention": this.onClickMention,
+            "handle_close": this.onClose,
+            "handle_back": this.onBack,
         }
+        if (column.type === enums.column.type.home) {
+            return <HomeColumnView {...this.props} {...props} />
+        }
+        if (column.type === enums.column.type.server) {
+            return <ServerColumnView {...this.props} {...props} />
+        }
+        if (column.type === enums.column.type.hashtag) {
+            return <HashtagColumnView {...this.props} {...props} />
+        }
+        return null
+    }
+}
+
+@observer
+class HomeColumnView extends Component {
+    constructor(props) {
+        super(props)
+        const { column } = props
+        assert(column.type === enums.column.type.home, "@column.type must be 'home'")
+        this.state = {
+            "is_join_pending": false
+        }
+    }
+    render() {
+        const { column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        if (column.type !== enums.column.type.home) {
+            return null
+        }
+        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention } = this.props
+        const { user } = column.params
         const uploader = new UploadManager()
         return (
             <div className="column timeline">
                 <div className="inside timeline-container round">
-                    {headerView}
+                    <HomeTimelineHeaderView
+                        column={column}
+                        user={user}
+                        handle_close={handle_close}
+                        handle_back={handle_back} />
                     <div className="content">
                         <div className="vertical"></div>
-                        {column.options.postbox.is_hidden ? null : <PostboxView logged_in={logged_in} uploader={uploader} {...column.params} media_favorites={media_favorites} media_history={media_history} />}
+                        <PostboxView
+                            logged_in={logged_in}
+                            uploader={uploader}
+                            pinned_media={pinned_media}
+                            recent_uploads={recent_uploads}
+                            {...column.params} />
                         <TimelineView
                             logged_in={logged_in}
                             timeline={column.timeline}
                             request_query={request_query}
                             options={column.options}
-                            load_more_statuses={this.loadMoreStatuses}
-                            onClickHashtag={this.onClickHashtag}
-                            onClickMention={this.onClickMention} />
+                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_mention={handle_click_mention} />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
+@observer
+class ServerColumnView extends Component {
+    constructor(props) {
+        super(props)
+        const { column } = props
+        assert(column.type === enums.column.type.server, "@column.type must be 'server'")
+        this.state = {
+            "is_join_pending": false
+        }
+    }
+    render() {
+        const { column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        if (column.type !== enums.column.type.server) {
+            return null
+        }
+        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention } = this.props
+        const { server } = column.params
+        return (
+            <div className="column timeline">
+                <div className="inside timeline-container round">
+                    <ServerTimelineHeaderView
+                        column={column}
+                        server={server}
+                        handle_close={handle_close}
+                        handle_back={handle_back} />
+                    <div className="content">
+                        <div className="vertical"></div>
+                        <TimelineView
+                            logged_in={logged_in}
+                            timeline={column.timeline}
+                            request_query={request_query}
+                            options={column.options}
+                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_mention={handle_click_mention} />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
+@observer
+class HashtagColumnView extends Component {
+    constructor(props) {
+        super(props)
+        const { column } = props
+        const { hashtag } = column.params
+        assert(column.type === enums.column.type.hashtag, "@column.type must be 'hashtag'")
+        this.state = {
+            "is_join_pending": false,
+            "joined": hashtag.joined
+        }
+    }
+    onJoin = event => {
+        event.preventDefault()
+        const { column } = this.props
+        const { hashtag } = column.params
+        this.setState({
+            "is_join_pending": true
+        })
+        request
+            .post("/hashtag/join", { "hashtag_id": hashtag.id })
+            .then(res => {
+                const data = res.data
+                if (data.success == false) {
+                    alert(data.error)
+                    return
+                }
+                this.setState({
+                    "joined": true
+                })
+            })
+            .catch(error => {
+                alert(error)
+            })
+            .then(_ => {
+                this.setState({
+                    "is_join_pending": false
+                })
+            })
+    }
+    render() {
+        const { column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        if (column.type !== enums.column.type.hashtag) {
+            return null
+        }
+        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention } = this.props
+        const { hashtag } = column.params
+        const uploader = new UploadManager()
+        return (
+            <div className="column timeline">
+                <div className="inside timeline-container round">
+                    <HashtagTimelineHeaderView
+                        column={column}
+                        hashtag={hashtag}
+                        handle_close={handle_close}
+                        handle_back={handle_back} />
+                    {this.state.joined ? null :
+                        <div className="timeline-join">
+                            <p className="hint">このルームに参加すると投稿することができます</p>
+                            <div className="submit">
+                                <button
+                                    className={classnames("button meiryo ready user-defined-bg-color", { "in-progress": this.state.is_join_pending })}
+                                    onClick={this.onJoin}>
+                                    <span className="progress-text">参加する</span>
+                                    <span className="display-text">参加する</span>
+                                </button>
+                                <button className="button meiryo neutral user-defined-bg-color" onClick={() => {
+                                    location.href = `/server/${hashtag.tagname}/about`
+                                }}>
+                                    <span className="display-text">詳細を見る</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    <div className="content">
+                        <div className="vertical"></div>
+                        {this.state.joined === false ? null :
+                            <PostboxView
+                                {...column.params}
+                                logged_in={logged_in}
+                                uploader={uploader}
+                                pinned_media={pinned_media}
+                                recent_uploads={recent_uploads} />
+                        }
+                        <TimelineView
+                            logged_in={logged_in}
+                            timeline={column.timeline}
+                            request_query={request_query}
+                            options={column.options}
+                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_mention={handle_click_mention} />
                     </div>
                 </div>
             </div>

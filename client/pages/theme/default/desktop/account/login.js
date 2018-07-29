@@ -15,7 +15,7 @@ export default class App extends Component {
     signin = event => {
         event.preventDefault()
         if (this.pending === true) {
-            return
+            return false
         }
         this.pending = true
         const name = this.refs.name.value
@@ -23,13 +23,14 @@ export default class App extends Component {
         if (name.length == 0) {
             alert("ユーザー名を入力してください")
             this.pending = false
-            return
+            return false
         }
         if (password.length == 0) {
             alert("パスワードを入力してください")
             this.pending = false
-            return
+            return false
         }
+        const { request_query } = this.props
         request
             .post("/account/signin", {
                 name,
@@ -40,6 +41,10 @@ export default class App extends Component {
                 if (data.success == false) {
                     alert(data.error)
                     this.pending = false
+                    return false
+                }
+                if (request_query && request_query.redirect) {
+                    location.href = request_query.redirect
                     return
                 }
                 location.href = "/"
@@ -58,17 +63,17 @@ export default class App extends Component {
                 <div className="account-container">
                     <h1 className="title">{config.site.name}にログイン</h1>
                     <div className="content">
-                        <form className="inside account-form" method="post" onSubmit={this.signin}>
+                        <form className="inside account-form" method="post" action="/" ref="form" onSubmit={this.signin}>
                             <div className="item">
                                 <h3 className="title">ユーザー名</h3>
                                 <p className="input-container">
-                                    <input type="text" ref="name" className="form-input user-defined-border-color-focus" />
+                                    <input type="text" name="name" ref="name" className="form-input user-defined-border-color-focus" />
                                 </p>
                             </div>
                             <div className="item">
                                 <h3 className="title">パスワード</h3>
                                 <p className="input-container password">
-                                    <input type="password" ref="password" className="form-input user-defined-border-color-focus" />
+                                    <input type="password" name="password" ref="password" className="form-input user-defined-border-color-focus" />
                                 </p>
                             </div>
                             <div className="submit">

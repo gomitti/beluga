@@ -1,6 +1,7 @@
 import timeline from "../../../timeline"
 import { parse_bool_str } from "../../../lib/bool"
 import logger from "../../../logger"
+import assign from "../../../lib/assign";
 
 module.exports = (fastify, options, next) => {
     const parse_params = params => {
@@ -23,8 +24,9 @@ module.exports = (fastify, options, next) => {
     }
     fastify.get(`/api/v1/timeline/hashtag`, async (req, res) => {
         try {
-            const params = parse_params(Object.assign({
-                // 何か
+            const session = await fastify.authenticate(req, res)
+            const params = parse_params(assign({
+                "user_id": session.user_id
             }, req.query))
             const statuses = await timeline.v1.hashtag(fastify.mongo.db, params)
             res.send({ "success": true, statuses })
@@ -34,8 +36,9 @@ module.exports = (fastify, options, next) => {
     })
     fastify.get(`/api/v1/timeline/home`, async (req, res) => {
         try {
-            const params = parse_params(Object.assign({
-                // 何か
+            const session = await fastify.authenticate(req, res)
+            const params = parse_params(assign({
+                "user_id": session.user_id
             }, req.query))
             const statuses = await timeline.v1.home(fastify.mongo.db, params)
             res.send({ "success": true, statuses })
@@ -45,8 +48,9 @@ module.exports = (fastify, options, next) => {
     })
     fastify.get(`/api/v1/timeline/server`, async (req, res) => {
         try {
-            const params = parse_params(Object.assign({
-                // 何か
+            const session = await fastify.authenticate(req, res)
+            const params = parse_params(assign({
+                "user_id": session.user_id
             }, req.query))
             const statuses = await timeline.v1.server(fastify.mongo.db, params)
             res.send({ "success": true, statuses })
@@ -56,8 +60,9 @@ module.exports = (fastify, options, next) => {
     })
     fastify.get(`/api/v1/timeline/mentions`, async (req, res) => {
         try {
-            const params = parse_params(Object.assign({
-                // 何か
+            const session = await fastify.authenticate(req, res)
+            const params = parse_params(assign({
+                "user_id": session.user_id
             }, req.query))
             const statuses = await timeline.v1.mentions(fastify.mongo.db, params)
             res.send({ "success": true, statuses })
@@ -65,7 +70,7 @@ module.exports = (fastify, options, next) => {
             logger.log({
                 "level": "error",
                 "stack": error.stack ? error.stack.split("\n") : null,
-                error,
+                "error": error,
             })
             res.send({ "success": false, "error": error.toString() })
         }

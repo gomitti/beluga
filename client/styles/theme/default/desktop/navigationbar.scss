@@ -8,12 +8,12 @@
         height: 26px;
 
         > .inside {
-            padding: 0 40px 0 20px;
+            padding: 0 80px;
         }
     }
 
     > .bottom {
-        padding-left: 20px;
+        padding-left: 80px;
         height: 44px;
         background-clip: padding-box;
         background-color: white;
@@ -394,7 +394,7 @@
         display: inline-block;
         height: 26px;
         width: 45px;
-        background-image: url("/asset/default/logo.svg?v=0.1.60");
+        background-image: url("/asset/theme/default/logo.svg?v=0.1.60");
         background-size: 100% 100%;
         background-repeat: no-repeat;
     }
@@ -417,6 +417,7 @@
                 display: block;
                 height: 26px;
                 line-height: 26px;
+                font-weight: normal;
             }
 
             > a.misc::before {
@@ -462,6 +463,7 @@
             font-size: 12px;
             line-height: 12px;
             padding: 8px 15px;
+            font-weight: normal;
 
             &:hover {
                 color: rgb(250, 250, 250);

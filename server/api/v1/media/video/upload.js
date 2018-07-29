@@ -23,7 +23,7 @@ const get_extension = format_name => {
 const reject = (metadata, video_filepath, message) => {
     logger.log({
         "level": "error",
-        metadata
+        "metadata": metadata
     })
     try {
         fs.unlinkSync(video_filepath)
@@ -175,7 +175,7 @@ const gm_crop_poster = async (poster_data, width, height) => {
         logger.log({
             "level": "error",
             "error": "square_data is null",
-            metadata
+            "metadata": metadata
         })
         throw new Error("サムネイルを作成できません")
     }
@@ -267,8 +267,8 @@ export default async (db, params) => {
         logger.log({
             "level": "error",
             "error": error.toString(),
-            directory,
-            user_id,
+            "directory": directory,
+            "user_id": user_id,
         })
         throw new Error(error.toString())
     }

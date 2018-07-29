@@ -13,7 +13,7 @@ export default async (db, params) => {
     await api.v1.hashtag.update(db, params)
 
     // キャッシュの消去
-    memcached.v1.delete_hashtag_from_cache(hashtag)
+    memcached.v1.delete_hashtag_from_cache(hashtag.id, hashtag.tagname)
 
     return true
 }

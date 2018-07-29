@@ -1,12 +1,13 @@
 import { observable, action } from "mobx"
 import { request } from "../../../../../api"
+import { is_array } from "../../../../../assert";
 import ws from "../../../../../websocket"
 
 export default class FavoritesStore {
     @observable.shallow users = []
 
     constructor(status, parent) {
-        if (status.favorited_by && status.favorited_by.length > 0) {
+        if (is_array(status.favorited_by) && status.favorited_by.length > 0) {
             this.users = status.favorited_by
         }
         this.status_id = status.id

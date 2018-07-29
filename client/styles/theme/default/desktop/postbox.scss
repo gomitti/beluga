@@ -3,6 +3,8 @@
     z-index: 1;
 
     > .inside {
+        position: relative;
+        z-index: 1;
         min-height: 65px;
         padding: 6px 16px;
         padding-left: 6px;
@@ -12,6 +14,16 @@
         position: relative;
         z-index: 1;
     }
+
+    > .preview {
+        position: relative;
+        z-index: 2;
+        background-color: rgb(255, 247, 226);
+    }
+}
+
+.postbox-preview-status-avatar-image {
+    border-color: rgb(255, 247, 226) !important;
 }
 
 .postbox-left {
@@ -130,7 +142,7 @@
                     content: "\E021";
                 }
 
-                &.media-favorites::before {
+                &.media-pinned::before {
                     content: "\E01F";
                 }
 
@@ -221,7 +233,7 @@
                 padding: 2px;
                 box-sizing: border-box;
                 cursor: pointer;
-                width: 12.5%;
+                width: 16.6666%;
                 line-height: 0;
                 height: auto;
 
@@ -241,7 +253,7 @@
 
     > .preview {
         position: absolute;
-        width: 120px;
+        width: 200px;
         height: auto;
         line-height: 0;
         top: 0;

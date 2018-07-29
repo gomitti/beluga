@@ -5,8 +5,8 @@ import { convert_to_hex_string_or_null, try_convert_to_hex_string } from "../../
 
 const memcached = new Memcached(api.v1.media.show)
 
-export const delete_media_from_cache = media => {
-    const media_id = try_convert_to_hex_string(media.id, "@mediaが不正です")
+export const delete_media_from_cache = media_id => {
+    media_id = try_convert_to_hex_string(media_id, "@media_idが不正です")
     memcached.delete(media_id)
 }
 

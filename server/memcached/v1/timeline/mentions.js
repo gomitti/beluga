@@ -9,8 +9,8 @@ const fetch = api.v1.timeline.mentions
 const memcached_diff = new Memcached(fetch)
 const memcached_whole = new Memcached(fetch)
 
-export const delete_timeline_mentions_from_cache = user => {
-    const user_id = try_convert_to_hex_string(user.id, "@userが不正です")
+export const delete_timeline_mentions_from_cache = user_id => {
+    user_id = try_convert_to_hex_string(user_id, "@user_idが不正です")
     memcached_diff.delete(user_id)
     memcached_whole.delete(user_id)
 }

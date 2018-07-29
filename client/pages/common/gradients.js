@@ -9,7 +9,7 @@ export default class App extends Component {
 
     render() {
         const views = []
-        for (let pair of this.props.gradients) {
+        this.props.gradients.forEach(pair => {
             let start = pair[0]
             let end = pair[1]
             if (start.indexOf("#") !== 0) {
@@ -26,7 +26,7 @@ export default class App extends Component {
                     }}></div>
                 </div>
             )
-        }
+        })
         return (
             <div className="catalogue">
                 <Head>

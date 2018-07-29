@@ -1,6 +1,5 @@
 // Symbolを使うとjsonが面倒
 const target = {
-    "self": "self",
     "new": "new",
     "blank": "blank",
 }

@@ -18,21 +18,23 @@ export default class TimelineView extends Component {
                 }
                 const { y } = link.getBoundingClientRect()
                 if (y - 500 < window.innerHeight) {
-                    const { load_more_statuses } = this.props
                     this.requested_href = href
-                    load_more_statuses()
+                    this.loadMoreStatuses()
                 }
             }
         })
     }
+    loadMoreStatuses = () => {
+        const { timeline } = this.props
+        timeline.more()
+    }
     onClickMoreLink = event => {
         event.preventDefault()
-        const { load_more_statuses } = this.props
-        load_more_statuses()
+        this.loadMoreStatuses()
         this.more_link_clicked_more_than_once = true
     }
     render() {
-        const { timeline, options, onClickHashtag, onClickMention, request_query, logged_in } = this.props
+        const { timeline, options, handle_click_hashtag, handle_click_mention, request_query, logged_in } = this.props
         const statuses = timeline.filteredStatuses
         let moreLinkView = null
         if (timeline.no_more_statuses === false && statuses.length > 0 && typeof location !== "undefined") {
@@ -58,7 +60,12 @@ export default class TimelineView extends Component {
                     if (status.deleted) {
                         return null
                     }
-                    return <StatusView status={status} key={status.id} options={options.status || {}} onClickHashtag={onClickHashtag} onClickMention={onClickMention} logged_in={logged_in} />
+                    return <StatusView status={status}
+                        key={status.id}
+                        options={options.status || {}}
+                        handle_click_hashtag={handle_click_hashtag}
+                        handle_click_mention={handle_click_mention}
+                        logged_in={logged_in} />
                 })}
                 {moreLinkView}
             </div>

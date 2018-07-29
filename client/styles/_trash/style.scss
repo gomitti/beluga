@@ -5,7 +5,7 @@
     font-family: "Beluga";
     font-weight: 400;
     font-style: normal;
-    src: url("/asset/default/beluga.ttf?v=0.1.55") format("truetype");
+    src: url("/asset/theme/default/beluga.ttf?v=0.1.55") format("truetype");
 }
 
 body {
@@ -288,7 +288,7 @@ a {
 
 .status-likes {
     > p {
-        background-image: url("/asset/default/star.png");
+        background-image: url("/asset/theme/default/star.png");
         width: 15px;
         height: 15px;
         background-size: 100% 100%;
@@ -434,7 +434,7 @@ textarea {
         right: 4px;
 
         > i {
-            background-image: url("/asset/default/gif.svg?v=0.1.55");
+            background-image: url("/asset/theme/default/gif.svg?v=0.1.55");
             background-size: 15px 10px;
             background-repeat: no-repeat;
             width: 15px;

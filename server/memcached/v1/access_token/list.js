@@ -6,8 +6,8 @@ import { try_convert_to_hex_string } from "../../../lib/object_id"
 
 const memcached = new Memcached(api.v1.access_token.list)
 
-export const delete_access_token_list_from_cache = user => {
-    const user_id = try_convert_to_hex_string(user.id, "@userが不正です")
+export const delete_access_token_list_from_cache = user_id => {
+    user_id = try_convert_to_hex_string(user_id, "@user_idが不正です")
     memcached.delete(user_id)
 }
 

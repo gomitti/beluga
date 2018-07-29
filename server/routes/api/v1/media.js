@@ -8,13 +8,13 @@ import logger from "../../../logger"
 module.exports = (fastify, options, next) => {
     fastify.register(require("fastify-multipart"), {
         "limits": {
-            "fileSize": config.media.video.max_filesize + 1,    // 少し多めにしておくと容量チェックができる
+            "fileSize": config.media.video.max_filesize,
         }
     })
     fastify.post(`/api/v1/media/destroy`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
 
@@ -27,7 +27,7 @@ module.exports = (fastify, options, next) => {
             logger.log({
                 "level": "error",
                 "stack": error.stack ? error.stack.split("\n") : null,
-                error,
+                "error": error,
             })
             res.send({ "success": false, "error": error.toString() })
         }
@@ -60,7 +60,7 @@ module.exports = (fastify, options, next) => {
                 }
 
                 const session = await fastify.authenticate(req, res, csrf_token)
-                if (!!session.user_id === false) {
+                if (session.user_id === null) {
                     throw new Error("ログインしてください")
                 }
 
@@ -74,19 +74,28 @@ module.exports = (fastify, options, next) => {
                 }
 
                 const remote = storage.servers[0]
-                const urls = await api.v1.media.image.upload(fastify.mongo.db, {
-                    "data": buffer,
-                    "user_id": user.id,
-                    "storage": remote
-                })
-                memcached.v1.delete_media_list_from_cache(user)
-                res.send({ "success": true, urls })
+                try {
+                    const urls = await api.v1.media.image.upload(fastify.mongo.db, {
+                        "data": buffer,
+                        "user_id": user.id,
+                        "storage": remote
+                    })
+                    memcached.v1.delete_media_list_from_cache(user.id)
+                    res.send({ "success": true, urls })
+                } catch (error) {
+                    logger.log({
+                        "level": "error",
+                        "stack": error.stack ? error.stack.split("\n") : null,
+                        "error": error,
+                    })
+                    res.send({ "success": false, "error": error.toString() })
+                }
             })
         } catch (error) {
             logger.log({
                 "level": "error",
                 "stack": error.stack ? error.stack.split("\n") : null,
-                error,
+                "error": error,
             })
             res.send({ "success": false, "error": error.toString() })
         }
@@ -119,7 +128,7 @@ module.exports = (fastify, options, next) => {
                 }
 
                 const session = await fastify.authenticate(req, res, csrf_token)
-                if (!!session.user_id === false) {
+                if (session.user_id === null) {
                     throw new Error("ログインしてください")
                 }
 
@@ -133,19 +142,28 @@ module.exports = (fastify, options, next) => {
                 }
 
                 const remote = storage.servers[0]
-                const urls = await api.v1.media.video.upload(fastify.mongo.db, {
-                    "data": buffer,
-                    "user_id": user.id,
-                    "storage": remote
-                })
-                memcached.v1.delete_media_list_from_cache(user)
-                res.send({ "success": true, urls })
+                try {
+                    const urls = await api.v1.media.video.upload(fastify.mongo.db, {
+                        "data": buffer,
+                        "user_id": user.id,
+                        "storage": remote
+                    })
+                    memcached.v1.delete_media_list_from_cache(user.id)
+                    res.send({ "success": true, urls })
+                } catch (error) {
+                    logger.log({
+                        "level": "error",
+                        "stack": error.stack ? error.stack.split("\n") : null,
+                        "error": error,
+                    })
+                    res.send({ "success": false, "error": error.toString() })
+                }
             })
         } catch (error) {
             logger.log({
                 "level": "error",
                 "stack": error.stack ? error.stack.split("\n") : null,
-                error,
+                "error": error,
             })
             res.send({ "success": false, "error": error.toString() })
         }

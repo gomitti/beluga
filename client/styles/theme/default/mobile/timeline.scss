@@ -62,3 +62,25 @@
         font-weight: normal;
     }
 }
+
+.timeline-join {
+    text-align: center;
+    padding: 20px;
+
+    > .hint {
+        font-size: 15px;
+        line-height: 18px;
+    }
+
+    > .submit {
+        margin-top: 10px;
+
+        > .button {
+            margin-right: 10px;
+
+            &:last-child {
+                margin: 0;
+            }
+        }
+    }
+}

@@ -9,9 +9,9 @@ const memcached = {
     "tagnames": new Memcached(api.v1.hashtag.show),
 }
 
-export const delete_hashtag_from_cache = hashtag => {
-    const hashtag_id = try_convert_to_hex_string(hashtag.id, "@hashtagが不正です")
-    const { tagname } = hashtag
+export const delete_hashtag_from_cache = (hashtag_id, tagname) => {
+    hashtag_id = try_convert_to_hex_string(hashtag_id, "@hashtag_idが不正です")
+    assert(is_string(tagname), "@tagname must be of type string")
     memcached.ids.delete(hashtag_id)
     memcached.tagnames.delete(tagname)
 }

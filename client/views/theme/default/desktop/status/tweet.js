@@ -2,7 +2,13 @@ import React, { Component } from "react"
 
 const detect_widget_loaded = iframe => {
     const { contentDocument } = iframe
+    if (!!contentDocument === false) {
+        return false
+    }
     const { body } = contentDocument
+    if (!!body === false) {
+        return false
+    }
     if (body.getElementsByClassName("twitter-tweet-rendered").length === 1) {
         return true
     }

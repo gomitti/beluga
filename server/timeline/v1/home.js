@@ -8,20 +8,25 @@ import collection from "../../collection"
 import { try_convert_to_object_id } from "../../lib/object_id"
 
 export default async (db, params) => {
-    const user_id = try_convert_to_object_id(params.user_id, "@user_idが不正です")
-    const user = await model.v1.user.show(db, { "id": user_id })
+    const user = await model.v1.user.show(db, { "id": params.user_id })
     if (user === null) {
         throw new Error("ユーザーが存在しません")
     }
-    
-    const server_id = try_convert_to_object_id(params.server_id, "@server_idが不正です")
-    const server = await model.v1.server.show(db, { "id": server_id })
+
+    const server = await model.v1.server.show(db, { "id": params.server_id })
     if (server === null) {
         throw new Error("サーバーが存在しません")
     }
-    
+
     const timeline_params = assign(api.v1.timeline.default_params, params)
-    const status_params = assign(timeline_params)
+    const status_params = assign(collection.v1.status.default_params, {
+        "trim_user": false,
+        "trim_server": false,
+        "trim_hashtag": false,
+        "trim_recipient": false,
+        "trim_favorited_by": false,
+        "requested_by": params.requested_by
+    })
 
     const rows = await memcached.v1.timeline.home(db, timeline_params)
     const statuses = []

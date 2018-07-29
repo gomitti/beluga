@@ -15,7 +15,7 @@ export default class TimelineStore {
     constructor(endpoint, request_query, params, options) {
         this.endpoint = endpoint
         this.query = assign(request_query)
-        this.params = params
+        this.params = assign(params)
         this.options = assign(default_options, options)
         this.no_more_statuses = false
         if (ws) {
@@ -110,7 +110,7 @@ export default class TimelineStore {
         }
         const query = assign(params, this.query)
         try {
-            const res = await request.get(this.endpoint, { "params": query })
+            const res = await request.get(this.endpoint, query)
             const data = res.data
             const stores = []
             for (const status of data.statuses) {
@@ -144,7 +144,7 @@ export default class TimelineStore {
         }
         const query = assign(params, this.query)
         try {
-            const res = await request.get(this.endpoint, { "params": query })
+            const res = await request.get(this.endpoint, query)
             const data = res.data
             if (data.success === false) {
                 alert(data.error)

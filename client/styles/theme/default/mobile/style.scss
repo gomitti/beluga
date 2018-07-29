@@ -9,12 +9,13 @@
 @import "video";
 @import "hashtags";
 @import "account";
+@import "server";
 
 @font-face {
     font-family: "Beluga";
     font-weight: 400;
     font-style: normal;
-    src: url("/asset/default/beluga.ttf?v=0.1.63") format("truetype");
+    src: url("/asset/theme/default/beluga.ttf?v=0.1.63") format("truetype");
 }
 
 body {

@@ -25,6 +25,5 @@ export default async (db, params) => {
     if (params.trim_profile === true) {
         delete user.profile
     }
-
     return user
 }

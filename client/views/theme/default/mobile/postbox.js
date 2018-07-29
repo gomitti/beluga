@@ -1,11 +1,12 @@
 import React, { Component } from "react"
 import { observer } from "mobx-react"
+import classnames from "classnames"
 import assert from "../../../../assert"
 import assign from "../../../../libs/assign"
 import { request } from "../../../../api"
-import { PostboxMediaView } from "./postbox/media"
-import classnames from "classnames"
-import { sync as uid } from "uid-safe"
+import MediaView from "./postbox/media"
+import PreviewView from "./postbox/preview"
+import ProgressView from "./postbox/upload"
 import Button from "./button"
 import { convert_bytes_to_optimal_unit } from "../../../../libs/functions"
 
@@ -15,12 +16,11 @@ export default class PostboxView extends Component {
         super(props)
         this.state = {
             "is_post_button_active": false,
-            "show_media_favorites": false,
-            "show_media_history": false,
+            "show_pinned_media": false,
+            "show_recent_uploads": false,
             "show_text_actions": false,
-            "uploading_files": [],
-            "uploaded_files": [],
-            "upload_status_text": null
+            "show_preview": false,
+            "preview_text": ""
         }
     }
     componentDidMount() {
@@ -44,7 +44,7 @@ export default class PostboxView extends Component {
     toggleMediaView = event => {
         event.preventDefault()
         this.setState({
-            "show_media_favorites": !this.state.show_media_favorites
+            "show_pinned_media": !this.state.show_pinned_media
         })
     }
     appendMediaLink = (event, item) => {
@@ -72,11 +72,11 @@ export default class PostboxView extends Component {
             return
         }
         const query = { text }
-        const { hashtag, recipient, server } = this.props
+        const { hashtag, user, server } = this.props
         if (hashtag) {	// ルームへの投稿
             query.hashtag_id = hashtag.id
-        } else if (recipient && server) {	// ユーザーのホームへの投稿
-            query.recipient_id = recipient.id
+        } else if (user && server) {	// ユーザーのホームへの投稿
+            query.recipient_id = user.id
             query.server_id = server.id
         } else {
             assert(false, "Invalid post target")
@@ -92,7 +92,7 @@ export default class PostboxView extends Component {
                     textarea.focus()
                     return
                 }
-                textarea.value = ""
+                this.setText("")
                 this.setState({ "is_pending": false, "is_post_button_active": false })
             })
             .catch(error => {
@@ -104,6 +104,12 @@ export default class PostboxView extends Component {
     setText(str) {
         const { textarea } = this.refs
         textarea.value = str
+
+        if (this.preview_timer) {
+            clearTimeout(this.preview_timer)
+        }
+        this.preview_timer = setTimeout(this.updatePreviewText, 200)
+
         if (str.length === 0) {
             return this.setState({
                 "is_post_button_active": false
@@ -117,14 +123,14 @@ export default class PostboxView extends Component {
         const { target, clipboardData } = event
         const data = clipboardData.getData("Text")
         // URL以外はそのままペースト
-        if (!data.match(/^https?:\/\/[^\s ]+$/)) {
+        if (!!data.match(/^https?:\/\/[^\s　]+$/) === false) {
             return
         }
         // ファイルはそのままペースト
         const components = data.split("/")
         const filename = components[components.length - 1]
         if (filename.indexOf(".") !== -1) {
-            if (!filename.match(/\.(html|htm|php|cgi)/)) {
+            if (!!filename.match(/\.(html|htm|php|cgi)/) === false) {
                 return
             }
         }
@@ -136,24 +142,30 @@ export default class PostboxView extends Component {
         const position = target.selectionStart
         if (position === 0) {
             if (target.value.length === 0) {
-                target.value = prefix + data
+                this.setText(prefix + data)
                 return
             }
-            target.value = prefix + data + "\n" + target.value
+            this.setText(prefix + data + "\n" + target.value)
             return
         }
         if (position === target.value.length) {
             if (target.value[target.value.length - 1] === "\n") {
-                target.value = target.value + prefix + data
+                this.setText(target.value + prefix + data)
                 return
             }
-            target.value = target.value + "\n" + prefix + data
+            this.setText(target.value + "\n" + prefix + data)
             return
         }
-        target.value = target.value.substring(0, position) + "\n" + prefix + data + "\n" + target.value.substring(position)
+        this.setText(target.value.substring(0, position) + "\n" + prefix + data + "\n" + target.value.substring(position))
     }
     onChangeText = event => {
         const { textarea } = this.refs
+
+        if (this.preview_timer) {
+            clearTimeout(this.preview_timer)
+        }
+        this.preview_timer = setTimeout(this.updatePreviewText, 200)
+
         if (textarea.value.length === 0 && this.state.is_post_button_active === true) {
             return this.setState({
                 "is_post_button_active": false
@@ -165,12 +177,22 @@ export default class PostboxView extends Component {
             })
         }
     }
+    updatePreviewText = () => {
+        if (this.state.show_preview === false) {
+            return
+        }
+        const { textarea } = this.refs
+        this.setState({
+            "preview_text": textarea ? textarea.value : ""
+        })
+    }
     onFileChange = event => {
         const { uploader } = this.props
         const { files } = event.target
         for (const file of files) {
             uploader.add(file)
         }
+        this.refs.file.value = ""
     }
     onClickActionMediaUpload = event => {
         event.preventDefault()
@@ -182,15 +204,23 @@ export default class PostboxView extends Component {
     onClickActionMediaHistory = event => {
         event.preventDefault()
         this.setState({
-            "show_media_history": !this.state.show_media_history,
-            "show_media_favorites": false
+            "show_recent_uploads": !this.state.show_recent_uploads,
+            "show_pinned_media": false
         })
     }
-    onClickActionMediaFavorites = event => {
+    onClickActionPinnedMedia = event => {
         event.preventDefault()
         this.setState({
-            "show_media_favorites": !this.state.show_media_favorites,
-            "show_media_history": false
+            "show_pinned_media": !this.state.show_pinned_media,
+            "show_recent_uploads": false
+        })
+    }
+    onClickActionPreview = event => {
+        event.preventDefault()
+        const { textarea } = this.refs
+        this.setState({
+            "show_preview": !this.state.show_preview,
+            "preview_text": textarea ? textarea.value : ""
         })
     }
     onClickActionText = event => {
@@ -199,36 +229,33 @@ export default class PostboxView extends Component {
             "show_text_actions": !this.state.show_text_actions
         })
     }
+    onClickActionTextCode = event => {
+        event.preventDefault()
+        if (event.target.nodeName === "SPAN") {
+            return
+        }
+        const { textarea } = this.refs
+        if (textarea.value.length === 0) {
+            this.setText('"""\n\n"""')
+        } else {
+            this.setText(textarea.value + "\n" + '"""\n\n"""')
+        }
+    }
     render() {
-        const { logged_in, media_favorites, media_history } = this.props
-        if (!logged_in) {
+        const { logged_in, pinned_media, recent_uploads } = this.props
+        if (!!logged_in === false) {
             return (
                 <div>投稿するには<a href="/login">ログイン</a>してください</div>
             )
         }
-        let uploadProgressView = null
+
         const { uploader } = this.props
         const { uploading_file_metadatas } = uploader
-        if (uploading_file_metadatas.length > 0) {
-            uploadProgressView =
-                <div className="postbox-upload-progress">
-                    {uploading_file_metadatas.map(metadata => {
-                        const { name, size, percent } = metadata
-                        const size_str = convert_bytes_to_optimal_unit(size)
-                        return (
-                            <div className="file">
-                                <p className="metadata">
-                                    <span className="name">{name}</span>
-                                    <span className="size">{size_str}</span>
-                                </p>
-                                <p className="progress-bar">
-                                    <span className="bar user-defined-bg-color" style={{ "width": `${percent * 100}%` }}></span>
-                                    <span className="track"></span>
-                                </p>
-                            </div>
-                        )
-                    })}
-                </div>
+
+        const preview_status = {
+            "text": this.state.preview_text,
+            "user": logged_in,
+            "server": {}
         }
         return (
             <div className="postbox-module" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
@@ -248,21 +275,23 @@ export default class PostboxView extends Component {
                                     onPaste={this.onPasteText} />
                             </div>
                         </div>
-                        {uploadProgressView}
+                        <ProgressView metadatas={uploading_file_metadatas} />
                         <div className="postbox-footer">
                             <input className="hidden" type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
                             <div className="actions">
                                 <div className="unit">
                                     <Button className="action media-upload" onClick={this.onClickActionMediaUpload}></Button>
                                     <Button className={classnames("action media-history user-defined-color-active", {
-                                        "active": this.state.show_media_history
+                                        "active": this.state.show_recent_uploads
                                     })} onClick={this.onClickActionMediaHistory}></Button>
-                                    <Button className={classnames("action media-favorites user-defined-color-active", {
-                                        "active": this.state.show_media_favorites
-                                    })} onClick={this.onClickActionMediaFavorites}></Button>
+                                    <Button className={classnames("action media-pinned user-defined-color-active", {
+                                        "active": this.state.show_pinned_media
+                                    })} onClick={this.onClickActionPinnedMedia}></Button>
                                 </div>
                                 <div className="unit">
-                                    <Button className="action preview" onClick={this.onClickActionEmoji}></Button>
+                                    <Button className={classnames("action preview user-defined-color-active", {
+                                        "active": this.state.show_preview
+                                    })} onClick={this.onClickActionPreview}></Button>
                                     <Button className={classnames("action text-editing user-defined-color-active", {
                                         "active": this.state.show_text_actions
                                     })} onClick={this.onClickActionText}></Button>
@@ -275,6 +304,7 @@ export default class PostboxView extends Component {
                                         <Button className="action text-underline"></Button>
                                         <Button className="action text-strikethrough"></Button>
                                         <Button className="action text-italic"></Button>
+                                        <Button className="action text-code" onClick={this.onClickActionTextCode}></Button>
                                     </div>
                                     : null}
                             </div>
@@ -286,21 +316,20 @@ export default class PostboxView extends Component {
                                 })} onClick={this.post}>投稿する</Button>
                             </div>
                         </div>
-                        {media_favorites ?
-                            <PostboxMediaView
-                                is_hidden={!this.state.show_media_favorites}
-                                media={media_favorites}
-                                title="お気に入りの画像"
-                                append={this.appendMediaLink} />
-                            : null}
-                        {media_history ?
-                            <PostboxMediaView
-                                is_hidden={!this.state.show_media_history}
-                                media={media_history}
-                                title="アップロード履歴"
-                                append={this.appendMediaLink} />
-                            : null}
+                        <MediaView
+                            is_hidden={!this.state.show_pinned_media}
+                            media={pinned_media}
+                            title="よく使う画像"
+                            append={this.appendMediaLink} />
+                        <MediaView
+                            is_hidden={!this.state.show_recent_uploads}
+                            media={recent_uploads}
+                            title="アップロード履歴"
+                            append={this.appendMediaLink} />
                     </div>
+                </div>
+                <div className="preview postbox-preview-bg-color">
+                    <PreviewView is_hidden={!this.state.show_preview} status={preview_status} />
                 </div>
             </div>
         )

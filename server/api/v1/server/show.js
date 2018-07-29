@@ -2,8 +2,9 @@ import config from "../../../config/beluga"
 import { try_convert_to_object_id } from "../../../lib/object_id"
 
 const build_query_by_id = params => {
-    const id = try_convert_to_object_id(params.id, "@idが不正です")
-    return { "_id": id }
+    return {
+        "_id": try_convert_to_object_id(params.id, "@idが不正です")
+    }
 }
 
 const build_query_by_name = params => {

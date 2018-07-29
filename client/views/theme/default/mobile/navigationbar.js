@@ -28,32 +28,26 @@ export default class NavigationBarView extends Component {
                                 <span className="icon mentions"></span>
                             </a>
                         </li>
-                        {(() => {
-                            if (server) {
-                                return (
-                                    <li>
-                                        <a href={`/server/${server.name}/hashtags`} className={classnames("user-defined-color-active user-defined-border-color-active", {
-                                            "active": active === "hashtags"
-                                        })}>
-                                            <span className="icon hashtags"></span>
-                                        </a>
-                                    </li>
-                                )
-                            }
-                        })()}
-                        {(() => {
-                            if (server) {
-                                return (
-                                    <li>
-                                        <a href={`/world/${server.name}`} className={classnames("user-defined-color-active user-defined-border-color-active", {
-                                            "active": active === "world"
-                                        })}>
-                                            <span className="icon world"></span>
-                                        </a>
-                                    </li>
-                                )
-                            }
-                        })()}
+                        {server ?
+                            <li>
+                                <a href={`/server/${server.name}/hashtags`} className={classnames("user-defined-color-active user-defined-border-color-active", {
+                                    "active": active === "hashtags"
+                                })}>
+                                    <span className="icon hashtags"></span>
+                                </a>
+                            </li>
+                            : null
+                        }
+                        {server ?
+                            <li>
+                                <a href={`/server/${server.name}/statuses`} className={classnames("user-defined-color-active user-defined-border-color-active", {
+                                    "active": active === "statuses"
+                                })}>
+                                    <span className="icon world"></span>
+                                </a>
+                            </li>
+                            : null
+                        }
                         <li>
                             <a href="/settings/profile" className={classnames("user-defined-color-active user-defined-border-color-active", {
                                 "active": active === "settings"

@@ -8,14 +8,20 @@ import collection from "../../collection"
 import { try_convert_to_object_id } from "../../lib/object_id"
 
 export default async (db, params) => {
-    const timeline_params = assign(api.v1.timeline.default_params, params)
-    const status_params = assign(timeline_params)
-    const id = try_convert_to_object_id(params.id, "@idが不正です")
-
-    const hashtag = await model.v1.hashtag.show(db, { id })
+    const hashtag = await model.v1.hashtag.show(db, { "id": params.hashtag_id })
     if (hashtag === null) {
         throw new Error("ルームが存在しません")
     }
+
+    const timeline_params = assign(api.v1.timeline.default_params, params)
+    const status_params = assign(collection.v1.status.default_params, {
+        "trim_user": false,
+        "trim_server": false,
+        "trim_hashtag": false,
+        "trim_recipient": false,
+        "trim_favorited_by": false,
+        "requested_by": params.requested_by
+    })
 
     const rows = await memcached.v1.timeline.hashtag(db, timeline_params)
     const statuses = []

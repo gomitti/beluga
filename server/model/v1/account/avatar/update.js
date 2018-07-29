@@ -9,7 +9,7 @@ export default async (db, params) => {
     const url = await api.v1.account.avatar.update(db, params)
 
     // キャッシュの消去
-    memcached.v1.delete_user_from_cache(user)
+    memcached.v1.delete_user_from_cache(user.id, user.name)
 
     return url
 }

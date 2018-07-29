@@ -140,6 +140,10 @@ export default async (db, params) => {
     if (params.hashtag_id) {
         hashtag = await memcached.v1.hashtag.show(db, { "id": params.hashtag_id })
         assert(hashtag !== null, "ルームがが見つかりません")
+        
+        const joined = await memcached.v1.hashtag.joined(db, { "hashtag_id": hashtag.id, "user_id": user.id })
+        assert(joined === true, "参加していないルームには投稿できません")
+
         params.server_id = hashtag.server_id
         params.is_public = !!hashtag.is_public
     }
@@ -196,26 +200,25 @@ export default async (db, params) => {
             "server_id": server.id
         })
         mentions.push(user)
-        memcached.v1.delete_timeline_mentions_from_cache(user)
+        memcached.v1.delete_timeline_mentions_from_cache(user.id)
         match = regexp.exec(params.text);
     }
 
     if (hashtag) {
-        memcached.v1.delete_timeline_hashtag_from_cache(hashtag)
+        memcached.v1.delete_timeline_hashtag_from_cache(hashtag.id)
         const collection = db.collection("hashtags")
         const result = await collection.updateOne(
             { "_id": hashtag.id },
             { "$inc": { "statuses_count": 1 } }
         )
-        hashtag.statuses_count += 1		// キャッシュを直接変更
     }
 
     if (recipient) {
-        memcached.v1.delete_timeline_home_from_cache(recipient, server)
+        memcached.v1.delete_timeline_home_from_cache(recipient.id, server.id)
     }
 
     if (server) {
-        memcached.v1.delete_timeline_server_from_cache(server)
+        memcached.v1.delete_timeline_server_from_cache(server.id)
     }
 
     // 連投規制

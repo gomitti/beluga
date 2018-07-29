@@ -5,10 +5,9 @@ import storage from "../../../config/storage"
 
 module.exports = (fastify, options, next) => {
     let api_version = "v1"
-    fastify.post(`/api/v1/user/show`, async (req, res) => {
+    fastify.get(`/api/v1/user/show`, async (req, res) => {
         try {
-            const params = req.body
-            const user = await model.v1.user.show(fastify.mongo.db, params)
+            const user = await model.v1.user.show(fastify.mongo.db, req.query)
             res.send({ "success": true, user })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })

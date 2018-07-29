@@ -4,7 +4,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/reaction/add`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const params = Object.assign({}, req.body, { "user_id": session.user_id })
@@ -19,7 +19,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/reaction/toggle`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const params = Object.assign({}, req.body, { "user_id": session.user_id })

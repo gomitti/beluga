@@ -22,9 +22,6 @@ if (config.https) {
 const get_server_name = url => {
     const components = url.split("/")
     const location = components[1]
-    if (location === config.slug.timeline.server) {
-        return components[2]
-    }
     if (location === "server") {
         return components[2]
     }

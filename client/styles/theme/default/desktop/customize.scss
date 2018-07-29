@@ -1,0 +1,64 @@
+.column.customize-emoji {
+    flex: 0 1 600px;
+}
+
+.settings-module {
+    > .item {
+        .image-input {
+            margin-top: 10px;
+        }
+    }
+}
+
+.custome-emoji-list {
+    > ul {
+        > .item {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            border-bottom: 1px solid rgb(220, 220, 220);
+            padding: 6px 0;
+
+            &:last-child {
+                border: none;
+            }
+
+            > .image-area {
+                width: 50px;
+                flex: 0 0 auto;
+
+                > .image {
+                    width: 30px;
+                    height: 30px;
+                }
+            }
+
+            > .shortname-area {
+                flex: 1 1 auto;
+                word-break: break-all;
+                margin-right: 5px;
+                font-size: 15px;
+            }
+
+            > .user-area {
+                flex: 0 1 auto;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+
+                .avatar {
+                    flex: 0 1 auto;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 30px;
+                    margin-right: 5px;
+                }
+
+                .name {
+                    flex: 0 1 auto;
+                    font-size: 15px;
+                }
+            }
+        }
+    }
+}

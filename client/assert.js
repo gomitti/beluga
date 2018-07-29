@@ -22,7 +22,7 @@ export default (expression, message) => {
         return
     }
     const error = new Error(message)
-    if(alert){
+    if (typeof alert !== "undefined") {
         alert(`Assertion failed: ${message}`)
     }
     console.log(`Assertion failed: ${message}`)

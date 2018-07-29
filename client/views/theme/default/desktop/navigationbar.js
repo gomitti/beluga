@@ -70,14 +70,13 @@ class NavigationBarUserView extends Component {
                 <div className={`content page-${this.state.current_page}`}>
                     <div className="menu">
                         <ul className="block">
-                            <li><a href={`/user/${logged_in.name}`} target="_blank">プロフィール</a></li>
-                            <li><a className="arrow" href={`/mentions`} target="_blank" onClick={this.onClickMentions}>@関連</a></li>
-                            <li><a className="arrow" href={`/user/${logged_in.name}/lists`} target="_blank">リスト</a></li>
+                            <li><a href={`/user/${logged_in.name}`}>プロフィール</a></li>
+                            <li><a className="arrow" href={`/mentions`} onClick={this.onClickMentions}>@関連</a></li>
                         </ul>
                         <ul className="block">
-                            <li><a href="/settings/profile" target="_blank">設定とプライバシー</a></li>
-                            <li><a href="/settings/profile" target="_blank">ヘルプセンター</a></li>
-                            <li><a href="/logout" target="_blank">ログアウト</a></li>
+                            <li><a href="/settings/profile">設定とプライバシー</a></li>
+                            <li><a href="/settings/profile">ヘルプセンター</a></li>
+                            <li><a href="/logout">ログアウト</a></li>
                         </ul>
                     </div>
                     <div className="mentions">
@@ -105,22 +104,22 @@ export default class NavigationBarView extends Component {
                                     <li>
                                         <a href="">設定</a>
                                         <ul className="navigationbar-pulldown-menu">
-                                            <li><a href="/settings/profile" target="_blank">プロフィール</a></li>
-                                            <li><a href="/settings/design" target="_blank">デザイン</a></li>
-                                            <li><a href="/settings/account" target="_blank">アカウント</a></li>
-                                            <li><a href="/settings/favorites" target="_blank">お気に入り</a></li>
-                                            <li><a href="/settings/uploads" target="_blank">アップロード</a></li>
-                                            <li><a href="/settings/security" target="_blank">セキュリティ</a></li>
-                                            <li><a href="/settings/authenticator" target="_blank">スマホ認証</a></li>
-                                            <li><a href="/settings/desktop" target="_blank">デスクトップ</a></li>
+                                            <li><a href="/settings/profile">プロフィール</a></li>
+                                            <li><a href="/settings/design">デザイン</a></li>
+                                            <li><a href="/settings/account">アカウント</a></li>
+                                            <li><a href="/settings/pins">固定</a></li>
+                                            <li><a href="/settings/uploads">アップロード</a></li>
+                                            <li><a href="/settings/security">セキュリティ</a></li>
+                                            <li><a href="/settings/authenticator">スマホ認証</a></li>
+                                            <li><a href="/settings/desktop">デスクトップ</a></li>
                                         </ul>
                                     </li>
                                     :
                                     <li>
                                         <a href="">アカウント</a>
                                         <ul className="navigationbar-pulldown-menu">
-                                            <li><a href="/login" target="_blank">ログイン</a></li>
-                                            <li><a href="/signup" target="_blank">新規登録</a></li>
+                                            <li><a href="/login">ログイン</a></li>
+                                            <li><a href="/signup">新規登録</a></li>
                                         </ul>
                                     </li>
                                 }
@@ -134,10 +133,10 @@ export default class NavigationBarView extends Component {
                                 <li>
                                     <a href="" className="misc"></a>
                                     <ul className="navigationbar-pulldown-menu">
-                                        <li><a href="https://help.beluga.fm" target="_blank">ヘルプ</a></li>
-                                        <li><a href="https://research.beluga.fm" className="verdana" target="_blank">Research</a></li>
-                                        <li><a href="https://playground.beluga.fm" className="verdana" target="_blank">Playground</a></li>
-                                        <li><a href="https://github.com/belugafm/beluga" target="_blank">ソースコード</a></li>
+                                        <li><a href="https://help.beluga.fm">ヘルプ</a></li>
+                                        <li><a href="https://research.beluga.fm" className="verdana">Research</a></li>
+                                        <li><a href="https://playground.beluga.fm" className="verdana">Playground</a></li>
+                                        <li><a href="https://github.com/belugafm/beluga">ソースコード</a></li>
                                     </ul>
                                 </li>
                             </ul>
@@ -174,8 +173,8 @@ export default class NavigationBarView extends Component {
                                     }
                                     {server ?
                                         <li>
-                                            <a href={`/world/${server.name}`} className={classnames("user-defined-color-hover user-defined-color-active user-defined-border-color-hover user-defined-border-color-active", {
-                                                "active": active === "world"
+                                            <a href={`/server/${server.name}/statuses`} className={classnames("user-defined-color-hover user-defined-color-active user-defined-border-color-hover user-defined-border-color-active", {
+                                                "active": active === "statuses"
                                             })}>
                                                 <span className="icon world"></span>
                                                 <span className="text">タイムライン</span>

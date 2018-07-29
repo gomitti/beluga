@@ -2,16 +2,16 @@ import enums from "../enums"
 import assert, { is_object } from "../assert"
 import assign from "../libs/assign"
 
+const key = "desktop.settings.BxbFYxIv"
+
 export const update = settings => {
     assert(is_object(settings), "@settings must be of type object")
-    settings.column.target = settings.column.target.toString()
     const settings_json = JSON.stringify(settings)
-    localStorage.setItem("desktop.settings", settings_json)
+    localStorage.setItem(key, settings_json)
 }
 let settings = {
-    "column": {
-        "target": enums.column.target.new
-    }
+    "new_column_target": enums.column.target.new,
+    "multiple_columns_enabled": false
 }
 export const default_settings = assign(settings)
 
@@ -20,8 +20,8 @@ settings = (() => {
     if (typeof localStorage === "undefined") {
         return default_settings
     }
-    const settings_str = localStorage.getItem("desktop.settings")
-    if (!settings_str) {
+    const settings_str = localStorage.getItem(key)
+    if (!!settings_str == false) {
         return default_settings
     }
     const settings = JSON.parse(settings_str)

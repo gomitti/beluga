@@ -20,8 +20,8 @@ export default class PostboxView extends Component {
             query.hashtag_id = this.props.hashtag.id
         }
         // ユーザーのホームへの投稿
-        if (this.props.recipient && this.props.server) {
-            query.recipient_id = this.props.recipient.id
+        if (this.props.user && this.props.server) {
+            query.recipient_id = this.props.user.id
             query.server_id = this.props.server.id
         }
         request

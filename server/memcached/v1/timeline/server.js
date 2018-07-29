@@ -9,8 +9,8 @@ const fetch = api.v1.timeline.server
 const memcached_diff = new Memcached(fetch)
 const memcached_whole = new Memcached(fetch)
 
-export const delete_timeline_server_from_cache = server => {
-    const server_id = try_convert_to_hex_string(server.id, "@serverが不正です")
+export const delete_timeline_server_from_cache = server_id => {
+    server_id = try_convert_to_hex_string(server_id, "@server_idが不正です")
     memcached_diff.delete(server_id)
     memcached_whole.delete(server_id)
 }

@@ -7,7 +7,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/access_token/generate`, async (req, res) => {
         try {
             const session = await fastify.authenticate_cookie(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const params = { "user_id": session.user_id }

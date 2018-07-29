@@ -21,7 +21,7 @@ export default class View extends Component {
             <div className="timeline server scroller">
                 <div className="inside">
                     {this.store.statuses.map(status => {
-                        return <StatusView status={status} key={status.id} options={{ "show_belonging": true }} onClickHashtag={this.onClickHashtag} onClickMention={this.onClickMention} />
+                        return <StatusView status={status} key={status.id} options={{ "show_belonging": true }} handle_click_hashtag={this.onClickHashtag} handle_click_mention={this.onClickMention} />
                     })}
                 </div>
             </div>

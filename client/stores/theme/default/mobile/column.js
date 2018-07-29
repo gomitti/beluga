@@ -7,36 +7,14 @@ import StatusStore from "../common/status"
 import HomeTimelineStore from "../desktop/timeline/home"
 import HahstagTimelineStore from "../desktop/timeline/hashtag"
 import ServerTimelineStore from "../desktop/timeline/server"
+import { get_timeline_store, default_options } from "../desktop/column"
 
-const get_timeline_store = (type, request_query, params, options) => {
-    if (type === enums.column.type.home) {
-        return new HomeTimelineStore(request_query, params, options)
-    }
-    if (type === enums.column.type.hashtag) {
-        return new HahstagTimelineStore(request_query, params, options)
-    }
-    if (type === enums.column.type.server) {
-        return new ServerTimelineStore(request_query, params, options)
-    }
-    return null
-}
-export const default_options = {
-    "type": "hashtag",
-    "timeline": {
-        "cancel_update": false
-    },
-    "status": {
-        "show_belonging": false
-    },
-    "postbox": {
-        "is_hidden": false
-    },
-}
 export default class ColumnStore {
-    constructor(request_query, params, options, initial_statuses) {
+    constructor(type, params, options, initial_statuses) {
+        this.type = type
         this.params = params
         this.options = assign(default_options, options)
-        this.timeline = get_timeline_store(options.type, request_query, params, options.timeline || {})
+        this.timeline = get_timeline_store(type, params, options.timeline)
         assert(this.timeline, "@timeline must not be null")
         if (Array.isArray(initial_statuses)) {
             const status_stores = []

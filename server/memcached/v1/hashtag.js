@@ -1,2 +1,3 @@
 import show from "./hashtag/show"
-export default { show }
+import joined from "./hashtag/joined"
+export default { show, joined }

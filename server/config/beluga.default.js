@@ -1,4 +1,4 @@
-const use_https = false
+const use_https = true
 export default {
     "https": use_https,
     "port": {
@@ -11,7 +11,7 @@ export default {
         "minimum_interval": 1000,   // 最小の投稿間隔をミリ秒で指定
         "reaction": {
             "limit": 3,		// 1投稿につき何種類の絵文字を追加できるか
-            "allow_self_reactions": false	// 自分自身へのリアクションの追加を許可
+            "allow_self_reactions": true	// 自分自身へのリアクションの追加を許可
         },
         "embed": {
             "web": {
@@ -33,7 +33,12 @@ export default {
         ["#56ccf2", "#2f80ed"], ["#f8ffae", "#43c6ac"], ["#ffe259", "#ffa751"]
     ],
     "emoji":{
-        "max_shortname_length": 100
+        "max_shortname_length": 32,
+        "max_filesize": 1024 * 64,
+        "min_size": 64,
+        "max_size": 128,
+        "path": "/path/to/file",
+        "regex": /^[0-9a-zA-Z_\-]+$/
     },
     "memcached": {
         "capacity": 1000,
@@ -107,12 +112,6 @@ export default {
     },
     "tmp": {
         "directory": "/path/to/tmp/dir"
-    },
-    "slug": {
-        "timeline": {
-            "server": "world",
-            "global": "universe",
-        }
     },
     "media": {
         "image": {

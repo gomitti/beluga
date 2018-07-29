@@ -100,7 +100,7 @@ class ThemeComponent extends Component {
                 <div className="picker">
                     <CirclePicker width="380px" colors={[
                         "#f78da7", "#f47373", "#f44336", "#e91e63", "#ba68c8", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3",
-                        "#0693e3", "#03a9f4", "#00bcd4", "#8ed1fc", "#009688", "#4caf50", "#8bc34a",
+                        "#0693e3", "#03a9f4", "#00bcd4", "#8bceef", "#009688", "#4caf50", "#8bc34a",
                         "#cddc39", "#00d084", "#7bdcb5", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#ff8a65", "#795548",
                         "#607d8b", "#abb8c3"
                     ]} color={this.state.color} onChangeComplete={this.onColorChangeComplete} />

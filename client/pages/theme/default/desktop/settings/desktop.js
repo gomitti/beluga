@@ -1,5 +1,6 @@
 import { Component } from "react"
 import classnames from "classnames"
+import Toggle from "react-toggle"
 import { SliderPicker, CirclePicker } from 'react-color'
 import enums from "../../../../../enums"
 import Head from "../../../../../views/theme/default/desktop/head"
@@ -18,19 +19,22 @@ export default class App extends Component {
         const { logged_in } = props
         this.state = {
             "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
-            "column_target": null	// ここで設定すると正しく表示されないのでhackする
+            "new_column_target": null,	// ここで設定すると正しく表示されないのでhackする
+            "multiple_columns_enabled": false
         }
         request.set_csrf_token(this.props.csrf_token)
     }
     componentDidMount() {
         // 謎hack
         this.setState({
-            "column_target": settings.column.target
+            "new_column_target": settings.new_column_target,
+            "multiple_columns_enabled": settings.multiple_columns_enabled
         })
     }
     onUpdate = event => {
         event.preventDefault()
-        settings.column.target = this.state.column_target
+        settings.new_column_target = this.state.new_column_target
+        settings.multiple_columns_enabled = this.state.multiple_columns_enabled
         update_settings(settings)
     }
     render() {
@@ -49,35 +53,39 @@ export default class App extends Component {
                                     <h1>デスクトップ</h1>
                                 </div>
                                 <div className="item">
-                                    <h3 className="title">ルームの開き方</h3>
+                                    <h3 className="title">マルチカラム</h3>
                                     <p><label>
-                                        <input
-                                            type="radio"
-                                            name="column_target"
-                                            value="self"
-                                            checked={this.state.column_target === enums.column.target.self}
-                                            onChange={() => this.setState({ "column_target": enums.column.target.self })} />
-                                        現在のタイムラインで開く
+                                        <input type="checkbox"
+                                            name="multiple_columns_enabled"
+                                            checked={this.state.multiple_columns_enabled}
+                                            onChange={() => this.setState({ "multiple_columns_enabled": !this.state.multiple_columns_enabled })} />
+                                        マルチカラムを有効にする
 									</label></p>
-                                    <p><label>
-                                        <input
-                                            type="radio"
-                                            name="column_target"
-                                            value="new"
-                                            checked={this.state.column_target === enums.column.target.new}
-                                            onChange={() => this.setState({ "column_target": enums.column.target.new })} />
-                                        一度だけ新しいタイムラインを開き、以降はそのタイムラインで開く
-										</label></p>
-                                    <p><label>
-                                        <input
-                                            type="radio"
-                                            name="column_target"
-                                            value="blank"
-                                            checked={this.state.column_target === enums.column.target.blank}
-                                            onChange={() => this.setState({ "column_target": enums.column.target.blank })} />
-                                        常に新しいタイムラインで開く
-										</label></p>
                                 </div>
+                                {this.state.multiple_columns_enabled ?
+                                    <div className="item">
+                                        <h3 className="title">ルームの開き方</h3>
+                                        <p><label>
+                                            <input
+                                                type="radio"
+                                                name="new_column_target"
+                                                value="new"
+                                                checked={this.state.new_column_target === enums.column.target.new}
+                                                onChange={() => this.setState({ "new_column_target": enums.column.target.new })} />
+                                            一度だけ新しいカラムを開き、以降はそのカラムで開く
+                                            </label></p>
+                                        <p><label>
+                                            <input
+                                                type="radio"
+                                                name="new_column_target"
+                                                value="blank"
+                                                checked={this.state.new_column_target === enums.column.target.blank}
+                                                onChange={() => this.setState({ "new_column_target": enums.column.target.blank })} />
+                                            常に新しいカラムで開く
+                                            </label></p>
+                                    </div>
+                                    : null
+                                }
                                 <div className="submit">
                                     <button
                                         className={classnames("button user-defined-bg-color", { "in-progress": this.state.pending_change })}

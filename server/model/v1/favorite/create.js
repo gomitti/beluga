@@ -1,7 +1,7 @@
 import api from "../../../api"
 import memcached from "../../../memcached"
-import assert from "../../../assert";
-import assign from "../../../lib/assign";
+import assert from "../../../assert"
+import assign from "../../../lib/assign"
 
 export default async (db, params) => {
     const user = await memcached.v1.user.show(db, { "id": params.user_id })
@@ -22,8 +22,9 @@ export default async (db, params) => {
     )
 
     // キャッシュの消去
-    memcached.v1.delete_status_from_cache(status)
-    memcached.v1.delete_status_favorited_by_from_cache(status)
+    memcached.v1.delete_status_from_cache(status.id)
+    memcached.v1.delete_status_favorited_from_cache(user.id, status.id)
+    memcached.v1.delete_status_favorited_by_from_cache(status.id)
 
     return true
 }

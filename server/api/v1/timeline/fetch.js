@@ -12,17 +12,17 @@ export default async (db, query, params) => {
     }
 
     if (is_number(params.count) === false) {
-        throw new Error("countが不正です")
+        throw new Error("@countが不正です")
     }
     if (params.count > config.timeline.max_count) {
         params.count = config.timeline.max_count
     }
 
     if (is_number(params.sort) === false) {
-        throw new Error("sortが不正です")
+        throw new Error("@sortが不正です")
     }
     if (params.sort !== 1 && params.sort !== -1) {
-        throw new Error("sortが不正です")
+        throw new Error("@sortが不正です")
     }
 
     if (params.since_id) {

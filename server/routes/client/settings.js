@@ -1,4 +1,3 @@
-import api from "../../api"
 import collection from "../../collection"
 import model from "../../model"
 import config from "../../config/beluga"
@@ -13,16 +12,16 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
-        let emoji_favorites = null
+        let pinned_emoji = null
         if (logged_in) {
-            emoji_favorites = await model.v1.account.favorite.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
-            assert(Array.isArray(emoji_favorites), "@emoji_favorites must be of type array")
+            pinned_emoji = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+            assert(Array.isArray(pinned_emoji), "@pinned_emoji must be of type array")
         }
 
         const profile_image_size = config.user.profile.image_size
         const device = fastify.device(req)
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/profile`, {
-            csrf_token, profile_image_size, logged_in, device, emoji_favorites,
+            csrf_token, profile_image_size, logged_in, device, pinned_emoji,
             "platform": fastify.platform(req),
         })
     })
@@ -54,7 +53,7 @@ module.exports = (fastify, options, next) => {
             "platform": fastify.platform(req),
         })
     })
-    fastify.next("/settings/favorites", async (app, req, res) => {
+    fastify.next("/settings/pins", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
         const logged_in = await fastify.logged_in(req, res, session)
@@ -62,13 +61,13 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
-        const media_favorites = await collection.v1.account.favorite.media.list(fastify.mongo.db, { "user_id": logged_in.id })
-        const media_history = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in.id, "count": 100 })
-        const emoji_favorites = await model.v1.account.favorite.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+        const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in.id })
+        const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in.id, "count": 100 })
+        const pinned_emoji = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
 
         const device = fastify.device(req)
-        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/favorites`, {
-            csrf_token, logged_in, media_favorites, media_history, emoji_favorites, device,
+        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/pins`, {
+            csrf_token, logged_in, pinned_media, recent_uploads, pinned_emoji, device,
             "platform": fastify.platform(req),
         })
     })

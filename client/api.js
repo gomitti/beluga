@@ -1,4 +1,5 @@
 import config from "./beluga.config"
+import assign from "./libs/assign";
 
 class Request {
     constructor() {
@@ -13,12 +14,12 @@ class Request {
         })
     }
     post(endpoint, query, config) {
-        query = Object.assign({ "csrf_token": this.csrf_token }, query)
+        query = assign({ "csrf_token": this.csrf_token }, query)
         return this.request.post(endpoint, query, config)
     }
     get(endpoint, query, config) {
-        query = Object.assign({ "csrf_token": this.csrf_token }, query)
-        return this.request.get(endpoint, query, config)
+        const params = assign({ "csrf_token": this.csrf_token }, query)
+        return this.request.get(endpoint, { params }, config)
     }
     set_csrf_token = csrf_token => {
         this.csrf_token = csrf_token

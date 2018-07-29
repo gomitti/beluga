@@ -7,9 +7,10 @@ import { try_convert_to_hex_string, convert_to_hex_string_or_null } from "../../
 
 const memcached = new Memcached(api.v1.favorite.favorited)
 
-export const delete_status_favorited_from_cache = status => {
-    const status_id = try_convert_to_hex_string(status.id, "@statusが不正です")
-    delete_cache_by_key(status.id)
+export const delete_status_favorited_from_cache = (user_id, status_id) => {
+    user_id = try_convert_to_hex_string(user_id, "@user_idが不正です")
+    status_id = try_convert_to_hex_string(status_id, "@status_idが不正です")
+    memcached.delete([user_id, status_id])
 }
 
 export default async (db, params) => {

@@ -1,2 +1,2 @@
-import favorite from "./account/favorite"
-export default { favorite }
+import pin from "./account/pin"
+export default { pin }

@@ -1,6 +1,6 @@
 import { Component } from "react"
 import classnames from "classnames"
-import CardView from "../../../../../views/theme/default/desktop/card/server"
+import ServerDetailView from "../../../../../views/theme/default/desktop/column/server"
 import Head from "../../../../../views/theme/default/desktop/head"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
@@ -70,15 +70,12 @@ export default class App extends Component {
             })
     }
     render() {
-        const { platform, server } = this.props
+        const { platform, server, logged_in } = this.props
         return (
             <div id="app" className="create-hashtag">
                 <Head title={`サーバーの作成 / ${config.site.name}`} platform={platform} />
-                <NavigationBarView />
+                <NavigationBarView logged_in={logged_in} server={server} />
                 <div className="create-hashtag-container">
-                    <div className="content">
-                        <CardView server={server} is_description_hidden={true} is_members_hidden={true} />
-                    </div>
                     <h1 className="title">ルームの作成</h1>
                     <div className="content">
                         <div className="inside create-hashtag-form">
@@ -99,11 +96,10 @@ export default class App extends Component {
                                 <span>他のルームを探しますか？</span>
                                 <a href={`/server/${server.name}/hashtags`}>一覧を見る</a>
                             </p>
-                            <p className="create-hashtag-callout">
-                                <span>ルームとは？</span>
-                                <a href="">ヘルプを見る</a>
-                            </p>
                         </div>
+                    </div>
+                    <div className="content">
+                        <ServerDetailView server={server} is_members_hidden={true} ellipsis_description={true} />
                     </div>
                 </div>
             </div>

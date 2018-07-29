@@ -5,7 +5,9 @@ module.exports = (fastify, options, next) => {
     })
     fastify.next("/login", async (app, req, res) => {
         const csrf_token = await fastify.csrf_token(req, res)
-        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/account/login`, { csrf_token })
+        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/account/login`, {
+            csrf_token, "request_query": req.query
+        })
     })
     next()
 }

@@ -28,8 +28,8 @@ export default async (db, params) => {
             "level": "error",
             "message": "Failed to create a server",
             "error": error.toString(),
-            server,
-            params
+            "server": server,
+            "params": params
         })
         throw new Error("サーバーで問題が発生しました")
     }
@@ -46,8 +46,8 @@ export default async (db, params) => {
             "level": "error",
             "message": "Failed to create a server",
             "error": error.toString(),
-            server,
-            remote
+            "server": server,
+            "params": params
         })
         throw error
     }

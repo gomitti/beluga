@@ -5,8 +5,8 @@ import { try_convert_to_hex_string, convert_to_hex_string_or_null } from "../../
 
 const memcached = new Memcached(api.v1.server.hashtags, 600)
 
-export const delete_server_hashtags_from_cache = server => {
-    const server_id = try_convert_to_hex_string(server.id, "@serverが不正です")
+export const delete_server_hashtags_from_cache = server_id => {
+    server_id = try_convert_to_hex_string(server_id, "@server_idが不正です")
     memcached.delete(server_id)
 }
 

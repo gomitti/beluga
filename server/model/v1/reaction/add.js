@@ -17,8 +17,8 @@ export default async (db, params) => {
     await api.v1.reaction.add(db, params)
 
     // キャッシュの消去
-    memcached.v1.delete_status_from_cache(status)
-    memcached.v1.delete_status_reaction_from_cache(status)
+    memcached.v1.delete_status_from_cache(status.id)
+    memcached.v1.delete_status_reaction_from_cache(status.id)
 
     return true
 }

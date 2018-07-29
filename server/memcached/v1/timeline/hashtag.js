@@ -9,14 +9,14 @@ const fetch = api.v1.timeline.hashtag
 const memcached_diff = new Memcached(fetch)
 const memcached_whole = new Memcached(fetch)
 
-export const delete_timeline_hashtag_from_cache = hashtag => {
-    const hashtag_id = try_convert_to_hex_string(hashtag.id, "@hashtagが不正です")
+export const delete_timeline_hashtag_from_cache = hashtag_id => {
+    hashtag_id = try_convert_to_hex_string(hashtag_id, "@hashtag_idが不正です")
     memcached_diff.delete(hashtag_id)
     memcached_whole.delete(hashtag_id)
 }
 
 export default async (db, params) => {
-    const hashtag_id = try_convert_to_hex_string(params.id, "@idを指定してください")
+    const hashtag_id = try_convert_to_hex_string(params.hashtag_id, "@hashtag_idを指定してください")
     const { count } = params
     assert(is_number(count), "@count must be of type number")
 

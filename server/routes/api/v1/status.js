@@ -9,7 +9,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/status/update`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const ip_address = req.headers["x-real-ip"]
@@ -42,7 +42,7 @@ module.exports = (fastify, options, next) => {
     fastify.post(`/api/v1/status/destroy`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            if (!!session.user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const params = Object.assign({ "user_id": session.user_id }, req.body)

@@ -105,10 +105,6 @@ export default class App extends Component {
                                 <span>他のサーバーを探しますか？</span>
                                 <a href="/servers">一覧を見る</a>
                             </p>
-                            <p className="create-server-callout">
-                                <span>サーバーとは？</span>
-                                <a href="/server/create">ヘルプを見る</a>
-                            </p>
                         </div>
                     </div>
                 </div>

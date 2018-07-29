@@ -10,4 +10,24 @@ import like from "./like"
 import favorite from "./favorite"
 import reaction from "./reaction"
 import access_token from "./access_token"
-export default { status, user, server, hashtag, timeline, media, account, like, reaction, favorite, access_token, mentions }
+import desktop from "./desktop"
+import hashtags from "./hashtags"
+import emoji from "./emoji"
+
+export default {
+    status,
+    user,
+    server,
+    hashtag,
+    timeline,
+    media,
+    account,
+    like,
+    reaction,
+    favorite,
+    access_token,
+    mentions,
+    desktop,
+    hashtags,
+    emoji
+}

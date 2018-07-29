@@ -14,7 +14,7 @@ const get_original_url_of_item = item => {
     return `${item.uri}/${item.directory}/${item.prefix}.${item.extension}`
 }
 
-export class PostboxMediaView extends Component {
+export default class MediaView extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -30,14 +30,14 @@ export class PostboxMediaView extends Component {
         if (this.state.preview_url === preview_url) {
             return
         }
-        const preview_width = 120
+        const preview_width = 200
         const preview_height = preview_width / width * height
         const parent = this.refs.wrapper.getBoundingClientRect()
         const { x, y } = event.target.getBoundingClientRect()
         this.setState({
             "is_preview_hidden": false,
             "preview_position": {
-                "x": x - parent.x - 60 + event.target.clientWidth / 2,
+                "x": x - parent.x - preview_width / 2 + event.target.clientWidth / 2,
                 "y": y - parent.y - preview_height - 4
             },
             preview_url
@@ -54,9 +54,12 @@ export class PostboxMediaView extends Component {
         if (is_hidden) {
             return null
         }
+        if (!!media === false) {
+            return null
+        }
         const mediaViews = []
         if (Array.isArray(media)) {
-            const num_per_row = 8
+            const num_per_row = 6
             const rows = []
             const num_rows = Math.ceil(media.length / num_per_row)
             for (let y = 0; y < num_rows; y++) {
@@ -85,7 +88,7 @@ export class PostboxMediaView extends Component {
         if (mediaViews.length == 0) {
             return (
                 <div className="postbox-media history no-media">
-                    <a href="/settings/favorites" className="user-defined-color bold">画像を登録</a>するとここに表示されます
+                    <a href="/settings/pins" className="user-defined-color bold">画像を登録</a>するとここに表示されます
 				</div>
             )
         }

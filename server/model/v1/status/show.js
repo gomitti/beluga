@@ -24,19 +24,14 @@ export default async (db, params) => {
         }
     }
 
-    if (params.user_id) {
-        try {
-            const user_id = try_convert_to_object_id(params.user_id, "@user_idが不正です")
-            if (status.favorites_count === 0) {
-                status.favorited = false
-            } else {
-                status.favorited = await memcached.v1.favorite.favorited(db, {
-                    user_id,
-                    "status_id": status.id
-                })
-            }
-        } catch (error) {
-
+    if (params.requested_by) {
+        if (status.favorites_count === 0) {
+            status.favorited = false
+        } else {
+            status.favorited = await memcached.v1.favorite.favorited(db, {
+                "user_id": params.requested_by,
+                "status_id": status.id
+            })
         }
     }
 

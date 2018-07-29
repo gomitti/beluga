@@ -1,4 +1,4 @@
-import React, { Component } from "react"
+import { Component } from "react"
 
 const get_thumbnail_url_of_item = item => {
     if (item.is_image) {
@@ -14,7 +14,7 @@ const get_original_url_of_item = item => {
     return `${item.uri}/${item.directory}/${item.prefix}.${item.extension}`
 }
 
-export class PostboxMediaView extends Component {
+export default class MediaView extends Component {
     render() {
         const { media, is_hidden, append, title } = this.props
         if (is_hidden) {
@@ -51,7 +51,7 @@ export class PostboxMediaView extends Component {
         if (mediaViews.length == 0) {
             return (
                 <div className="postbox-media history no-media">
-                    <a href="/settings/favorites" className="user-defined-color bold">画像を登録</a>するとここに表示されます
+                    <a href="/settings/pins" className="user-defined-color bold">画像を登録</a>するとここに表示されます
 				</div>
             )
         }
