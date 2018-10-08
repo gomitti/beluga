@@ -1,6 +1,8 @@
 /www/
+/.next/
 /node_modules/
-/server/config/beluga.js
-/server/config/storage.js
+/app/client/beluga.config.js
+/app/server/config/beluga.js
+/app/server/config/storage.js
 package-lock.json
 .DS_Store

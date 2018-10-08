@@ -1,0 +1,75 @@
+#navigationbar {
+    height: 44px;
+    background-clip: padding-box;
+    background-color: white;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 2px;
+}
+
+.navigationbar-menu {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: nowrap;
+
+    > li {
+        flex: 1 0 auto;
+        height: 44px;
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-around;
+        box-sizing: border-box;
+        padding: 0 5px;
+
+        > a {
+            flex: 0 0 auto;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            color: rgb(100, 100, 100);
+            font-weight: bold;
+            height: 44px;
+            width: 100%;
+            line-height: 1;
+            overflow: hidden;
+            border: solid transparent;
+            border-width: 0 0 3px 0;
+            box-sizing: border-box;
+
+            > .icon {
+                width: 18px;
+                height: 100%;
+                font-size: 22px;
+                font-family: Beluga;
+                display: inline-block;
+                padding-top: 13px;
+                box-sizing: border-box;
+            }
+
+            > .home::before {
+                content: "\E001";
+            }
+
+            > .notifications::before {
+                content: "\E005";
+            }
+
+            > .hashtags::before {
+                content: "\E006";
+            }
+
+            > .world::before {
+                content: "\E007";
+            }
+
+            > .settings::before {
+                content: "\E00C";
+            }
+
+            > .misc::before {
+                content: "\E004";
+            }
+        }
+    }
+}

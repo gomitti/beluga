@@ -1,0 +1,50 @@
+@import "../reset";
+@import "navigationbar";
+@import "postbox";
+@import "timeline";
+@import "status";
+@import "emoji";
+@import "button";
+@import "form";
+@import "video";
+@import "hashtags";
+@import "account";
+@import "server";
+
+@font-face {
+    font-family: "Beluga";
+    font-weight: 400;
+    font-style: normal;
+    src: url("/asset/theme/default/beluga.ttf?v=0.1.63") format("truetype");
+}
+
+body {
+    background-color: rgb(240, 240, 240);
+    padding: 5px;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "游ゴシック  Medium", meiryo, sans-serif;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.scroller-wrapper {
+    display: flex;
+    flex-direction: column;
+
+    > .scroller {
+        overflow-y: scroll;
+        -webkit-transform: translateZ(0px);
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+a {
+    font-weight: bold;
+    text-decoration: none;
+}

@@ -1,16 +1,46 @@
 {
-	"env": {
-		"development": {
-			"presets": ["es2015", "next/babel"],
-			"plugins": ["transform-decorators-legacy"]
-		},
-		"production": {
-			"presets": ["es2015", "next/babel"],
-			"plugins": ["transform-decorators-legacy"]
-		},
-		"test": {
-			"presets": [["env", {"modules": "commonjs"}], "next/babel"],
-			"plugins": ["transform-decorators-legacy"]
-		}
-	}
+    "env": {
+        "development": {
+            "presets": [
+                "@babel/preset-env",
+                "@babel/preset-react",
+                "next/babel"
+            ],
+            "plugins": [
+                [
+                    "@babel/plugin-proposal-decorators",
+                    {
+                        "legacy": true
+                    }
+                ],
+                [
+                    "@babel/plugin-proposal-class-properties",
+                    {
+                        "loose": true
+                    }
+                ]
+            ]
+        },
+        "production": {
+            "presets": [
+                "@babel/preset-env",
+                "@babel/preset-react",
+                "next/babel"
+            ],
+            "plugins": [
+                [
+                    "@babel/plugin-proposal-decorators",
+                    {
+                        "legacy": true
+                    }
+                ],
+                [
+                    "@babel/plugin-proposal-class-properties",
+                    {
+                        "loose": true
+                    }
+                ]
+            ]
+        }
+    }
 }

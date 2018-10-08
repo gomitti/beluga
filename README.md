@@ -81,6 +81,13 @@ sudo apt install graphicsmagick
 npm install
 ```
 
+Babelがなぜかうまく動かないので再インストールします
+
+```bash
+npm uninstall @babel/plugin-proposal-decorators @babel/cli
+npm install @babel/plugin-proposal-decorators@7.0.0-beta.42 @babel/cli@7.0.0-beta.42 --save-dev
+```
+
 `Error: Compilation of µWebSockets has failed and there is no pre-compiled binary available for your system. Please install a supported C++11 compiler and reinstall the module 'uws'.`が発生する場合は`fastify-ws`を再インストールすると直るかもしれません。
 
 ```bash

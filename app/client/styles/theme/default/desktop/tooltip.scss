@@ -1,0 +1,44 @@
+#tooltip {
+    text-align: center;
+    position: absolute;
+    z-index: 6;
+    width: 200px;
+
+    > .content {
+        background-color: black;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        display: inline-block;
+    }
+
+    > .content::after {
+        content: " ";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: black transparent transparent transparent;
+    }
+}
+
+.tooltip-user-status {
+    display: inline-flex;
+
+    > .emoji-image {
+        width: 20px;
+        height: 20px;
+        flex: 0 0 auto;
+    }
+
+    > .string {
+        font-size: 14px;
+        line-height: 20px;
+        white-space: pre;
+        flex: 1 1 auto;
+        margin-left: 5px;
+    }
+}

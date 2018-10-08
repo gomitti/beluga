@@ -1,0 +1,127 @@
+import React, { Component } from "react"
+import ws from "../../../../../websocket"
+import { request } from "../../../../../api"
+import { build_status_body_views } from "../parser";
+import assert, { is_object, is_function } from "../../../../../assert";
+
+class MembersView extends Component {
+    constructor(props) {
+        super(props)
+        const { server, collapse } = props
+        const members = server.members ? server.members : []
+        this.state = {
+            members,
+            "is_hidden": collapse,
+        }
+    }
+    componentDidMount() {
+        ws.addEventListener("message", (e) => {
+            const { server } = this.props
+            const data = JSON.parse(e.data)
+            if (data.members_changed) {
+                const { members, id } = data
+                if (server.id !== id) {
+                    return
+                }
+                this.setState({ members })
+                return
+            }
+            if (data.members_need_reload) {
+                const { server_name } = data
+                if (server.name !== server_name) {
+                    return
+                }
+                request
+                    .get("/server/members", { "name": server_name })
+                    .then(res => {
+                        const data = res.data
+                        if (data.success == false) {
+                            return
+                        }
+                        const { members } = data
+                        this.setState({ members })
+                    })
+                return
+            }
+        })
+    }
+    toggleMemberList = () => {
+        this.setState({
+            "is_hidden": !this.state.is_hidden
+        })
+    }
+    render() {
+        const { members } = this.state
+        const memberViews = []
+        for (const user of members) {
+            memberViews.push(
+                <li>
+                    <a href={`/user/${user.name}`}>
+                        <img src={user.avatar_url} />
+                    </a>
+                </li>
+            )
+        }
+        return (
+            <div className="content additional members">
+                <h3 className="title" onClick={event => this.toggleMemberList()}><span className="meiryo">オンライン</span> - <span className="verdana">{memberViews.length}</span></h3>
+                {this.state.is_hidden ? null :
+                    <ul className="members-list">
+                        {memberViews}
+                    </ul>
+                }
+            </div>
+        )
+    }
+}
+export default class View extends Component {
+    constructor(props) {
+        super(props)
+        const { server, is_description_hidden, ellipsis_description, handle_click_hashtag, handle_click_mention } = props
+        assert(is_object(server), "$server must be of type object")
+        assert(is_function(handle_click_hashtag), "$handle_click_hashtag must be of type function")
+        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
+        let { description } = server
+        if (is_description_hidden === true){
+            this.descriptionView = null
+            return
+        }
+        if (description.length === 0) {
+            this.descriptionView = null
+            return
+        }
+        if (ellipsis_description && description.length > 500) {
+            description = description.slice(0, 500)
+        }
+        this.descriptionView = build_status_body_views(description, server, {}, { handle_click_hashtag, handle_click_mention })
+    }
+    render() {
+        const { server, ellipsis_description, is_members_hidden, collapse_members } = this.props
+        return (
+            <div className="inside server-container round">
+                <div className="content card">
+                    <div className="group">
+                        <div className="avatar">
+                            <a href={`/server/${server.name}/about`}>
+                                <img className="image" src={server.avatar_url} />
+                            </a>
+                        </div>
+                        <div className="name">
+                            <a href={`/server/${server.name}/about`}>
+                                <h1>{server.display_name}</h1>
+                                <h2>{server.name}</h2>
+                            </a>
+                        </div>
+                    </div>
+                    {this.descriptionView ?
+                        <div className="description">
+                            {this.descriptionView}
+                        </div>
+                        : null
+                    }
+                </div>
+                {is_members_hidden ? null : <MembersView server={server} collapse={collapse_members} />}
+            </div>
+        )
+    }
+}
