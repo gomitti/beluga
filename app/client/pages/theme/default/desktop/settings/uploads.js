@@ -1,6 +1,5 @@
 import { Component } from "react"
 import { configure } from "mobx"
-import Router from "next/router"
 import Head from "../../../../../views/theme/default/desktop/head"
 import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
 import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
@@ -11,6 +10,7 @@ import { created_at_to_elapsed_time } from "../../../../../libs/date"
 import { convert_bytes_to_optimal_unit } from "../../../../../libs/functions"
 import Tooltip from "../../../../../views/theme/default/desktop/tooltip"
 import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import AppComponent from "../../../../../views/app"
 
 class TooltipButton extends Component {
     render() {
@@ -22,7 +22,7 @@ class TooltipButton extends Component {
                 ref={dom => this.dom = dom}
                 onMouseEnter={() => Tooltip.show(this.dom, "ファイルを削除します")}
                 onMouseOver={() => Tooltip.show(this.dom, "ファイルを削除します")}
-                onMouseOut={() => Tooltip.hide(this.dom, "ファイルを削除します")}>
+                onMouseOut={() => Tooltip.hide()}>
             </button>
         )
     }
@@ -40,25 +40,11 @@ const get_thumbnail_url_from_media = item => {
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
 
-export default class App extends Component {
-    static async getInitialProps({ query }) {
-        return query
-    }
+export default class App extends AppComponent {
     constructor(props) {
         super(props)
         const { media } = props
         this.state = { media }
-        request.set_csrf_token(this.props.csrf_token)
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-        }
     }
     destroy = media_id => {
 
@@ -75,12 +61,12 @@ export default class App extends Component {
                         Snackbar.show("削除しました", false)
                         const new_media = []
                         const { media } = this.state
-                        for (const item of media) {
+                        media.forEach(item => {
                             if (item.id === media_id) {
-                                continue
+                                return
                             }
                             new_media.push(item)
-                        }
+                        })
                         this.setState({
                             "media": new_media
                         })

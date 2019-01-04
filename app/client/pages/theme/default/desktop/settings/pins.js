@@ -1,7 +1,6 @@
 import { Component } from "react"
 import { observable, action } from "mobx"
 import { observer } from "mobx-react"
-import Router from "next/router"
 import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import classnames from "classnames"
 import Head from "../../../../../views/theme/default/desktop/head"
@@ -13,6 +12,7 @@ import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import { is_object } from "../../../../../assert"
 import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import AppComponent from "../../../../../views/app"
 
 @observer
 class MediaComponent extends Component {
@@ -24,16 +24,17 @@ class MediaComponent extends Component {
         if (Array.isArray(pinned) === false) {
             return
         }
-        for (const item of pinned) {
+        pinned.forEach(item => {
             this.selected_media_ids.push(item.id)
             this.selected_media.push(item)
-        }
+
+        })
         this.dragging_media = null
 
         const pinned_items = []
-        for (const item of this.selected_media) {
+        this.selected_media.forEach(item => {
             pinned_items.push(item)
-        }
+        })
         this.state = {
             pinned_items
         }
@@ -50,9 +51,9 @@ class MediaComponent extends Component {
         }
 
         const pinned_items = []
-        for (const item of this.selected_media) {
+        this.selected_media.forEach(item => {
             pinned_items.push(item)
-        }
+        })
         this.setState({
             pinned_items
         })
@@ -103,15 +104,15 @@ class MediaComponent extends Component {
         }
 
         const pinned_items = []
-        for (const item of this.selected_media) {
+        this.selected_media.forEach(item => {
             if (item.id === target_item.id) {
                 pinned_items.push(this.dragging_media)
             }
             if (item.id === this.dragging_media.id) {
-                continue
+                return
             }
             pinned_items.push(item)
-        }
+        })
         const media_ids = []
         this.selected_media = pinned_items
         this.selected_media.forEach(item => {
@@ -131,7 +132,7 @@ class MediaComponent extends Component {
             return null
         }
         const selectedImageViews = []
-        for (const item of this.state.pinned_items) {
+        this.state.pinned_items.forEach(item => {
             const ext = item.is_image ? item.extension : "jpg"
             const square_src = `${item.uri}/${item.directory}/${item.prefix}.square.${ext}`
             selectedImageViews.push(
@@ -149,9 +150,9 @@ class MediaComponent extends Component {
                     <img className="image" src={square_src} />
                 </a >
             )
-        }
+        })
         const imageCandidateViews = []
-        for (const item of history) {
+        history.forEach(item => {
             const index = this.selected_media_ids.indexOf(item.id)
             const active = index !== -1
             const ext = item.is_image ? item.extension : "jpg"
@@ -166,7 +167,7 @@ class MediaComponent extends Component {
                         : null}
                 </a>
             )
-        }
+        })
         return (
             <div className="settings-module pins meiryo">
                 <div className="head">
@@ -208,11 +209,11 @@ class EmojiComponent extends Component {
     componentDidMount() {
         const { pinned } = this.props
         if (pinned) {
-            for (const shortname of pinned) {
+            pinned.forEach(shortname => {
                 const category = get_category_by_shortname_or_null(shortname)
                 this.selected_emojis.push({ shortname, category })
                 this.selected_shortnames.push(shortname)
-            }
+            })
         }
     }
     pick = (shortname, category) => {
@@ -252,10 +253,10 @@ class EmojiComponent extends Component {
     }
     render() {
         const selectedEmojiView = []
-        for (const emoji of this.selected_emojis) {
+        this.selected_emojis.forEach(emoji => {
             const { shortname, category } = emoji
             selectedEmojiView.push(<button onClick={event => this.pick(shortname)} ><i className={`emojipicker-ignore-click emoji-${category} shortname-${shortname}`}></i></button>)
-        }
+        })
         return (
             <div className="settings-module pins meiryo">
                 <div className="head">
@@ -283,25 +284,7 @@ class EmojiComponent extends Component {
     }
 }
 
-export default class App extends Component {
-    static async getInitialProps({ query }) {
-        return query
-    }
-    constructor(props) {
-        super(props)
-        request.set_csrf_token(this.props.csrf_token)
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-
-        }
-    }
+export default class App extends AppComponent {
     render() {
         const { platform, logged_in, pinned_media, recent_uploads, pinned_emoji } = this.props
         if (Array.isArray(pinned_media) === false) {

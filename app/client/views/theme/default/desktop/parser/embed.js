@@ -21,11 +21,11 @@ export default (sentence, entities) => {
             const match = sentence.match(/^!(https?:\/\/[^\s 　]+)/)
             if (match) {
                 const original_url = match[1]
-                for (const item of entities.urls) {
+                entities.urls.forEach(item => {
                     if (item.original_url === original_url) {
                         return <WebsiteView {...item} />
                     }
-                }
+                })
             }
         }
     }

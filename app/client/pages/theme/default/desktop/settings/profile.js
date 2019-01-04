@@ -1,7 +1,6 @@
 import { Component } from "react"
 import { configure } from "mobx"
 import classnames from "classnames"
-import Router from "next/router"
 import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import Head from "../../../../../views/theme/default/desktop/head"
 import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
@@ -12,6 +11,7 @@ import { get_category_by_shortname_or_null, get_image_url_by_shortname_or_null, 
 import { is_object } from "../../../../../assert"
 import EmojiPicker from "../../../../../views/theme/default/desktop/emoji"
 import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import AppComponent from "../../../../../views/app"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
@@ -82,10 +82,7 @@ class UserStatusModuleItem extends Component {
     }
 }
 
-export default class App extends Component {
-    static async getInitialProps({ query }) {
-        return query
-    }
+export default class App extends AppComponent {
     constructor(props) {
         super(props)
         const { logged_in } = props
@@ -105,19 +102,6 @@ export default class App extends Component {
             "is_crop_ready": false,
             "pending_update": false,
             "pending_reset": false,
-        }
-        request.set_csrf_token(this.props.csrf_token)
-
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-
         }
     }
     componentDidMount() {
@@ -259,7 +243,7 @@ export default class App extends Component {
                     return
                 }
                 this.setState({ "preview_src": avatar_url })
-                alert("保存しました")
+                Snackbar.show("保存しました", false)
             })
             .catch(error => {
                 alert(error)
@@ -384,13 +368,16 @@ export default class App extends Component {
                                         <img src={preview_src} className="preview" />
                                     </div>
                                     <div ref="module">
-                                        <ReactCrop
-                                            {...this.state}
-                                            profile_image_size={profile_image_size}
-                                            onImageLoaded={this.onImageLoaded}
-                                            onComplete={this.onCropComplete}
-                                            onChange={this.onCropChange}
-                                        />
+                                        {(typeof window === "undefined")
+                                            ? null :
+                                            <ReactCrop
+                                                {...this.state}
+                                                profile_image_size={profile_image_size}
+                                                onImageLoaded={this.onImageLoaded}
+                                                onComplete={this.onCropComplete}
+                                                onChange={this.onCropChange}
+                                            />
+                                        }
                                     </div>
                                     <input type="file" ref="file" accept="image/*" onChange={this.onFileChange} />
                                 </div>

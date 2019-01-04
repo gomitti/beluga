@@ -1,16 +1,44 @@
 import React, { Component } from "react"
+import classnames from "classnames"
 import ws from "../../../../../websocket"
 import { request } from "../../../../../api"
 import { build_status_body_views } from "../parser";
-import assert, { is_object, is_function } from "../../../../../assert";
+import assert, { is_object, is_function } from "../../../../../assert"
+
+class UserListView extends Component {
+    render() {
+        const { users, is_active, is_hidden } = this.props
+        if (is_hidden) {
+            return null
+        }
+        const listViews = []
+        users.forEach(user => {
+            listViews.push(
+                <li key={user.id} className="user">
+                    <a href={`/user/${user.name}`}>
+                        <img src={user.avatar_url} className={classnames({
+                            "offline": !is_active
+                        })} />
+                    </a>
+                </li>
+            )
+        })
+        return (
+            <ul className="list">{listViews}</ul>
+        )
+    }
+}
 
 class MembersView extends Component {
     constructor(props) {
         super(props)
         const { server, collapse } = props
-        const members = server.members ? server.members : []
+        this.online_members = server.online_members ? server.online_members : []
+        this.members = null
+        this.pending = false
         this.state = {
-            members,
+            "online_members": this.online_members,
+            "offline_members": [],
             "is_hidden": collapse,
         }
     }
@@ -18,58 +46,77 @@ class MembersView extends Component {
         ws.addEventListener("message", (e) => {
             const { server } = this.props
             const data = JSON.parse(e.data)
-            if (data.members_changed) {
-                const { members, id } = data
-                if (server.id !== id) {
-                    return
-                }
-                this.setState({ members })
-                return
-            }
-            if (data.members_need_reload) {
-                const { server_name } = data
-                if (server.name !== server_name) {
-                    return
-                }
+            if (data.online_members_changed) {
                 request
-                    .get("/server/members", { "name": server_name })
+                    .get("/server/online_members", { "name": server.name })
                     .then(res => {
                         const data = res.data
                         if (data.success == false) {
                             return
                         }
                         const { members } = data
-                        this.setState({ members })
+                        this.online_members = members
+                        this.updateMemberList()
                     })
-                return
             }
         })
     }
-    toggleMemberList = () => {
+    toggleMemberList = event => {
+        event.preventDefault()
+        if (this.state.is_hidden === true && this.members === null && this.pending === false) {
+            this.pending = true
+            const { server } = this.props
+            request
+                .get("/server/members", { "id": server.id })
+                .then(res => {
+                    const data = res.data
+                    if (data.success == false) {
+                        this.pending = false
+                        return
+                    }
+                    const { members } = data
+                    this.members = members
+                    this.updateMemberList()
+                    this.pending = false
+                })
+        }
         this.setState({
             "is_hidden": !this.state.is_hidden
         })
     }
-    render() {
-        const { members } = this.state
-        const memberViews = []
-        for (const user of members) {
-            memberViews.push(
-                <li>
-                    <a href={`/user/${user.name}`}>
-                        <img src={user.avatar_url} />
-                    </a>
-                </li>
-            )
+    updateMemberList = () => {
+        const { members, online_members } = this
+        if (members === null) {
+            this.setState({
+                "online_members": online_members,
+            })
+            return
         }
+        const set_online_members = new Set()
+        online_members.forEach(user => {
+            set_online_members.add(user.id)
+        })
+        const offline_members = []
+        members.forEach(user => {
+            if (set_online_members.has(user.id)) {
+                return
+            }
+            offline_members.push(user)
+        })
+        this.setState({
+            "online_members": online_members,
+            "offline_members": offline_members,
+        })
+    }
+    render() {
+        const { offline_members, online_members } = this.state
         return (
             <div className="content additional members">
-                <h3 className="title" onClick={event => this.toggleMemberList()}><span className="meiryo">オンライン</span> - <span className="verdana">{memberViews.length}</span></h3>
-                {this.state.is_hidden ? null :
-                    <ul className="members-list">
-                        {memberViews}
-                    </ul>
-                }
+                <div className="section">
+                    <h3 className="title" onClick={this.toggleMemberList}><span className="meiryo">オンライン</span> - <span className="verdana">{this.online_members.length}</span></h3>
+                    <UserListView users={online_members} is_hidden={this.state.is_hidden} is_active={true} />
+                    <UserListView users={offline_members} is_hidden={this.state.is_hidden} is_active={false} />
+                </div>
             </div>
         )
     }
@@ -77,12 +124,12 @@ class MembersView extends Component {
 export default class View extends Component {
     constructor(props) {
         super(props)
-        const { server, is_description_hidden, ellipsis_description, handle_click_hashtag, handle_click_mention } = props
+        const { server, is_description_hidden, ellipsis_description, handle_click_channel, handle_click_mention } = props
         assert(is_object(server), "$server must be of type object")
-        assert(is_function(handle_click_hashtag), "$handle_click_hashtag must be of type function")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
         assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
         let { description } = server
-        if (is_description_hidden === true){
+        if (is_description_hidden === true) {
             this.descriptionView = null
             return
         }
@@ -93,7 +140,7 @@ export default class View extends Component {
         if (ellipsis_description && description.length > 500) {
             description = description.slice(0, 500)
         }
-        this.descriptionView = build_status_body_views(description, server, {}, { handle_click_hashtag, handle_click_mention })
+        this.descriptionView = build_status_body_views(description, server, {}, { handle_click_channel, handle_click_mention })
     }
     render() {
         const { server, ellipsis_description, is_members_hidden, collapse_members } = this.props
@@ -120,7 +167,7 @@ export default class View extends Component {
                         : null
                     }
                 </div>
-                {is_members_hidden ? null : <MembersView server={server} collapse={collapse_members} />}
+                <MembersView server={server} collapse={collapse_members} />
             </div>
         )
     }

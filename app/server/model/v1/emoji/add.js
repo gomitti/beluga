@@ -12,7 +12,7 @@ export default async (db, params) => {
 
     await api.v1.emoji.add(db, params)
 
-    memcached.v1.delete_emoji_list_from_cache(server.id)
+    memcached.v1.emoji.list.flush(server.id)
 
     return true
 }

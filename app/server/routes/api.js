@@ -4,7 +4,7 @@ import model from "../model"
 module.exports = (fastify, options, next) => {
     fastify
         .register(require("./api/v1/account"))
-        .register(require("./api/v1/hashtag"))
+        .register(require("./api/v1/channel"))
         .register(require("./api/v1/media"))
         .register(require("./api/v1/status"))
         .register(require("./api/v1/server"))
@@ -15,7 +15,8 @@ module.exports = (fastify, options, next) => {
         .register(require("./api/v1/reaction"))
         .register(require("./api/v1/access_token"))
         .register(require("./api/v1/kvs"))
-        .register(require("./api/v1/hashtags"))
+        .register(require("./api/v1/channels"))
         .register(require("./api/v1/emoji"))
+        .register(require("./api/v1/mute"))
     next()
 }

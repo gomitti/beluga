@@ -35,7 +35,7 @@ export const time_string_from_create_at = created_at => {
 export const date_string_from_create_at = created_at => {
     const date = new Date(created_at)
     const year = date.getFullYear()
-    const month = ("0" + date.getMonth()).substr(-2)
+    const month = ("0" + (date.getMonth() + 1)).substr(-2)
     const day = ("0" + date.getDate()).substr(-2)
     const hours = ("0" + date.getHours()).substr(-2)
     const minutes = ("0" + date.getMinutes()).substr(-2)

@@ -8,7 +8,8 @@ export default async (db, params) => {
     assert(Array.isArray(params.media_ids), "画像を指定してください")
 
     const media_ids = []
-    for (const id of params.media_ids) {
+    for (let j = 0; j < params.media_ids.length; j++) {
+        const id = params.media_ids[j]
         const media = await memcached.v1.media.show(db, { id })
         if (media) {
             media_ids.push(media.id)
@@ -16,7 +17,7 @@ export default async (db, params) => {
     }
     await api.v1.account.pin.media.update(db, { "user_id": user.id, media_ids })
 
-    memcached.v1.delete_account_pin_media_from_cache(user.id)
+    memcached.v1.account.pin.media.list.flush(user.id)
 
     return true
 }

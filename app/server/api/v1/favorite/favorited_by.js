@@ -8,8 +8,8 @@ export default async (db, params) => {
     const collection = db.collection("favorites")
     const rows = await collection.find({ status_id }).sort({ "created_at": -1 }).toArray()
     const user_ids = []
-    for (const row of rows) {
+    rows.forEach(row => {
         user_ids.push(row.user_id)
-    }
+    })
     return user_ids
 }

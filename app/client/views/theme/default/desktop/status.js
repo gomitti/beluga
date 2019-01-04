@@ -21,7 +21,7 @@ class ActionButton extends Component {
                 ref={dom => this.dom = dom}
                 onMouseEnter={() => Tooltip.show(this.dom, description)}
                 onMouseOver={() => Tooltip.show(this.dom, description)}
-                onMouseOut={() => Tooltip.hide(this.dom, description)}>
+                onMouseOut={() => Tooltip.hide()}>
                 <span className="icon"></span>
             </a>
         )
@@ -36,7 +36,7 @@ export class StatusTimeView extends Component {
                 ref={dom => this.dom = dom}
                 onMouseEnter={() => Tooltip.show(this.dom, description)}
                 onMouseOver={() => Tooltip.show(this.dom, description)}
-                onMouseOut={() => Tooltip.hide(this.dom, description)}>
+                onMouseOut={() => Tooltip.hide()}>
                 <span className="elapsed-time">{string}</span>
             </a>
         )
@@ -47,15 +47,15 @@ export class StatusTimeView extends Component {
 export default class StatusView extends Component {
     constructor(props) {
         super(props)
-        const { status, handle_click_hashtag, handle_click_mention, handle_click_thread, cache_body } = props
+        const { status, handle_click_channel, handle_click_mention, handle_click_thread, cache_body } = props
         assert(is_object(status), "$status must be of type object")
-        assert(is_function(handle_click_hashtag), "$handle_click_hashtag must be of type function at StatusView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_hashtag must be of type function at StatusView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_hashtag must be of type function at StatusView.constructor")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at StatusView.constructor")
+        assert(is_function(handle_click_mention), "$handle_click_channel must be of type function at StatusView.constructor")
+        assert(is_function(handle_click_thread), "$handle_click_channel must be of type function at StatusView.constructor")
 
         // 本文のビューを構築しておく
         const { text, server, entities } = status
-        this.bodyViews = build_status_body_views(text, server, entities, { handle_click_hashtag, handle_click_mention, handle_click_thread })
+        this.bodyViews = build_status_body_views(text, server, entities, { handle_click_channel, handle_click_mention, handle_click_thread })
 
         const { created_at } = status
         this.state = {
@@ -135,7 +135,8 @@ export default class StatusView extends Component {
         })
     }
     render() {
-        const { status, options, handle_click_hashtag, handle_click_mention, handle_click_thread, logged_in, trim_comments } = this.props
+        const { status, options, handle_click_channel, handle_click_mention, handle_click_thread, logged_in, trim_comments } = this.props
+        console.log(`[status] rendering ${status.id}`)
         const { user } = status
         let likesView = null
         if (status.likes.count > 0) {
@@ -149,13 +150,13 @@ export default class StatusView extends Component {
         let favoritesView = null
         if (status.favorites.count > 0) {
             const userViews = []
-            for (const user of status.favorites.users) {
+            status.favorites.users.forEach(user => {
                 userViews.push(
                     <a href={`/user/${user.name}`} target="_blank">
                         <img src={user.avatar_url} />
                     </a>
                 )
-            }
+            })
             favoritesView = <div className="status-favofites bar">
                 <div className="users">
                     {userViews}
@@ -169,10 +170,10 @@ export default class StatusView extends Component {
         }
 
         let belongingView = null
-        const { server, hashtag, recipient } = status
+        const { server, channel, recipient } = status
         if (options.show_belonging) {
-            if (hashtag && server) {
-                belongingView = <a href={`/server/${server.name}/${hashtag.tagname}`} onClick={handle_click_hashtag} className="belonging hashtag meiryo" data-tagname={hashtag.tagname}>#{hashtag.tagname}</a>
+            if (channel && server) {
+                belongingView = <a href={`/server/${server.name}/${channel.name}`} onClick={handle_click_channel} className="belonging channel meiryo" data-name={channel.name}>#{channel.name}</a>
             }
             if (recipient && server) {
                 belongingView = <a href={`/server/${server.name}/@${recipient.name}`} onClick={handle_click_mention} className="belonging recipient meiryo" data-name={recipient.name}>@{recipient.name}</a>
@@ -187,7 +188,7 @@ export default class StatusView extends Component {
                     <img src={user.avatar_url} className="avatar" />
                 )
             })
-            const preview_text = status.last_comment ? status.last_comment.text : ""
+            let preview_text = status.last_comment ? status.last_comment.text : ""
             if (preview_text.length > 100) {
                 preview_text = preview_text.substr(0, 100)
             }
@@ -204,14 +205,14 @@ export default class StatusView extends Component {
             <div className="status" onMouseEnter={this.onMouseEnter} onMouseMove={this.onMouseMove} onMouseLeave={this.onMouseLeave} key={status.id}>
                 <div className="inside">
                     <div className="status-left">
-                        <a href="/user/" className="avatar link">
+                        <a href={`/user/${user.name}`} className="avatar link">
                             <img src={user.avatar_url} className="image" />
                         </a>
                     </div>
                     <div className="status-right">
                         <div className="status-header">
                             <div className="inside">
-                                <a href="/user/" className="link">
+                                <a href={`/user/${user.name}`} className="link">
                                     <StatusHeaderDisplayNameView user={user} />
                                     <StatusHeaderUserStatusView user={user} />
                                     <span className="name verdana element">@{user.name}</span>

@@ -80,7 +80,7 @@ module.exports = (fastify, options, next) => {
                         "user_id": user.id,
                         "storage": remote
                     })
-                    memcached.v1.delete_media_list_from_cache(user.id)
+                    memcached.v1.media.list.flush(user.id)
                     res.send({ "success": true, urls })
                 } catch (error) {
                     logger.log({
@@ -148,7 +148,7 @@ module.exports = (fastify, options, next) => {
                         "user_id": user.id,
                         "storage": remote
                     })
-                    memcached.v1.delete_media_list_from_cache(user.id)
+                    memcached.v1.media.list.flush(user.id)
                     res.send({ "success": true, urls })
                 } catch (error) {
                     logger.log({

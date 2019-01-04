@@ -13,7 +13,7 @@ export default async (db, params) => {
     const url = await api.v1.server.avatar.update(db, params)
 
     // キャッシュの消去
-    memcached.v1.delete_server_from_cache(server.id, server.name)
+    memcached.v1.server.show.flush(server.id, server.name)
 
     return url
 }

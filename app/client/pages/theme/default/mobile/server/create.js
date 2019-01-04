@@ -1,27 +1,9 @@
-import { Component } from "react"
-import Router from "next/router"
 import Head from "../../../../../views/desktop/common/head"
 import { request } from "../../../../../api"
 import config from "../../../../../beluga.config"
+import Component from "../../../../../views/app"
 
 export default class App extends Component {
-
-	static async getInitialProps({ query }) {
-		return query
-	}
-
-	constructor(props) {
-        super(props)
-        request.set_csrf_token(this.props.csrf_token)
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-        }
-	}
-
 	create = event => {
 		if (this.pending === true) {
 			return

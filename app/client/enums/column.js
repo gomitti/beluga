@@ -7,7 +7,7 @@ const type = {
     "server": "server",
     "home": "home",
     "thread": "thread",
-    "hashtag": "hashtag",
+    "channel": "channel",
     "notifications": "notifications",
 }
 export default { target, type }

@@ -16,7 +16,7 @@ class EmojiView extends Component {
                 ref={dom => this.dom = dom}
                 onMouseEnter={() => Tooltip.show(this.dom, `:${shortname}:`, 6)}
                 onMouseOver={() => Tooltip.show(this.dom, `:${shortname}:`, 6)}
-                onMouseOut={() => Tooltip.hide(this.dom, `:${shortname}:`, 6)}>
+                onMouseOut={() => Tooltip.hide()}>
                 {image}
             </button>
         )
@@ -81,7 +81,7 @@ const split_emoji_shortname = components => {
     })
     return result
 }
-const split_hashtag = components => {
+const split_channel = components => {
     const result = []
     components.forEach(sentence => {
         if (sentence.length === 0) {
@@ -136,7 +136,7 @@ const split = sentence => {
     let components = typeof sentence === "string" ? [sentence] : sentence
     components = split_regexp(components, /(!?https?:\/\/[^\s 　]+)/g)
     components = split_mention(components)
-    components = split_hashtag(components)
+    components = split_channel(components)
     components = split_emoji_unicode(components)
     components = split_emoji_shortname(components)
     return components
@@ -325,9 +325,9 @@ const build_image_views = (urls, server, status_entities) => {
         const imageViews = []
         subset.forEach(image_source => {
             const nodes = parse(image_source, server, status_entities, {})
-            for (const view of nodes) {
+            nodes.forEach(view => {
                 imageViews.push(view)
-            }
+            })
         })
         views.push(<div className="status-body-gallery">{imageViews}</div>)
     }

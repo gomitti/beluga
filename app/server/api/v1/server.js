@@ -2,6 +2,9 @@ import create from "./server/create"
 import destroy from "./server/destroy"
 import show from "./server/show"
 import avatar from "./server/avatar"
-import hashtags from "./server/hashtags"
+import channels from "./server/channels"
 import profile from "./server/profile"
-export default { create, show, destroy, avatar, hashtags, profile }
+import joined from "./server/joined"
+import join from "./server/join"
+import members from "./server/members"
+export default { create, show, destroy, avatar, channels, profile, joined, join, members }

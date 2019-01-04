@@ -3,14 +3,6 @@ import { is_number } from "../../../assert"
 import { try_convert_to_object_id } from "../../../lib/object_id"
 
 export default async (db, query, params) => {
-    if (params.since_id) {
-        params.since_id = try_convert_to_object_id(params.since_id, "$since_idが不正です")
-    }
-
-    if (params.max_id) {
-        params.max_id = try_convert_to_object_id(params.max_id, "$max_idが不正です")
-    }
-
     if (is_number(params.count) === false) {
         throw new Error("@countが不正です")
     }
@@ -25,23 +17,28 @@ export default async (db, query, params) => {
         throw new Error("@sortが不正です")
     }
 
+    let sort = -1
     if (params.since_id) {
-        query._id = { "$gt": params.since_id }
+        const since_id = try_convert_to_object_id(params.since_id, "$since_idが不正です")
+        query._id = { "$gt": since_id }
+        sort = 1
     }
     if (params.max_id) {
-        query._id = { "$lt": params.max_id }
+        const max_id = try_convert_to_object_id(params.max_id, "$max_idが不正です")
+        query._id = { "$lt": max_id }
     }
 
-    const collection = db.collection("statuses")
-    const rows = await collection.find(query).sort({ "_id": -1 }).limit(params.count).toArray()
-
-    for (const status of rows) {
+    let rows = await db.collection("statuses").find(query).sort({ "_id": sort }).limit(params.count).toArray()
+    if (sort === 1) {
+        rows = rows.reverse()
+    }
+    rows.forEach(status => {
         status.id = status._id
         for (const key in status) {
             if (key.indexOf("_") == 0) {
                 delete status[key]
             }
         }
-    }
+    })
     return rows
 }

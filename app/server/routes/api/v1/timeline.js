@@ -8,8 +8,8 @@ module.exports = (fastify, options, next) => {
         if (params.trim_user) {
             params.trim_user = parse_bool_str(params.trim_user)
         }
-        if (params.trim_hashtag) {
-            params.trim_hashtag = parse_bool_str(params.trim_hashtag)
+        if (params.trim_channel) {
+            params.trim_channel = parse_bool_str(params.trim_channel)
         }
         if (params.trim_server) {
             params.trim_server = parse_bool_str(params.trim_server)
@@ -22,13 +22,13 @@ module.exports = (fastify, options, next) => {
         }
         return params
     }
-    fastify.get(`/api/v1/timeline/hashtag`, async (req, res) => {
+    fastify.get(`/api/v1/timeline/channel`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             const params = parse_params(assign({
                 "user_id": session.user_id
             }, req.query))
-            const statuses = await timeline.v1.hashtag(fastify.mongo.db, params)
+            const statuses = await timeline.v1.channel(fastify.mongo.db, params)
             res.send({ "success": true, statuses })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })

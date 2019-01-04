@@ -1,7 +1,5 @@
-import { Component } from "react"
 import classnames from "classnames"
 import Toggle from "react-toggle"
-import Router from "next/router"
 import { SliderPicker, CirclePicker } from 'react-color'
 import enums from "../../../../../enums"
 import Head from "../../../../../views/theme/default/desktop/head"
@@ -10,36 +8,25 @@ import SettingsMenuView from "../../../../../views/theme/default/desktop/setting
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import assign from "../../../../../libs/assign"
-import { default_settings } from "../../../../../settings/desktop"
+import { get as get_desktop_settings } from "../../../../../settings/desktop"
 import { is_object } from "../../../../../assert"
 import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import Component from "../../../../../views/app"
 
 export default class App extends Component {
-    static async getInitialProps({ query }) {
-        return query
-    }
     constructor(props) {
         super(props)
-        const { logged_in, settings } = props
-        const _settings = assign(default_settings, settings)
+        const { logged_in } = props
+        const desktop_settings = get_desktop_settings()
         this.state = {
             "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
-            "new_column_target": _settings.new_column_target,
-            "multiple_columns_enabled": _settings.multiple_columns_enabled
-        }
-        request.set_csrf_token(this.props.csrf_token)
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-
+            "new_column_target": desktop_settings.new_column_target,
+            "multiple_columns_enabled": desktop_settings.multiple_columns_enabled
         }
     }
     onUpdate = event => {
         event.preventDefault()
-        const settings = assign(default_settings, {
+        const settings = assign(get_desktop_settings, {
             "new_column_target": this.state.new_column_target,
             "multiple_columns_enabled": this.state.multiple_columns_enabled,
         })
@@ -83,7 +70,7 @@ export default class App extends Component {
                                 </div>
                                 {this.state.multiple_columns_enabled ?
                                     <div className="item">
-                                        <h3 className="title">ルームの開き方</h3>
+                                        <h3 className="title">チャンネルの開き方</h3>
                                         <p><label>
                                             <input
                                                 type="radio"

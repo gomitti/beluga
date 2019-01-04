@@ -9,9 +9,9 @@ export default async (db, params) => {
 
     const { token, secret, deleted_token } = await api.v1.access_token.generate(db, params)
     if (deleted_token) {
-        memcached.v1.delete_access_token_from_cache(deleted_token)
+        memcached.v1.access_token.show.flush(deleted_token)
     }
-    memcached.v1.delete_access_token_list_from_cache(user.id)
+    memcached.v1.access_token.list.flush(deleted_token)
     
     return { token, secret }
 }

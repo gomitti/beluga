@@ -10,9 +10,9 @@ export default async (db, params) => {
     assert(user !== null, "ユーザーが見つかりません")
     assert(status.user_id.equals(user.id), "権限がありません")
 
-    let hashtag = null
-    if (status.hashtag_id) {
-        hashtag = await memcached.v1.hashtag.show(db, { "id": status.hashtag_id })
+    let channel = null
+    if (status.channel_id) {
+        channel = await memcached.v1.channel.show(db, { "id": status.channel_id })
     }
     let recipient = null
     if (status.recipient_id) {
@@ -27,17 +27,21 @@ export default async (db, params) => {
     await api.v1.notifications.destroy(db, { "status_id": status.id })
 
     // キャッシュの消去
-    memcached.v1.delete_status_from_cache(status.id)
-    if (hashtag) {
-        memcached.v1.delete_timeline_hashtag_from_cache(hashtag.id)
+    memcached.v1.status.show.flush(status.id)
+    if (channel) {
+        memcached.v1.timeline.channel.flush(channel.id)
     }
     if (server) {
-        memcached.v1.delete_timeline_server_from_cache(server.id)
+        memcached.v1.timeline.server.flush(server.id)
     }
     if (recipient && server) {
-        memcached.v1.delete_timeline_home_from_cache(recipient.id, server.id)
+        memcached.v1.timeline.home.flush(recipient.id, server.id)
     }
-    if(status.in_reply_to_status_id){
+    if (status.in_reply_to_status_id) {
+        // コメントを削除
+        await db.collection("threads").deleteOne({ "status_id": status.id })
+
+        // コメント数を更新
         const collection = db.collection("statuses")
         const comments_count = await collection.find({
             "in_reply_to_status_id": status.in_reply_to_status_id
@@ -56,7 +60,12 @@ export default async (db, params) => {
             "$set": { comments_count, commenter_ids }
         })
 
-        memcached.v1.delete_status_from_cache(status.in_reply_to_status_id)
+        // ダミーのコメントを消しておく
+        if(comments_count === 0){
+            await db.collection("threads").deleteOne({ "status_id": status.in_reply_to_status_id })
+        }
+
+        memcached.v1.status.show.flush(status.in_reply_to_status_id)
     }
 
     return true

@@ -11,6 +11,8 @@ import { convert_bytes_to_optimal_unit } from "../../../../libs/functions"
 import config from "../../../../beluga.config"
 import Tooltip from "./tooltip"
 import EmojiPicker from "./emoji"
+import PostboxStore from "../../../../stores/theme/default/common/postbox"
+import TimelineStore from "../../../../stores/theme/default/desktop/timeline"
 
 class TooltipButton extends Component {
     render() {
@@ -19,11 +21,14 @@ class TooltipButton extends Component {
             <button className={classnames(`tooltip-button action ${type} emojipicker-ignore-click user-defined-color-active`, {
                 "active": !!is_active
             })}
-                onClick={handle_click}
+                onClick={event => {
+                    Tooltip.hide()
+                    handle_click(event)
+                }}
                 ref={dom => this.dom = dom}
                 onMouseEnter={() => Tooltip.show(this.dom, description, 6)}
                 onMouseOver={() => Tooltip.show(this.dom, description, 6)}
-                onMouseOut={() => Tooltip.hide(this.dom, description, 6)}>
+                onMouseOut={() => Tooltip.hide()}>
             </button>
         )
     }
@@ -60,6 +65,9 @@ export const wrap_with_tag = (text, start, end, tag, insert_linebreak) => {
 export default class PostboxView extends Component {
     constructor(props) {
         super(props)
+        const { postbox, timeline } = props
+        assert(postbox instanceof PostboxStore, "$postbox must be an instance of PostboxStore")
+        assert(timeline instanceof TimelineStore, "$timeline must be an instance of TimelineStore")
         this.state = {
             "is_post_button_active": false,
             "show_pinned_media": false,
@@ -122,6 +130,8 @@ export default class PostboxView extends Component {
         postbox.post(text, () => {
             this.setText("")
             this.setState({ "is_post_button_active": false })
+            const { timeline } = this.props
+            timeline.fetchLatestIfNeeded()
         }, () => {
             this.setState({ "is_post_button_active": true })
         }, () => {
@@ -292,14 +302,16 @@ export default class PostboxView extends Component {
         }
         event.preventDefault()
         const { uploader } = this.props
-        for (const file of files) {
+        for (let j = 0; j < files.length; j++) {
+            const file = files.item(j)
             uploader.add(file)
         }
     }
     onFileChange = event => {
         const { uploader } = this.props
         const { files } = event.target
-        for (const file of files) {
+        for (let j = 0; j < files.length; j++) {
+            const file = files.item(j)
             uploader.add(file)
         }
         this.refs.file.value = ""
@@ -406,13 +418,13 @@ export default class PostboxView extends Component {
             )
         }
 
-        const { uploader, postbox } = this.props
+        const { uploader, postbox, server } = this.props
         const { uploading_file_metadatas } = uploader
 
         const preview_status = {
             "text": this.state.preview_text,
             "user": logged_in,
-            "server": {}
+            "server": server
         }
         return (
             <div className="postbox-module" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>

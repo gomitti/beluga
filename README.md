@@ -4,12 +4,17 @@ Belugaのコードです。
 
 これはミラーなのでプルリクが直接ここにマージされることはありません。
 
+## Requirements
+
+- Node 10
+
 ## Installation
 
 ### Node
 
 ```bash
-npm install
+npm install -g n
+n 10.15.0
 ```
 
 ### MongoDB
@@ -79,20 +84,6 @@ sudo apt install graphicsmagick
 
 ```bash
 npm install
-```
-
-Babelがなぜかうまく動かないので再インストールします
-
-```bash
-npm uninstall @babel/plugin-proposal-decorators @babel/cli
-npm install @babel/plugin-proposal-decorators@7.0.0-beta.42 @babel/cli@7.0.0-beta.42 --save-dev
-```
-
-`Error: Compilation of µWebSockets has failed and there is no pre-compiled binary available for your system. Please install a supported C++11 compiler and reinstall the module 'uws'.`が発生する場合は`fastify-ws`を再インストールすると直るかもしれません。
-
-```bash
-npm uninstall --save fastify-ws
-npm install --save fastify-ws
 ```
 
 ### Nginx

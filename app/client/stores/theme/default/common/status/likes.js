@@ -4,7 +4,6 @@ import ws from "../../../../../websocket"
 
 export default class LikesStore {
     @observable count = 0
-
     constructor(status) {
         this.count = parseInt(status.likes_count)
         this.status_id = status.id
@@ -20,12 +19,10 @@ export default class LikesStore {
             })
         }
     }
-
     @action.bound
     set(count) {
         this.count = count
     }
-
     @action.bound
     increment() {
         request

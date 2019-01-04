@@ -166,6 +166,8 @@
 }
 
 .status-body-emoji {
+    padding: 0;
+
     > .image {
         width: 20px;
         height: 20px;
@@ -183,14 +185,19 @@
     }
 }
 
-.status-body-hashtag::before {
-    font-family: Beluga;
-    content: "\E01E";
+.status-body-channel,
+.status-body-mention {
+    text-decoration: none;
+}
+
+.status-body-channel::before {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    content: "#";
 }
 
 .status-body-mention::before {
-    font-family: Beluga;
-    content: "\E01D";
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    content: "@";
 }
 
 .status-body-tweet {
@@ -255,18 +262,19 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    margin: 2px 0 -4px -4px;
+    margin: 6px 0 -4px -4px;
 
     > .status-reaction {
         flex: 0 0 auto;
         display: flex;
         border-radius: 4px;
-        margin: 0 0 2px 1px;
+        margin: 0 4px 2px 0;
         padding: 4px 4px 4px 3px;
         cursor: pointer;
         background-color: white;
         box-sizing: border-box;
         border: 1px solid white;
+        border: 1px solid rgb(230, 230, 230);
         transition: border-color 50ms ease-in 0s;
 
         > .emoji {
@@ -336,6 +344,12 @@
 
         > .comments-label {
             flex: 0 0 auto;
+
+            &::after {
+                font-family: Beluga;
+                content: "\E00E";
+                margin-left: 2px;
+            }
         }
     }
 }
@@ -555,6 +569,9 @@
     > .inside {
         > .link {
             > .display-name {
+                min-width: 0;
+                overflow: hidden;
+
                 > .status-body-emoji {
                     width: 18px;
                     height: 18px;

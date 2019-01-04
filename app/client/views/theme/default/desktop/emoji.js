@@ -306,6 +306,7 @@ class EmojiPicker extends Component {
             "left": 0
         }
         this.picker = null
+        this.is_shift_key_down = false
         if (typeof window !== "undefined") {
             window.removeEventListener(event_types.show, this.show)
             window.addEventListener(event_types.show, this.show, false)
@@ -316,20 +317,33 @@ class EmojiPicker extends Component {
             window.removeEventListener("resize", this.hide)
             window.addEventListener("resize", this.hide, false)
             window.addEventListener("scroll", this.hide, false)
-            document.body.addEventListener("click", event => {
-                const { target } = event
-                if (!!target === false) {
-                    this.hide()
-                    return true
-                }
-                if (is_string(target.className) && target.className.indexOf("emojipicker-ignore-click") !== -1) {
-                    return true
-                }
-                this.hide()
-            })
+            window.addEventListener("keyup", this.onKeyUp)
+            window.addEventListener("keydown", this.onKeyDown)
+            document.body.addEventListener("click", this.onClick)
             this.state.available = true
             const { server } = props
             this.picker = get_shared_picker_store(server)
+        }
+    }
+    onClick = event => {
+        const { target } = event
+        if (!!target === false) {
+            this.hide()
+            return true
+        }
+        if (is_string(target.className) && target.className.indexOf("emojipicker-ignore-click") !== -1) {
+            return true
+        }
+        this.hide()
+    }
+    onKeyUp = event => {
+        if (event.keyCode == 16) {
+            this.is_shift_key_down = false
+        }
+    }
+    onKeyDown = event => {
+        if (event.keyCode == 16) {
+            this.is_shift_key_down = true
         }
     }
     show = payload => {
@@ -360,7 +374,12 @@ class EmojiPicker extends Component {
             "left": x,
             "top": y
         })
-        this.picker.show(callback_pick, callback_hide)
+        this.picker.show((shortname, category) => {
+            callback_pick(shortname, category)
+            if (this.is_shift_key_down === false) {
+                this.hide()
+            }
+        }, callback_hide)
     }
     toggle = payload => {
         if (this.state.is_hidden) {

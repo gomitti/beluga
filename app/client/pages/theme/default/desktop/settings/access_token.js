@@ -1,6 +1,4 @@
-import { Component } from "react"
 import { configure } from "mobx"
-import Router from "next/router"
 import Head from "../../../../../views/theme/default/desktop/head"
 import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
 import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
@@ -8,31 +6,17 @@ import config from "../../../../../beluga.config"
 import assert, { is_string, is_object } from "../../../../../assert"
 import { request } from "../../../../../api"
 import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import Component from "../../../../../views/app"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
 
 export default class App extends Component {
-    static async getInitialProps({ query }) {
-        return query
-    }
     constructor(props) {
         super(props)
         const { access_tokens } = props
         this.state = {
             access_tokens
-        }
-        request.set_csrf_token(this.props.csrf_token)
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-
         }
     }
     onUpdateKey = event => {

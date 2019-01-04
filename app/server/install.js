@@ -1,62 +1,23 @@
-import "babel-polyfill"
 import mongo from "./mongo"
 const MongoClient = require("mongodb").MongoClient
 
-
-// ユーザー名の予約語を登録
-async function register_reserved_user_names(db) {
-    const collection = db.collection("users")
-    const reserved_names = [
-        "admin", "beluga", "me", "here"
-    ]
-    for (const name of reserved_names) {
-        try {
-            const existing = await collection.findOne({ name })
-            if (existing !== null) {
-                continue
-            }
-            const result = await collection.insertOne({ name })
-        } catch (error) {
-            console.log(error)
-        }
-    }
-}
-
-// サーバー名の予約語を登録
-async function register_reserved_server_names(db) {
-    const collection = db.collection("servers")
-    const reserved_names = [
-        "create"
-    ]
-    for (const name of reserved_names) {
-        try {
-            const existing = await collection.findOne({ name })
-            if (existing !== null) {
-                continue
-            }
-            const result = await collection.insertOne({ name })
-        } catch (error) {
-            console.log(error)
-        }
-    }
-}
-
-// データベースの初期化を行う
-(async () => {
+const main = async () => {
     try {
         const client = await MongoClient.connect(mongo.url)
         const db = client.db(mongo.database.production)
-        await register_reserved_user_names(db)
-        await register_reserved_server_names(db)
 
         // インデックスを張る
-        db.collection("statuses").createIndex({ "hashtag_id": -1, "_id": -1 })
+        db.collection("statuses").createIndex({ "channel_id": -1, "_id": -1 })
         db.collection("statuses").createIndex({ "in_reply_to_status_id": -1, "_id": -1 })
         db.collection("statuses").createIndex({ "server_id": -1, "is_public": -1, "_id": -1 })
         db.collection("statuses").createIndex({ "user_id": -1, "_id": -1 })
         db.collection("statuses").createIndex({ "recipient_id": -1, "server_id": -1, "_id": -1 })
+        db.collection("threads").createIndex({ "in_reply_to_status_id": -1 })
+        db.collection("threads").createIndex({ "in_reply_to_status_id": -1, "status_id": -1 })
+        db.collection("threads").createIndex({ "status_id": -1 }, { "unique": true })
         db.collection("mentions").createIndex({ "recipient_id": -1, "_id": -1 })
         db.collection("mentions").createIndex({ "recipient_id": -1, "server_id": -1, "_id": -1 })
+        db.collection("mutes").createIndex({ "target_user_id": -1, "requested_by": -1 }, { "unique": true })
         db.collection("likes").createIndex({ "status_id": -1, "user_id": -1 }, { "unique": true })
         db.collection("likes").createIndex({ "status_author_id": -1 })
         db.collection("favorites").createIndex({ "status_id": -1, "user_id": -1 }, { "unique": true })
@@ -67,10 +28,12 @@ async function register_reserved_server_names(db) {
         db.collection("media").createIndex({ "is_image": -1 })
         db.collection("media").createIndex({ "is_video": -1 })
         db.collection("sessions").createIndex({ "encrypted_id": -1 }, { "unique": true })
-        db.collection("hashtag_members").createIndex({ "hashtag_id": -1 })
-        db.collection("hashtag_members").createIndex({ "server_id": -1 })
-        db.collection("hashtag_members").createIndex({ "server_id": -1, "user_id": -1 })
-        db.collection("hashtag_members").createIndex({ "hashtag_id": -1, "user_id": -1 }, { "unique": true })
+        db.collection("server_members").createIndex({ "server_id": -1 })
+        db.collection("server_members").createIndex({ "user_id": -1 })
+        db.collection("channel_members").createIndex({ "channel_id": -1 })
+        db.collection("channel_members").createIndex({ "server_id": -1 })
+        db.collection("channel_members").createIndex({ "server_id": -1, "user_id": -1 })
+        db.collection("channel_members").createIndex({ "channel_id": -1, "user_id": -1 }, { "unique": true })
         db.collection("access_tokens").createIndex({ "user_id": -1 }, { "unique": true })
         db.collection("kvs").createIndex({ "user_id": -1 })
         db.collection("emojis").createIndex({ "server_id": -1 })
@@ -83,4 +46,6 @@ async function register_reserved_server_names(db) {
         console.log(error)
     }
 
-})()
+}
+
+main()

@@ -1,5 +1,3 @@
-import { Component } from "react"
-import Router from "next/router"
 import { configure } from "mobx"
 import classnames from "classnames"
 import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
@@ -11,43 +9,23 @@ import { request } from "../../../../../api"
 import assert from "../../../../../assert";
 import { get_image_url_by_shortname_or_null, add_custom_shortnames } from "../../../../../stores/theme/default/common/emoji";
 import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import Component from "../../../../../views/app"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
 
 export default class App extends Component {
-
-    // サーバー側でのみ呼ばれる
-    // ここで返したpropsはクライアント側でも取れる
-    static async getInitialProps({ query }) {
-        return query
-    }
-
     constructor(props) {
         super(props)
-
         this.state = {
             "pending_add": false,
         }
-
-        const { custom_emoji_list, csrf_token } = props
+        const { custom_emoji_list } = props
         const shortnames = []
         custom_emoji_list.forEach(emoji => {
             shortnames.push(emoji.shortname)
         })
         add_custom_shortnames(shortnames)
-
-        request.set_csrf_token(csrf_token)
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-        }
     }
 
     onFileChange = event => {
@@ -148,7 +126,7 @@ export default class App extends Component {
             <div id="app" className="customize">
                 <Head title={`絵文字の追加 / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} device={device} />
                 <NavigationbarView server={server} logged_in={logged_in} />
-                <div id="content" className={classnames("timeline hashtags", { "logged_in": !!logged_in })}>
+                <div id="content" className={classnames("timeline channels", { "logged_in": !!logged_in })}>
                     <div className="inside column-container">
                         <div className="column customize-emoji">
                             <div className="inside server-container round">

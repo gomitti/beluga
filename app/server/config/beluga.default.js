@@ -13,7 +13,7 @@ export default {
             "limit": 3,		// 1投稿につき何種類の絵文字を追加できるか
             "allow_self_reactions": true	// 自分自身へのリアクションの追加を許可
         },
-        "embed": {
+        "embedding": {
             "web": {
                 "limit": 3,				// 1つの投稿にURLの埋め込みを何個まで許可するか
                 // サーバー側でHTTPリクエストが発生するため大量の埋め込みを行うと負荷がかかる
@@ -32,7 +32,7 @@ export default {
         ["#fad0c4", "#ff9a9e"], ["#fbc2eb", "#a18cd1"], ["#fee140", "#fa709a"], ["#89f7fe", "#66a6ff"],
         ["#56ccf2", "#2f80ed"], ["#f8ffae", "#43c6ac"], ["#ffe259", "#ffa751"]
     ],
-    "emoji":{
+    "emoji": {
         "max_shortname_length": 32,
         "max_filesize": 1024 * 64,
         "min_size": 64,
@@ -48,13 +48,14 @@ export default {
         "max_count": 10		// 投稿1つにつき何回まで「いいね」を押せるか
     },
     "account": {
-        "max_num_accounts_per_ip_address": 3
+        "max_num_accounts_per_ip_address": 30
     },
     "user": {
         "max_name_length": 32,
         "max_display_name_length": 32,
         "max_status_text_length": 32,
         "name_regexp": "[a-zA-Z0-9_]+",
+        "reserved_names": ["admin", "beluga", "me", "here", "channel"],
         "profile": {
             "background_image": {
                 "max_size": 10000,
@@ -68,8 +69,9 @@ export default {
             "default_theme_color": "#477da7"
         },
     },
-    "hashtag": {
-        "max_tagname_length": 100			// UTF16基準なので注意。サロゲートペアは2文字扱いになる
+    "channel": {
+        "reserved_names": ["create_new_channel"],
+        "max_name_length": 100			// UTF16基準なので注意。サロゲートペアは2文字扱いになる
     },
     "server": {
         "name_regexp": "[a-zA-Z0-9_]+",
@@ -79,10 +81,11 @@ export default {
         "profile": {
             "image_size": 300,
         },
-        "hashtags": {
-            "min_statuses_count_to_display": 10	// ルーム一覧に表示される最低限の投稿数
+        "channels": {
+            "min_statuses_count_to_display": 10	// チャンネル一覧に表示される最低限の投稿数
         },
-        "first_hashtag_name": "general",
+        "first_channel_name": "general",
+        "reserved_names": ["create"],
     },
     "auth": {
         "salt": "salt",		// ここを運用開始後に変えるとログインができなくなるので注意
@@ -99,7 +102,7 @@ export default {
     },
     "timeline": {
         "max_count": 3000,
-        "default_count": 20
+        "default_count": 30
     },
     "websocket": {
         "https": {

@@ -9,16 +9,16 @@ const build_query_by_id = params => {
 const build_query_by_name = params => {
     const { name } = params
     if (typeof name !== "string") {
-        throw new Error("@nameが不正です")
+        throw new Error("$nameが不正です")
     }
     if (name.length == 0) {
-        throw new Error("@nameを指定してください")
+        throw new Error("$nameを指定してください")
     }
     if (name.length > config.user.max_name_length) {
-        throw new Error(`@nameは${config.user.max_name_length}文字を超えてはいけません`)
+        throw new Error(`$nameは${config.user.max_name_length}文字を超えてはいけません`)
     }
     if (name.match(new RegExp(`^${config.user.name_regexp}$`)) === null) {
-        throw new Error(`@nameには半角英数字と_のみ使用できます`)
+        throw new Error(`$nameには半角英数字と_のみ使用できます`)
     }
     return { name }
 }

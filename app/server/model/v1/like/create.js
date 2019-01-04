@@ -21,7 +21,7 @@ export default async (db, params) => {
     )
 
     // キャッシュの消去
-    memcached.v1.delete_status_from_cache(status.id)
+    memcached.v1.status.show.flush(status.id)
 
     return true
 }

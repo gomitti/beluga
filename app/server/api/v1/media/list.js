@@ -11,14 +11,13 @@ export default async (db, params) => {
     const collection = db.collection("media")
     const rows = await collection.find({ user_id }).sort({ "created_at": -1 }).limit(params.count).toArray()
 
-    for (const media of rows) {
+    rows.forEach(media => {
         media.id = media._id
         for (const key in media) {
             if (key.indexOf("_") == 0) {
                 delete media[key]
             }
         }
-    }
-
+    })
     return rows
 }

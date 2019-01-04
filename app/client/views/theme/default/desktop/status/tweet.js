@@ -32,11 +32,9 @@ export default class TweetView extends Component {
             }
             setTimeout(timer_func, 200 * (this.retry + 1))
             if (detect_widget_loaded(iframe) === false) {
-                console.log("not loaded")
                 return
             }
             let height = iframe.contentWindow.document.documentElement.scrollHeight
-            console.log(height)
             if (typeof height === "number" && height > iframe.height) {
                 iframe.height = height;
             }

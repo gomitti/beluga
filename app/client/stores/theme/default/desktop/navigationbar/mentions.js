@@ -36,7 +36,7 @@ export default class MentionsStore {
             "recipient_id": this.recipient_id,
             "trim_user": false,
             "trim_server": false,
-            "trim_hashtag": false,
+            "trim_channel": false,
             "trim_recipient": false,
         }, this.params)
         if (this.statuses.length > 0) {
@@ -49,10 +49,10 @@ export default class MentionsStore {
                 const { success, statuses } = data
                 if (success) {
                     const stores = []
-                    for (const status of statuses) {
+                    statuses.forEach(status => {
                         const store = new StatusStore(status)
                         stores.push(store)
-                    }
+                    })
                     this.prepend(stores)
                 }
             })

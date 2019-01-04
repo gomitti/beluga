@@ -9,10 +9,13 @@ const fetch = api.v1.timeline.notifications
 const memcached_diff = new Memcached(fetch)
 const memcached_whole = new Memcached(fetch)
 
-export const delete_timeline_notifications_from_cache = user_id => {
-    user_id = try_convert_to_hex_string(user_id, "$user_idが不正です")
-    memcached_diff.delete(user_id)
-    memcached_whole.delete(user_id)
+const register_flush_func = target => {
+    target.flush = user_id => {
+        user_id = try_convert_to_hex_string(user_id, "$user_idが不正です")
+        memcached_diff.delete(user_id)
+        memcached_whole.delete(user_id)
+    }
+    return target
 }
 
 const fetch_all_server = async (db, params) => {
@@ -70,10 +73,10 @@ const fetch_specified_server = async (db, params) => {
     return await memcached_diff.fetch([user_id, server_id, since_id, count], db, params)
 }
 
-export default async (db, params) => {
+export default register_flush_func(async (db, params) => {
     if (params.server_id) {
         return await fetch_specified_server(db, params)
     } else {
         return await fetch_all_server(db, params)
     }
-}
+})

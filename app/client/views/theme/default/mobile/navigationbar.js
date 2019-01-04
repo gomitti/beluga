@@ -30,10 +30,10 @@ export default class NavigationBarView extends Component {
                         </li>
                         {server ?
                             <li>
-                                <a href={`/server/${server.name}/hashtags`} className={classnames("user-defined-color-active user-defined-border-color-active", {
-                                    "active": active === "hashtags"
+                                <a href={`/server/${server.name}/channels`} className={classnames("user-defined-color-active user-defined-border-color-active", {
+                                    "active": active === "channels"
                                 })}>
-                                    <span className="icon hashtags"></span>
+                                    <span className="icon channels"></span>
                                 </a>
                             </li>
                             : null

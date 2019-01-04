@@ -1,7 +1,9 @@
 import status from "./status"
+import statuses from "./statuses"
 import user from "./user"
+import users from "./users"
 import server from "./server"
-import hashtag from "./hashtag"
+import channel from "./channel"
 import timeline from "./timeline"
 import media from "./media"
 import notifications from "./notifications"
@@ -11,14 +13,17 @@ import favorite from "./favorite"
 import reaction from "./reaction"
 import access_token from "./access_token"
 import kvs from "./kvs"
-import hashtags from "./hashtags"
+import channels from "./channels"
 import emoji from "./emoji"
+import mute from "./mute"
 
 export default {
     status,
+    statuses,
     user,
+    users,
     server,
-    hashtag,
+    channel,
     timeline,
     media,
     account,
@@ -28,6 +33,7 @@ export default {
     access_token,
     notifications,
     kvs,
-    hashtags,
-    emoji
+    channels,
+    emoji,
+    mute
 }

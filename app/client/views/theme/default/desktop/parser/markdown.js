@@ -122,9 +122,9 @@ export const parse_block_markdown = text => {
             if (starting_tag === null) {
                 starting_tag = markdown_pre
                 if (block.length > 0) {
-                    for (const sentence of block) {
+                    block.forEach(sentence => {
                         blocks.push(sentence)
-                    }
+                    })
                 }
                 block = []
             }

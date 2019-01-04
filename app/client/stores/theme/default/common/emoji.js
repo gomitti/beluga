@@ -142,13 +142,13 @@ export const get_shortname_by_unicode = unicode => {
     return shortname
 }
 
-class EmojiHistoryStore {
+class HistoryStore {
     @observable.shallow list = []
     constructor(server) {
         if (!!server === false) {
             return
         }
-        assert(is_object(server), "$server must be of type object at EmojiHistoryStore.constructor")
+        assert(is_object(server), "$server must be of type object at HistoryStore.constructor")
         this.server = server
 
         const history_str = localStorage.getItem(`emoji.history.${server.id}`)
@@ -188,14 +188,14 @@ class EmojiHistoryStore {
     }
 }
 
-class EmojiPickerStore {
+class PickerStore {
     @observable is_searching = false
     @observable current_category = null
     @observable.shallow history = null
     constructor(server) {
         if (server) {
             this.server = server
-            this.history = new EmojiHistoryStore(server)
+            this.history = new HistoryStore(server)
         }
     }
     @action.bound
@@ -236,17 +236,22 @@ class EmojiPickerStore {
     }
 }
 
-
-if (typeof localStorage === "undefined") {
-    exports.EmojiPickerStore = class Empty {
-        get_emoji_history = () => {
-            return []
-        }
-        set_current_category = category => { }
+class Empty {
+    get_emoji_history = () => {
+        return []
     }
-} else {
-    exports.EmojiPickerStore = EmojiPickerStore
+    set_current_category = category => { }
 }
+
+const get_picker_class = () => {
+    if (typeof localStorage === "undefined") {
+        return Empty
+    } else {
+        return PickerStore
+    }
+}
+
+export const EmojiPickerStore = get_picker_class()
 
 const map_server_picker = {}
 let default_picker = null
@@ -255,14 +260,14 @@ export const get_shared_picker_store = server => {
         if (default_picker) {
             return default_picker
         }
-        default_picker = new exports.EmojiPickerStore()
+        default_picker = new (get_picker_class())()
         return default_picker
     }
     let picker = map_server_picker[server.id]
     if (picker) {
         return picker
     }
-    picker = new exports.EmojiPickerStore(server)
+    picker = new (get_picker_class())(server)
     map_server_picker[server.id] = picker
     return picker
 }

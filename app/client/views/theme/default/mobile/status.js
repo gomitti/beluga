@@ -14,12 +14,12 @@ import EmojiPicker from "./emoji";
 export default class StatusView extends Component {
     constructor(props) {
         super(props)
-        const { status, server, handle_click_hashtag, handle_click_mention } = props
+        const { status, server, handle_click_channel, handle_click_mention } = props
         assert(is_object(status), "$status must be of type object")
 
         // 本文のビューを構築しておく
         const { text, entities } = status
-        this.bodyViews = build_status_body_views(text, server, entities, { handle_click_hashtag, handle_click_mention })
+        this.bodyViews = build_status_body_views(text, server, entities, { handle_click_channel, handle_click_mention })
 
         this.state = {
             "elapsed_time_str": created_at_to_elapsed_time(status.created_at),
@@ -91,13 +91,13 @@ export default class StatusView extends Component {
         let favoritesView = null
         if (status.favorites.count > 0) {
             const userViews = []
-            for (const user of status.favorites.users) {
+            status.favorites.users.forEach(user => {
                 userViews.push(
                     <a href={`/user/${user.name}`} target="_blank">
                         <img src={user.avatar_url} />
                     </a>
                 )
-            }
+            })
             favoritesView = <div className="status-favofites bar">
                 <div className="users">
                     {userViews}
@@ -111,10 +111,10 @@ export default class StatusView extends Component {
         }
 
         let belongingView = null
-        const { hashtag, recipient } = status
+        const { channel, recipient } = status
         if (options.show_belonging) {
-            if (hashtag && server) {
-                belongingView = <a href={`/server/${server.name}/${hashtag.tagname}`} className="belonging hashtag meiryo">#{hashtag.tagname}</a>
+            if (channel && server) {
+                belongingView = <a href={`/server/${server.name}/${channel.name}`} className="belonging channel meiryo">#{channel.name}</a>
             }
             if (recipient && server) {
                 belongingView = <a href={`/server/${server.name}/@${recipient.name}`} className="belonging recipient meiryo">@{recipient.name}</a>
@@ -129,7 +129,7 @@ export default class StatusView extends Component {
                     <img src={user.avatar_url} className="avatar" />
                 )
             })
-            const preview_text = status.last_comment ? status.last_comment.text : ""
+            let preview_text = status.last_comment ? status.last_comment.text : ""
             if (preview_text.length > 100) {
                 preview_text = preview_text.substr(0, 100)
             }

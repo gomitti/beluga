@@ -14,7 +14,7 @@ export default async (db, params) => {
     await api.v1.kvs.store(db, { "user_id": user.id, "key": key, "value": value })
 
     // キャッシュの消去
-    memcached.v1.delete_kvs_from_cache(user.id, key)
+    memcached.v1.kvs.restore.flush(user.id, key)
 
     return true
 }

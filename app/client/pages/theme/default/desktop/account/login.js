@@ -1,24 +1,12 @@
-import { Component } from "react"
-import Router from "next/router"
 import Head from "../../../../../views/theme/default/desktop/head"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
+import Component from "../../../../../views/app"
 
 export default class App extends Component {
     static async getInitialProps({ query }) {
         return query
-    }
-    constructor(props) {
-        super(props)
-        request.set_csrf_token(this.props.csrf_token)
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-        }
     }
     signin = event => {
         event.preventDefault()
@@ -52,8 +40,10 @@ export default class App extends Component {
                     return false
                 }
                 if (request_query && request_query.redirect) {
-                    location.href = request_query.redirect
-                    return
+                    if (request_query.redirect.match(/^\/[\w\/@]+$/)) {
+                        location.href = request_query.redirect
+                        return
+                    }
                 }
                 location.href = "/"
             })

@@ -7,7 +7,13 @@ export default class SettingsMenuView extends Component {
         const { active, server } = this.props
         return (
             <div className="settings-menu-module clearfix">
-                <ServerDetailView server={server} is_members_hidden={true} ellipsis_description={true} collapse_members={true} />
+                <ServerDetailView
+                    server={server}
+                    is_members_hidden={true}
+                    is_description_hidden={true}
+                    collapse_members={true}
+                    handle_click_channel={() => true}
+                    handle_click_mention={() => true} />
                 <div className="settings-menu-container clearfix">
                     <div className="inside">
                         <h2 className="title settings">設定</h2>

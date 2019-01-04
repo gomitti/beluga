@@ -1,32 +1,17 @@
-import { Component } from "react"
-import Router from "next/router"
 import classnames from "classnames"
 import Head from "../../../../../views/theme/default/desktop/head"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
+import Component from "../../../../../views/app"
 
 export default class App extends Component {
-
-    static async getInitialProps({ query }) {
-        return query
-    }
-
     constructor(props) {
         super(props)
         this.state = {
             "pending_create": false
         }
-        request.set_csrf_token(this.props.csrf_token)
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-        }
     }
-
     verify = (name, display_name) => {
         if (name.length == 0) {
             throw new Error("サーバー名を入力してください")
@@ -35,7 +20,6 @@ export default class App extends Component {
             throw new Error("表示名を入力してください")
         }
     }
-
     create = event => {
         if (this.state.pending_create === true) {
             return

@@ -8,17 +8,17 @@ export default async (db, params) => {
     assert(Array.isArray(params.shortnames), "絵文字を指定してください")
 
     const emoji_shortnames = []
-    for (const shortname of params.shortnames) {
+    params.shortnames.forEach(shortname => {
         try {
             assert(shortname.match(config.emoji.regex), "不正な絵文字です")
             if (emoji_shortnames.includes(shortname)) {
-                continue
+                return
             }
             emoji_shortnames.push(shortname)
         } catch (error) {
 
         }
-    }
+    })
 
     const collection = db.collection("account_pins")
     const result = await collection.updateOne({ user_id }, {

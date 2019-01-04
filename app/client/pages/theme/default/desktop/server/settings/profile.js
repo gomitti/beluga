@@ -1,6 +1,4 @@
-import { Component } from "react"
 import { configure } from "mobx"
-import Router from "next/router"
 import classnames from "classnames"
 import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import Head from "../../../../../../views/theme/default/desktop/head"
@@ -8,14 +6,12 @@ import NavigationBarView from "../../../../../../views/theme/default/desktop/nav
 import SettingsMenuView from "../../../../../../views/theme/default/desktop/settings/server/menu"
 import config from "../../../../../../beluga.config"
 import { request } from "../../../../../../api"
+import Component from "../../../../../../views/app"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
 
 export default class App extends Component {
-    static async getInitialProps({ query }) {
-        return query
-    }
     constructor(props) {
         super(props)
         const { server } = props
@@ -35,17 +31,6 @@ export default class App extends Component {
             "is_crop_ready": false,
             "pending_update": false,
             "pending_reset": false,
-        }
-        request.set_csrf_token(this.props.csrf_token)
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
         }
     }
     componentDidMount() {
@@ -295,13 +280,16 @@ export default class App extends Component {
                                         <img src={preview_src} className="preview" />
                                     </div>
                                     <div ref="module">
-                                        <ReactCrop
-                                            {...this.state}
-                                            profile_image_size={profile_image_size}
-                                            onImageLoaded={this.onImageLoaded}
-                                            onComplete={this.onCropComplete}
-                                            onChange={this.onCropChange}
-                                        />
+                                        {(typeof window === "undefined")
+                                            ? null :
+                                            <ReactCrop
+                                                {...this.state}
+                                                profile_image_size={profile_image_size}
+                                                onImageLoaded={this.onImageLoaded}
+                                                onComplete={this.onCropComplete}
+                                                onChange={this.onCropChange}
+                                            />
+                                        }
                                     </div>
                                     <input type="file" ref="file" accept="image/*" onChange={this.onFileChange} />
                                 </div>

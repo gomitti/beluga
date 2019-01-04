@@ -9,7 +9,7 @@ export default async (db, params) => {
     await api.v1.account.background_image.reset(db, params)
 
     // キャッシュの消去
-    memcached.v1.delete_user_from_cache(user.id, user.name)
+    memcached.v1.user.show.flush(user.id, user.name)
 
     return true
 }

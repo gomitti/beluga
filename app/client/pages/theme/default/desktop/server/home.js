@@ -1,7 +1,5 @@
-import { Component } from "react"
 import { configure, observable, action } from "mobx"
 import { observer } from "mobx-react"
-import Router from "next/router"
 import classnames from "classnames"
 import enums from "../../../../../enums"
 import assign from "../../../../../libs/assign"
@@ -10,13 +8,15 @@ import warning from "../../../../../libs/warning"
 import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
 import EmojiPicker from "../../../../../views/theme/default/desktop/emoji"
 import { ColumnView, MultipleColumnsContainerView } from "../../../../../views/theme/default/desktop/column"
-import { default_options as default_column_options } from "../../../../../stores/theme/default/desktop/column"
+import { ColumnOptions, ColumnSettings } from "../../../../../stores/theme/default/desktop/column"
 import Head from "../../../../../views/theme/default/desktop/head"
 import config from "../../../../../beluga.config"
 import Tooltip from "../../../../../views/theme/default/desktop/tooltip"
 import { request } from "../../../../../api"
 import { add_custom_shortnames } from "../../../../../stores/theme/default/common/emoji"
-import { update_current_settings } from "../../../../../settings/desktop"
+import { get as get_desktop_settings } from "../../../../../settings/desktop"
+import Component from "../../../../../views/app"
+import { TimelineOptions } from "../../../../../stores/theme/default/desktop/timeline"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
@@ -24,7 +24,8 @@ configure({ "enforceActions": true })
 class MultipleColumnsContainer extends MultipleColumnsContainerView {
     constructor(props) {
         super(props)
-        const { server, logged_in, columns, user, callback_change } = props
+        const { server, logged_in, columns, user, callback_change,
+            muted_users, muted_words, request_query, has_newer_statuses, has_older_statuses } = props
         assert(is_object(server), "$server must be of type object")
         assert(is_object(logged_in), "$logged_in must be of type object")
         assert(is_array(columns), "$columns must be of type array or null")
@@ -33,65 +34,95 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
             this.callback_change = callback_change
         }
 
-        columns.forEach(column => {
-            const { type, param_ids, params, statuses } = column
+        const desktop_settings = get_desktop_settings()
+        if (desktop_settings.multiple_columns_enabled) {
+            for (let column_index = 0; column_index < columns.length; column_index++) {
+                const column = columns[column_index]
+                const { type, params, statuses } = column
 
-            assert(is_object(param_ids), "$param_ids must be of type object")
-            assert(is_object(params), "$params must be of type object")
-            assert(is_array(statuses), "$statuses must be of type array")
-            assert(is_string(type), "$type must be of type string")
+                assert(is_object(params), "$params must be of type object")
+                assert(is_array(statuses), "$statuses must be of type array")
+                assert(is_string(type), "$type must be of type string")
 
-            const options = assign(default_column_options)
-
-            if (type === enums.column.type.server) {
-                options.status.show_belonging = true
-                options.postbox.is_hidden = true
-            }
-
-            if (type === enums.column.type.home) {
-                if (params.user.id === user.id) {
-                    options.is_closable = false
+                const column_options = new ColumnOptions()
+                if (type === enums.column.type.server) {
+                    column_options.status.show_belonging = true
+                    column_options.postbox.is_hidden = true
                 }
-            }
-
-            if (type === enums.column.type.hashtag) {
-                if (params.hashtag.joined === false) {
-                    options.postbox.is_hidden = true
+                if (type === enums.column.type.home) {
+                    if (params.user.id === user.id) {
+                        column_options.is_closable = false
+                    }
                 }
+                if (type === enums.column.type.channel) {
+                    if (params.channel.joined === false) {
+                        column_options.postbox.is_hidden = true
+                    }
+                }
+
+                const opt = new TimelineOptions()
+                if (column_index == 0) {
+                    opt.has_newer_statuses = has_newer_statuses
+                    opt.has_older_statuses = has_older_statuses
+                    if (has_newer_statuses) {
+                        opt.auto_reloading_enabled = false
+                    }
+                } else {
+                    opt.has_older_statuses = true
+                }
+                opt.muted_users = muted_users
+                opt.muted_words = muted_words
+                column_options.timeline = opt
+
+                const column_settings = new ColumnSettings()
+
+                this.insert(type, params,
+                    column_options,
+                    column_settings,
+                    statuses,
+                    enums.column.target.blank,
+                    -1,
+                    muted_users,
+                    muted_words
+                )
             }
+        } else {
+            assert(columns.length === 1, "length of $columns must be 1")
+            const column = columns[0]
+            const { type, params, statuses } = column
+            const column_options = new ColumnOptions()
+
+            const opt = new TimelineOptions()
+            opt.has_newer_statuses = has_newer_statuses
+            opt.has_older_statuses = has_older_statuses
+            if (has_newer_statuses) {
+                opt.auto_reloading_enabled = false
+            }
+            opt.muted_users = muted_users
+            opt.muted_words = muted_words
+            column_options.timeline = opt
+
+            const column_settings = new ColumnSettings()
 
             this.insert(type, params,
-                options,
+                column_options,
+                column_settings,
                 statuses,
                 enums.column.target.blank,
-                -1
+                -1,
+                muted_users,
+                muted_words
             )
-        })
+        }
     }
 }
 
 export default class App extends Component {
-    // サーバー側でのみ呼ばれる
-    // ここで返したpropsはクライアント側でも取れる
-    static async getInitialProps({ query }) {
-        return query
-    }
     constructor(props) {
         super(props)
-        const { csrf_token, custom_emoji_shortnames, server, desktop_settings } = props
-
-        request.set_csrf_token(csrf_token)
-        add_custom_shortnames(custom_emoji_shortnames)
-        update_current_settings(desktop_settings)
-
         this.state = {
             "app_inline_flex": false
         }
-
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
         if (typeof window !== "undefined") {
             window.addEventListener("resize", event => {
                 if (this.resize_time_id) {
@@ -100,13 +131,6 @@ export default class App extends Component {
                 this.resize_time_id = setTimeout(() => {
                     this.updateJustifyContent()
                 }, 50);
-            });
-        }
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
             });
         }
     }
@@ -130,7 +154,8 @@ export default class App extends Component {
         }
     }
     render() {
-        const { server, user, logged_in, hashtags, platform, pinned_emoji_shortnames, custom_emoji_shortnames, statuses, desktop_settings } = this.props
+        const { server, user, logged_in, channels, platform, pinned_emoji_shortnames, custom_emoji_shortnames, statuses } = this.props
+        const desktop_settings = get_desktop_settings()
         return (
             <div id="app" className={classnames("timeline home", {
                 "inline-flex": this.state.app_inline_flex,

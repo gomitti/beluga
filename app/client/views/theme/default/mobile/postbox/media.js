@@ -28,12 +28,12 @@ export default class MediaView extends Component {
             for (let y = 0; y < num_rows; y++) {
                 rows.push(media.slice(y * num_per_row, Math.min((y + 1) * num_per_row, media.length)))
             }
-            for (const row of rows) {
+            rows.forEach(row => {
                 const views = []
-                for (const item of row) {
+                row.forEach(item => {
                     const thumbnail_url = get_thumbnail_url_of_item(item)
                     if (!thumbnail_url) {
-                        continue
+                        return
                     }
                     const original_url = get_original_url_of_item(item)
                     const sizes = item.prefix.split("-")
@@ -42,11 +42,11 @@ export default class MediaView extends Component {
                             <img className="thumbnail" src={thumbnail_url} />
                         </a>
                     )
-                }
+                })
                 mediaViews.push(
                     <div className="row">{views}</div>
                 )
-            }
+            })
         }
         if (mediaViews.length == 0) {
             return (

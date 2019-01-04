@@ -1,3 +1,5 @@
 import show from "./server/show"
-import hashtags from "./server/hashtags"
-export default { show, hashtags }
+import channels from "./server/channels"
+import joined from "./server/joined"
+import members from "./server/members"
+export default { show, channels, joined, members }

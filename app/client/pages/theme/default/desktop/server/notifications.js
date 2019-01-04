@@ -1,7 +1,5 @@
-import { Component } from "react"
 import { configure, observable, action } from "mobx"
 import { observer } from "mobx-react"
-import Router from "next/router"
 import classnames from "classnames"
 import enums from "../../../../../enums"
 import assign from "../../../../../libs/assign"
@@ -15,8 +13,8 @@ import Head from "../../../../../views/theme/default/desktop/head"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import { add_custom_shortnames } from "../../../../../stores/theme/default/common/emoji"
-import { update_current_settings } from "../../../../../settings/desktop"
 import Tooltip from "../../../../../views/theme/default/desktop/tooltip"
+import Component from "../../../../../views/app"
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
@@ -70,36 +68,10 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
 }
 
 export default class App extends Component {
-    // サーバー側でのみ呼ばれる
-    // ここで返したpropsはクライアント側でも取れる
-    static async getInitialProps({ query }) {
-        return query
-    }
     constructor(props) {
         super(props)
-        const { csrf_token, custom_emoji_shortnames, server, desktop_settings } = props
-
-        request.set_csrf_token(csrf_token)
-        add_custom_shortnames(custom_emoji_shortnames)
-        update_current_settings(desktop_settings)
-
         this.state = {
             "justify_content": "center"
-        }
-
-        if (typeof history !== "undefined") {
-            history.scrollRestoration = "manual"
-        }
-
-        if (typeof window !== "undefined") {
-            window.addEventListener("resize", event => {
-                if (this.resize_time_id) {
-                    clearTimeout(this.resize_time_id)
-                }
-                this.resize_time_id = setTimeout(() => {
-                    this.updateJustifyContent()
-                }, 50);
-            });
         }
     }
     componentDidMount = () => {
@@ -122,12 +94,12 @@ export default class App extends Component {
         }
     }
     render() {
-        const { server, logged_in, hashtags, platform, pinned_emoji_shortnames, custom_emoji_shortnames, statuses } = this.props
+        const { server, logged_in, channels, platform, pinned_emoji_shortnames, custom_emoji_shortnames, statuses } = this.props
         return (
             <div id="app" className="timeline thrread">
                 <Head title={`@関連 / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} />
                 <NavigationBarView server={server} logged_in={logged_in} active="mentions" />
-                <div id="content" className={classnames("timeline hashtag", { "logged_in": !!logged_in })}>
+                <div id="content" className={classnames("timeline channel", { "logged_in": !!logged_in })}>
                     <MultipleColumnsContainer {...this.props} />
                 </div>
                 <EmojiPicker

@@ -36,6 +36,12 @@ export default async (db, params) => {
         throw new Error(`${name}はすでに存在するため、違うサーバー名に変更してください`)
     }
 
+    config.server.reserved_names.forEach(reserved_name => {
+        if (reserved_name === name) {
+            throw new Error(`サーバー名を${name}に設定することはできません`)
+        }
+    })
+
     const multipost = await collection.findOne({ "created_by": user_id })
     if (multipost !== null) {
         // throw new Error("サーバーを複数作成することはできません")

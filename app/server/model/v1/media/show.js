@@ -2,10 +2,10 @@ import storage from "../../../config/storage"
 import memcached from "../../../memcached"
 
 const map_host_uri = {}
-for (const server of storage.servers) {
+storage.servers.forEach(server => {
     const protocol = server.https ? "https" : "http"
     map_host_uri[server.host] = `${protocol}://${server.url_prefix}.${server.domain}`
-}
+})
 
 export default async (db, params) => {
     const media = await memcached.v1.media.show(db, { "id": params.id })

@@ -19,7 +19,7 @@
         min-width: 350px;
     }
 
-    > .column.hashtags {
+    > .column.channels {
         flex: 0 1 250px;
         min-width: 200px;
     }
@@ -39,7 +39,7 @@
     flex-direction: column;
 }
 
-.timeline.hashtags {
+.timeline.channels {
     > .column-container {
         > .column.left {
             width: 260px;
@@ -223,10 +223,10 @@
     > .content {
         position: relative;
 
-        > .vertical {
+        > .vertical-line {
             position: absolute;
             top: 32px;
-            bottom: 64px;
+            bottom: 0;
             left: 36px;
             border-left: 0.15em solid #dcdcdc;
         }
@@ -277,17 +277,45 @@
     position: relative;
     z-index: 2;
 
-    > .more-link {
-        font-weight: normal;
-        display: block;
-        background-color: rgb(244, 244, 244);
-        padding: 8px 0;
-        text-align: center;
-        margin: 0 10px;
-        border-radius: 6px;
-        color: rgb(60, 60, 60);
-        text-decoration: none;
-        font-size: 14px;
+    > .inside {
+        position: relative;
+
+        > .vertical-line {
+            position: absolute;
+            top: 32px;
+            bottom: 122px;
+            left: 36px;
+            border-left: 0.15em solid #dcdcdc;
+        }
+
+        > .fetch-statuses-button {
+            font-weight: bold;
+            display: block;
+            background-color: rgb(244, 244, 244);
+            padding: 8px 0;
+            text-align: center;
+            margin: 0 10px;
+            border-radius: 6px;
+            color: rgb(60, 60, 60);
+            text-decoration: none;
+            font-size: 14px;
+
+            &.newer-statuses {
+                margin-bottom: 6px;
+            }
+        }
+    }
+}
+
+.multiple-columns .timeline-module {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {}
+
+    &::-webkit-scrollbar-thumb {
+        border-radius: 10px;
     }
 }
 

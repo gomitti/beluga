@@ -6,7 +6,7 @@ import mongo from "./mongo"
 import config from "./config/beluga"
 const app = require("fastify")({
     "bodyLimit": 1024 * 1024 * 10,
-    "maxParamLength": config.hashtag.max_tagname_length * 10
+    "maxParamLength": config.channel.max_name_length * 10
 })
 
 mongodb.MongoClient

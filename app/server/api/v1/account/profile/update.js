@@ -74,7 +74,7 @@ export default async (db, params) => {
 
 
     if (Array.isArray(tags)) {
-        for (const tag of tags) {
+        tags.forEach(tag => {
             if (is_string(tag) === false) {
                 throw new Error("不正なタグが含まれています")
             }
@@ -84,7 +84,7 @@ export default async (db, params) => {
             if (tag.length >= config.user.profile.max_tag_length) {
                 throw new Error(`タグの文字数は${config.user.profile.max_tag_length}までです。（${tag.length} > ${config.user.profile.max_tag_length}）`)
             }
-        }
+        })
         if (tags.length > config.user.profile.max_num_tags) {
             throw new Error(`タグの個数は${config.user.profile.max_num_tags}までです。（${tags.length} > ${config.user.profile.max_num_tags}）`)
         }

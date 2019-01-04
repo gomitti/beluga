@@ -4,7 +4,7 @@ import { request } from "../../../../api"
 import assign from "../../../../libs/assign";
 
 export const destinations = {
-    "hashtag": 1,
+    "channel": 1,
     "home": 2,
     "thread": 3,
 }
@@ -12,9 +12,9 @@ export const destinations = {
 export default class PostboxStore {
     @observable is_pending = false
     constructor(destination, params) {
-        const { hashtag, user, server, in_reply_to_status } = params
-        if (destination === destinations.hashtag) {
-            assert(is_object(hashtag), "$hashtag must be of type object")
+        const { channel, user, server, in_reply_to_status } = params
+        if (destination === destinations.channel) {
+            assert(is_object(channel), "$channel must be of type object")
         } else if (destination === destinations.home) {
             assert(is_object(user), "$user must be of type object")
             assert(is_object(server), "$server must be of type object at PostboxStore.constructor")
@@ -24,8 +24,8 @@ export default class PostboxStore {
             throw new Error("Invalid destination")
         }
         const query = {}
-        if (destination === destinations.hashtag) {
-            query.hashtag_id = hashtag.id
+        if (destination === destinations.channel) {
+            query.channel_id = channel.id
         } else if (destination === destinations.home) {
             query.recipient_id = user.id
             query.server_id = server.id

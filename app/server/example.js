@@ -5,7 +5,7 @@ fastify.register(require("fastify-react"))
 fastify.after(() => {
     fastify.next("/", async (app, req, res) => {
         app.render(req.req, res.res, `/theme/default/desktop/entrance`, {
-            "hashtags": {},
+            "channels": {},
             "logged_in": {}
         })
     })

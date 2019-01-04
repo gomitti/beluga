@@ -6,7 +6,8 @@ export default async (db, params) => {
     assert(Array.isArray(rows), "$rows must be of type array")
 
     const list = []
-    for (const id of rows) {
+    for (let j = 0; j < rows.length; j++) {
+        const id = rows[j]
         const media = await model.v1.media.show(db, { id })
         if (media) {
             list.push(media)

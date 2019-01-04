@@ -4,7 +4,8 @@
 
     > .inside {
         min-height: 65px;
-        padding: 6px 16px 4px 16px;
+        // padding: 6px 16px 4px 16px;
+        padding: 0 16px;
         padding-left: 6px;
         display: flex;
         flex-direction: row;
@@ -173,6 +174,8 @@
 }
 
 .status-body-emoji {
+    padding: 0;
+
     > .image {
         width: 20px;
         height: 20px;
@@ -231,6 +234,12 @@
 
         > .comments-label {
             flex: 0 0 auto;
+
+            &::after {
+                font-family: Beluga;
+                content: "\E00E";
+                margin-left: 2px;
+            }
         }
     }
 
@@ -250,14 +259,18 @@
     }
 }
 
-.status-body-hashtag::before {
-    font-family: Beluga;
-    content: "\E01E";
+.status-body-channel,
+.status-body-mention {
+    text-decoration: none;
+    font-family: NotoSansJP,appleLogo,sans-serif;
+}
+
+.status-body-channel::before {
+    content: "#";
 }
 
 .status-body-mention::before {
-    font-family: Beluga;
-    content: "\E01D";
+    content: "@";
 }
 
 .status-body-tweet {
@@ -322,18 +335,18 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    margin: 2px 0 -4px -4px;
+    margin: 6px 0 -4px -4px;
 
     > .status-reaction {
         flex: 0 0 auto;
         display: flex;
         border-radius: 4px;
-        margin: 0 0 2px 1px;
+        margin: 0 4px 2px 0;
         padding: 4px 4px 4px 3px;
         cursor: pointer;
         background-color: white;
         box-sizing: border-box;
-        border: 1px solid white;
+        border: 1px solid rgb(230, 230, 230);
         transition: border-color 50ms ease-in 0s;
 
         > .emoji {

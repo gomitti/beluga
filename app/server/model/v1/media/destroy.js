@@ -8,14 +8,15 @@ import { ftp_ls, ftp_delete, ftp_rmd } from "../../../lib/ftp"
 import assert from "../../../assert"
 
 const map_host_storage = {}
-for (const server of storage.servers) {
+storage.servers.forEach(server => {
     map_host_storage[server.host] = server
-}
+})
 
 const delete_remote_files = async (ftp, item) => {
     const files = await ftp_ls(ftp, item.directory)
     assert(is_array(files), "$files must be of type array")
-    for (const file of files) {
+    for (let j = 0; j < files.length; j++) {
+        const file = files[j]
         const filepath = path.join(item.directory, file.name)
         await ftp_delete(ftp, filepath)
     }
@@ -40,12 +41,12 @@ export default async (db, params) => {
 
     const favorites = await api.v1.account.pin.media.list(db, { "user_id": user.id })
     const new_favorites = []
-    for (const id of favorites) {
+    favorites.forEach(id => {
         if (id.equals(media.id)) {
-            continue
+            return
         }
         new_favorites.push(id)
-    }
+    })
     await api.v1.account.pin.media.update(db, { "user_id": user.id, "media_ids": new_favorites })
 
     const ftp = new Ftp({
@@ -57,10 +58,10 @@ export default async (db, params) => {
     await delete_remote_files(ftp, media)
 
     // キャッシュの消去
-    memcached.v1.delete_media_from_cache(media.id)
-    memcached.v1.delete_media_list_from_cache(user.id)
-    memcached.v1.delete_media_aggregation_from_cache(user.id)
-    memcached.v1.delete_account_pin_media_from_cache(user.id)
+    memcached.v1.media.show.flush(media.id)
+    memcached.v1.media.list.flush(user.id)
+    memcached.v1.media.aggregate.flush(user.id)
+    memcached.v1.account.pin.media.list.flush(user.id)
 
     return true
 }

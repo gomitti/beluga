@@ -23,9 +23,9 @@ if (typeof window !== "undefined") {
         }
         initWebSocket() {
             if (this.ws) {
-                for (const listener of this.listeners) {
+                this.listeners.forEach(listener => {
                     this.ws.removeEventListener(listener.name, listener.callback)
-                }
+                })
             }
             const url = `${protocol}://${config.domain}:${config.websocket_port}/${endpoint}`
             console.log(`connecting ${url}`)
@@ -46,9 +46,9 @@ if (typeof window !== "undefined") {
             this.ws.onerror = (e) => {
                 console.log("onerror", e)
             }
-            for (const listener of this.listeners) {
+            this.listeners.forEach(listener => {
                 this.ws.addEventListener(listener.name, listener.callback)
-            }
+            })
         }
         addEventListener(name, callback) {
             this.listeners.push({ name, callback })

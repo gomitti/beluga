@@ -8,8 +8,8 @@ export default async (db, params) => {
     assert(Array.isArray(params.shortnames), "絵文字を指定してください")
 
     await api.v1.account.pin.emoji.update(db, { "user_id": user.id, "shortnames": params.shortnames })
-    
-    memcached.v1.delete_account_pin_emoji_from_cache(user.id)
+
+    memcached.v1.account.pin.emoji.list.flush(user.id)
 
     return true
 }

@@ -1,0 +1,247 @@
+.create-channel-container {
+    padding-top: 40px;
+    width: 350px;
+    margin: 24px auto 0 auto;
+
+    > .title {
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+        margin-top: 28px;
+        line-height: 1;
+    }
+
+    > .content {
+        width: 100%;
+        margin-top: 20px;
+        border-radius: 6px;
+        background-color: white;
+        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+
+        > .server-information {
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            border-bottom: 1px solid rgb(244, 244, 244);
+            padding: 10px 20px;
+
+            > .avatar {
+                > a {
+                    > .image {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 35px;
+                        margin: 0 auto;
+                        display: block;
+                    }
+                }
+            }
+
+            > .name {
+                text-align: center;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-left: 10px;
+
+                > a {
+                    text-decoration: none;
+
+                    > h1 {
+                        color: black;
+                        font-weight: bold;
+                        font-size: 15px;
+                    }
+
+                    > h2 {
+                        color: rgb(153, 153, 153);
+                        font-weight: normal;
+                        font-size: 14px;
+                        margin-top: 1px;
+                    }
+
+                    &:hover {
+                        text-decoration: none;
+
+                        > h1,
+                        > h2 {
+                            text-decoration: underline;
+                        }
+                    }
+                }
+            }
+        }
+
+        > .inside {
+            padding: 20px;
+
+            > .create-channel-callout {
+                font-size: 15px;
+                margin-top: 10px;
+                line-height: 1;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+
+        > .server-container {
+            border-radius: 6px;
+
+            > .card {
+                padding: 0 20px;
+
+                > .group {
+                    display: flex;
+                    flex-direction: row;
+
+                    > .server-avatar {
+                        flex: 0 0 auto;
+                    }
+
+                    > .server-name {
+                        flex: 1 1 auto;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.create-channel-form {
+    > .item {
+        margin-top: 20px;
+
+        > .title {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        > .input-container {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: row;
+
+            > .form-input {
+                font-size: 16px;
+                flex: 1 1 auto;
+            }
+        }
+
+        > .hint {
+            margin-top: 4px;
+            font-size: 13px;
+            color: rgb(120, 120, 120);
+        }
+
+        &:first-child {
+            margin-top: 0;
+        }
+
+        > .access-control {
+            > .choice {
+                display: block;
+                position: relative;
+                background-color: rgb(250, 250, 250);
+                border: 1px solid rgb(236, 236, 236);
+                border-radius: 4px;
+                margin-top: 5px;
+                padding: 10px;
+                cursor: pointer;
+
+                > .radio-button {
+                    position: absolute;
+                    top: 7px;
+                    left: 10px;
+                }
+
+                > .name {
+                    font-weight: bold;
+                    font-size: 15px;
+                    margin-left: 20px;
+                }
+
+                > .description {
+                    font-size: 14px;
+                    color: rgb(120, 120, 120);
+                    line-height: 16px;
+                    margin: 4px 0 0 20px;
+                }
+            }
+        }
+    }
+
+    > .submit {
+        margin-top: 20px;
+
+        > .button {
+            width: 100%;
+            height: 32px;
+        }
+    }
+}
+
+#app.channel-settings {
+    .settings-menu-module {
+        width: 200px;
+
+        > .inside {
+            border: 1px solid rgb(220, 220, 220);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            margin-bottom: 0;
+
+            > .content {
+                padding: 20px 16px;
+
+                .group {
+                    display: flex;
+                    flex-direction: row;
+
+                    > .server-avatar {
+                        flex: 0 0 auto;
+
+                        > a {
+                            > .image {
+                                width: 40px;
+                                height: 40px;
+                            }
+                        }
+                    }
+
+                    > .server-name {
+                        margin-left: 5px;
+
+                        > a {
+                            > h1 {
+                                font-size: 15px;
+                            }
+
+                            > h2 {
+                                font-size: 12px;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        > .name {
+            border: 1px solid rgb(220, 220, 220);
+            border-radius: 0 0 6px 6px;
+            box-sizing: border-box;
+            padding: 0 16px;
+            height: 40px;
+            line-height: 40px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+
+            > a {
+                color: rgb(60, 60, 60);
+                font-size: 15px;
+            }
+        }
+    }
+}

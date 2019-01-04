@@ -12,11 +12,16 @@ import Button from "./button"
 import { convert_bytes_to_optimal_unit } from "../../../../libs/functions"
 import { wrap_with_tag } from "../desktop/postbox"
 import EmojiPicker from "./emoji"
+import PostboxStore from "../../../../stores/theme/default/common/postbox"
+import TimelineStore from "../../../../stores/theme/default/desktop/timeline"
 
 @observer
 export default class PostboxView extends Component {
     constructor(props) {
         super(props)
+        const { postbox, timeline } = props
+        assert(postbox instanceof PostboxStore, "$postbox must be an instance of PostboxStore")
+        assert(timeline instanceof TimelineStore, "$timeline must be an instance of TimelineStore")
         this.state = {
             "is_post_button_active": false,
             "show_pinned_media": false,
@@ -77,6 +82,8 @@ export default class PostboxView extends Component {
         postbox.post(text, () => {
             this.setText("")
             this.setState({ "is_post_button_active": false })
+            const { timeline } = this.props
+            timeline.fetchLatestIfNeeded()
         }, () => {
             this.setState({ "is_post_button_active": true })
         })
@@ -175,7 +182,8 @@ export default class PostboxView extends Component {
     onFileChange = event => {
         const { uploader } = this.props
         const { files } = event.target
-        for (const file of files) {
+        for (let j = 0; j < files.length; j++) {
+            const file = files.item(j)
             uploader.add(file)
         }
         this.refs.file.value = ""

@@ -1,6 +1,6 @@
 import account from "./account"
 import server from "./server"
-import hashtag from "./hashtag"
+import channel from "./channel"
 import user from "./user"
 import like from "./like"
 import media from "./media"
@@ -10,11 +10,12 @@ import status from "./status"
 import access_token from "./access_token"
 import kvs from "./kvs"
 import emoji from "./emoji"
+import mute from "./mute"
 
 export default {
     account,
     server,
-    hashtag,
+    channel,
     user,
     like,
     media,
@@ -23,5 +24,6 @@ export default {
     favorite,
     access_token,
     kvs,
-    emoji
+    emoji,
+    mute
 }

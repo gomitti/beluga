@@ -4,11 +4,12 @@ import storage from "../../../config/storage"
 
 module.exports = (fastify, options, next) => {
     // オンラインのユーザーを取得
-    fastify.decorate("members", async (server, logged_in) => {
-        const online_user_ids = fastify.online.users(server)
+    fastify.decorate("online_members", async (server, logged_in) => {
+        const online_user_ids = fastify.websocket_bridge.get_users_by_server(server)
         const member = []
         let including_me = false
-        for (const user_id of online_user_ids) {
+        for (let j = 0; j < online_user_ids.length; j++) {
+            const user_id = online_user_ids[j]
             const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
             if (user) {
                 member.push(user)
@@ -30,7 +31,23 @@ module.exports = (fastify, options, next) => {
             }
             const params = Object.assign({ "user_id": session.user_id }, req.body)
             const server = await model.v1.server.create(fastify.mongo.db, params)
+            await model.v1.server.join(fastify.mongo.db, { "server_id": server.id, "user_id": session.user_id })
             res.send({ "success": true, server })
+        } catch (error) {
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
+    fastify.post(`/api/v1/server/join`, async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            await model.v1.server.join(fastify.mongo.db, {
+                "server_id": req.body.server_id,
+                "user_id": session.user_id
+            })
+            res.send({ "success": true })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })
         }
@@ -41,8 +58,27 @@ module.exports = (fastify, options, next) => {
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            const server = await memcached.v1.server.show(fastify.mongo.db, { "name": req.body.name })
-            const members = await fastify.members(server, null)
+            const server = await memcached.v1.server.show(fastify.mongo.db, { "id": req.query.id, "name": req.query.name })
+            if (server === null) {
+                throw new Error("サーバーが見つかりません")
+            }
+            const members = await model.v1.server.members(fastify.mongo.db, { "id": server.id })
+            res.send({ "success": true, members })
+        } catch (error) {
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
+    fastify.get(`/api/v1/server/online_members`, async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            const server = await memcached.v1.server.show(fastify.mongo.db, { "name": req.query.name })
+            if (server === null) {
+                throw new Error("サーバーが見つかりません")
+            }
+            const members = await fastify.online_members(server, null)
             res.send({ "success": true, members })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })
@@ -142,6 +178,18 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": true, "server": updated_server })
         } catch (error) {
             console.log(error)
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
+    fastify.get(`/api/v1/server/events`, async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            await model.v1.server.join(fastify.mongo.db, { "server_id": server.id, "user_id": session.user_id })
+            res.send({ "success": true, server })
+        } catch (error) {
             res.send({ "success": false, "error": error.toString() })
         }
     })

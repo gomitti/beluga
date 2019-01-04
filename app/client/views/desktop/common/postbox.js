@@ -15,9 +15,9 @@ export default class PostboxView extends Component {
             return
         }
         const query = { text }
-        // ルームへの投稿
-        if (this.props.hashtag) {
-            query.hashtag_id = this.props.hashtag.id
+        // チャンネルへの投稿
+        if (this.props.channel) {
+            query.channel_id = this.props.channel.id
         }
         // ユーザーのホームへの投稿
         if (this.props.user && this.props.server) {
@@ -92,7 +92,7 @@ export default class PostboxView extends Component {
     onFileChange = event => {
         const files = event.target.files
         console.log(files)
-        for (const file of files) {
+        files.forEach(file => {
             const reader = new FileReader()
             reader.onload = (event) => {
                 request
@@ -119,7 +119,7 @@ export default class PostboxView extends Component {
                     })
             }
             reader.readAsDataURL(file)
-        }
+        })
     }
 
     render() {

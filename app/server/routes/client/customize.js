@@ -19,11 +19,13 @@ module.exports = (fastify, options, next) => {
         }
 
         const custom_emoji_list = await memcached.v1.emoji.list(fastify.mongo.db, { "server_id": server.id })
-        custom_emoji_list.forEach(async emoji => {
+
+        for (let j = 0; j < custom_emoji_list.length; j++) {
+            const emoji = custom_emoji_list[j]
             const user = await memcached.v1.user.show(fastify.mongo.db, { "id": emoji.added_by })
             assert(is_object(user), "$user must be of type object")
             emoji.user = user
-        })
+        }
 
         const device = fastify.device(req)
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/customize/emoji`, {

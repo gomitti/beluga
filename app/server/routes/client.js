@@ -48,94 +48,112 @@ module.exports = (fastify, options, next) => {
         return "win"
     })
     fastify.decorate("device", req => {
-        var ua = req.headers["user-agent"];
+        let ua = req.headers["user-agent"];
         if (ua.match(/mobile/i)) {
             return "mobile"
         }
         return "desktop"
     })
-    fastify.decorate("build_columns", async (stored_columns, logged_in, source_server, source_hashtag, source_recipient, source_in_reply_to_status) => {
+    fastify.decorate("build_columns", async (stored_columns, initial_column, logged_in, request_query, source_server) => {
+        if (stored_columns.length == 0) {
+            stored_columns.push(initial_column)
+        }
         const columns = []
-        for (let i = 0; i < stored_columns.length; i++) {
-            const column = stored_columns[i]
-            const { type, param_ids } = column
-            const params = {
+        for (let column_index = 0; column_index < stored_columns.length; column_index++) {
+            const column = stored_columns[column_index]
+            if (column_index === 0) {
+                const timeline_query = {}
+                if (request_query.since_id) {
+                    timeline_query.since_id = request_query.since_id
+                }
+                if (request_query.max_id) {
+                    timeline_query.max_id = request_query.max_id
+                }
+                if (request_query.count) {
+                    timeline_query.count = parseInt(request_query.count)
+                }
+                column.timeline_query = timeline_query
+            }
+            const { type, param_ids, timeline_query } = column
+            const query = assign({
                 "trim_user": false,
                 "trim_server": false,
-                "trim_hashtag": false,
+                "trim_channel": false,
                 "trim_favorited_by": false,
                 "trim_recipient": false,
                 "requested_by": logged_in.id
-            }
+            }, timeline_query)
+
+            const { server_id, user_id, channel_id, in_reply_to_status_id } = param_ids
 
             if (type === "server") {
-                if (!!param_ids.server_id === false) {
+                if (!!server_id === false) {
                     continue
                 }
                 const server = await model.v1.server.show(fastify.mongo.db, {
-                    "id": param_ids.server_id
+                    "id": server_id
                 })
                 if (server === null) {
                     continue
                 }
-                const statuses = await timeline.v1.server(fastify.mongo.db, assign(params, {
-                    "server_id": param_ids.server_id
+                const statuses = await timeline.v1.server(fastify.mongo.db, assign(query, {
+                    "server_id": server_id
                 }))
                 column.statuses = statuses
                 column.params = { server }
             }
-            if (type === "hashtag") {
-                if (!!param_ids.hashtag_id === false) {
+            if (type === "channel") {
+                if (!!channel_id === false) {
                     continue
                 }
-                const hashtag = await model.v1.hashtag.show(fastify.mongo.db, {
-                    "id": param_ids.hashtag_id,
+                const channel = await model.v1.channel.show(fastify.mongo.db, {
+                    "id": channel_id,
                     "requested_by": logged_in.id
                 })
-                if (hashtag === null) {
+                if (channel === null) {
                     continue
                 }
-                const statuses = await timeline.v1.hashtag(fastify.mongo.db, assign(params, {
-                    "hashtag_id": param_ids.hashtag_id
+                const statuses = await timeline.v1.channel(fastify.mongo.db, assign(query, {
+                    "channel_id": channel_id
                 }))
                 column.statuses = statuses
-                column.params = { hashtag }
+                column.params = { channel }
             }
             if (type === "home") {
-                if (!!param_ids.user_id === false) {
+                if (!!user_id === false) {
                     continue
                 }
                 const user = await model.v1.user.show(fastify.mongo.db, {
-                    "id": param_ids.user_id
+                    "id": user_id
                 })
                 if (user === null) {
                     continue
                 }
-                if (!!param_ids.server_id === false) {
+                if (!!server_id === false) {
                     continue
                 }
                 const server = await model.v1.server.show(fastify.mongo.db, {
-                    "id": param_ids.server_id
+                    "id": server_id
                 })
                 if (server === null) {
                     continue
                 }
-                const statuses = await timeline.v1.home(fastify.mongo.db, assign(params, {
-                    "user_id": param_ids.user_id,
-                    "server_id": param_ids.server_id
+                const statuses = await timeline.v1.home(fastify.mongo.db, assign(query, {
+                    "user_id": user_id,
+                    "server_id": server_id
                 }))
                 column.statuses = statuses
                 column.params = { server, user }
             }
             if (type === "thread") {
-                if (!!param_ids.in_reply_to_status_id === false) {
+                if (!!in_reply_to_status_id === false) {
                     continue
                 }
                 const in_reply_to_status = await collection.v1.status.show(fastify.mongo.db, {
-                    "id": param_ids.in_reply_to_status_id,
+                    "id": in_reply_to_status_id,
                     "trim_user": false,
                     "trim_server": false,
-                    "trim_hashtag": false,
+                    "trim_channel": false,
                     "trim_recipient": false,
                     "trim_favorited_by": false,
                     "trim_commenters": false,
@@ -144,16 +162,16 @@ module.exports = (fastify, options, next) => {
                 if (in_reply_to_status === null) {
                     continue
                 }
-                const statuses = await timeline.v1.thread(fastify.mongo.db, assign(params, {
-                    "in_reply_to_status_id": param_ids.in_reply_to_status_id,
+                const statuses = await timeline.v1.thread(fastify.mongo.db, assign(query, {
+                    "in_reply_to_status_id": in_reply_to_status_id,
                 }))
                 column.statuses = statuses
                 column.params = { in_reply_to_status }
             }
             if (type === "notifications") {
-                const statuses = await timeline.v1.notifications(fastify.mongo.db, assign(params, {
+                const statuses = await timeline.v1.notifications(fastify.mongo.db, assign(query, {
                     "user_id": logged_in.id,
-                    "server_id": param_ids.server_id
+                    "server_id": server_id
                 }))
                 column.statuses = statuses
                 column.params = {
@@ -167,7 +185,8 @@ module.exports = (fastify, options, next) => {
     fastify
         .register(require("./client/account"))
         .register(require("./client/server"))
-        .register(require("./client/hashtag"))
+        .register(require("./client/channel"))
+        .register(require("./client/user"))
         .register(require("./client/settings"))
         .register(require("./client/customize"))
 
@@ -175,18 +194,19 @@ module.exports = (fastify, options, next) => {
         try {
             const logged_in = await fastify.logged_in(req, res)
             const db = fastify.mongo.db
-            const rows = await db.collection("hashtags").find({}).toArray()
-            const hashtags = []
-            for (const hashtag of rows) {
-                const server = await model.v1.server.show(db, { "id": hashtag.server_id })
+            const rows = await db.collection("channels").find({}).toArray()
+            const channels = []
+            for (let j = 0; j < rows.length; j++) {
+                const channel = rows[j]
+                const server = await model.v1.server.show(db, { "id": channel.server_id })
                 if (!server) {
                     continue
                 }
-                hashtag.server = server
-                hashtags.push(hashtag)
+                channel.server = server
+                channels.push(channel)
             }
             const device = fastify.device(req)
-            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/entrance`, { hashtags, logged_in })
+            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/entrance`, { channels, logged_in })
         } catch (error) {
             console.log(error)
             return fastify.error(app, req, res, 500)

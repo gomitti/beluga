@@ -9,13 +9,13 @@ export default async (db, params) => {
     assert(Array.isArray(params.media_ids), "メディアを指定してください")
 
     const media_ids = []
-    for (const id_str of params.media_ids) {
+    params.media_ids.forEach(id_str => {
         try {
             media_ids.push(ObjectID(id_str))
         } catch (error) {
 
         }
-    }
+    })
 
     const collection = db.collection("account_pins")
     const result = await collection.updateOne({ user_id }, {

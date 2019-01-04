@@ -5,7 +5,6 @@ import ws from "../../../../../websocket"
 
 export default class FavoritesStore {
     @observable.shallow users = []
-
     constructor(status, parent) {
         if (is_array(status.favorited_by) && status.favorited_by.length > 0) {
             this.users = status.favorited_by

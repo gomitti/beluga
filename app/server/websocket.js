@@ -79,7 +79,10 @@ class OnlineManager {
 }
 
 class WebsocketBridge {
-    users(server) {
+    get_users_by_server(server) {
+        if (!!server === false) {
+            return []
+        }
         if (!!server.name === false) {
             return []
         }
@@ -112,22 +115,65 @@ const broadcast = (event, data) => {
         return
     }
     websocket.ws.clients.forEach(client => {
+        if (client.readyState != client.OPEN) {
+            return
+        }
         client.send(JSON.stringify(Object.assign({
             [event]: true	// イベント名をそのままキーにする
         }, data)))
     })
 }
 
-websocket
-    .register(require("fastify-ws"), {
-        "library": "uws"
-        // "library": "ws"	// wsかuwsどちらかを選ぶ
+const update_online_members = () => {
+    if (websocket.ws === undefined) {
+        return
+    }
+
+    // 全て消去
+    online.clear()
+
+    // 再追加
+    const clients = []
+    websocket.ws.clients.forEach(client => {
+        if (!!client.user_id === false) {
+            return
+        }
+        if (client.readyState != client.OPEN) {
+            return
+        }
+        clients.push(client)
     })
+    // 来た時刻で昇順になるようにソート
+    clients.sort((a, b) => {
+        if (a.arrived_at < b.arrived_at) {
+            return -1
+        }
+        if (a.arrived_at > b.arrived_at) {
+            return 1
+        }
+        return 0
+    })
+    clients.forEach(client => {
+        online.register(client.url, client.user_id)
+    })
+    broadcast("online_members_changed", { "count": online.total() })		// 全員に通知
+}
+
+websocket
+    .register(plugin((fastify, opts, next) => {
+        const WebSocketServer = require("ws").Server
+        const wss = new WebSocketServer({
+            server: fastify.server
+        })
+        fastify.decorate("ws", wss)
+        fastify.addHook("onClose", (fastify, done) => fastify.ws.close(done))
+        next()
+    }))
     .after(() => {
         websocket.ws
-            .on("connection", async client => {		// ユーザーが接続するたびに呼ばれる
-                const url = client.upgradeReq.url
-                const headers = assign(client.upgradeReq.headers)	// なぜか消えたりするのでコピー
+            .on("connection", async (client, req) => {		// ユーザーが接続するたびに呼ばれる
+                const { url, headers } = req
+                // const headers = assign(req.headers)	// なぜか消えたりするのでコピー
                 const session = await authenticate(websocket, headers)
                 if (session === null) {
                     return
@@ -139,67 +185,38 @@ websocket
                 if (is_string(user_id) === false) {
                     return
                 }
-                online.register(url, user_id)	// サーバーとユーザーの関連付け
                 client.url = url
                 client.user_id = user_id
                 client.arrived_at = Date.now()
-                client.is_alive = true
-                client.on("pong", function () {
-                    this.is_alive = true;
-                })
+                // client.is_alive = true
+                // client.on("pong", function () {
+                //     this.is_alive = true
+                // })
                 client.on("close", function () {
                     const did_disappear = online.remove(this.url, this.user_id)	// サーバーとユーザーの関連付け
                     if (did_disappear) {
-                        const server_name = get_server_name(this.url)
-                        broadcast("members_need_reload", { server_name })	// 全員に通知
+                        update_online_members()
                     }
                 })
-                broadcast("online_changed", { "count": online.total() })	// 全員に通知
-                const server_name = get_server_name(url)
-                broadcast("members_need_reload", { server_name })	// 全員に通知
+                update_online_members()
             })
 
         const interval = setInterval(() => {
-            // pingを送信
-            websocket.ws.clients.forEach(client => {
-                if (client.is_alive === false) {
-                    return client.terminate()
-                }
-                client.is_alive = false;
-                client.ping("", false, true);
-            });
-
-            // 全て消去
-            online.clear()
-
-            // 再追加
-            const clients = []
-            websocket.ws.clients.forEach(client => {
-                if (!client.user_id) {
-                    return
-                }
-                clients.push(client)
-            })
-            // 来た時刻で昇順になるようにソート
-            clients.sort((a, b) => {
-                if (a.arrived_at < b.arrived_at) {
-                    return -1
-                }
-                if (a.arrived_at > b.arrived_at) {
-                    return 1
-                }
-                return 0
-            })
-            for (const client of clients) {
-                online.register(client.url, client.user_id)
-            }
-            broadcast("online_changed", { "count": online.total() })		// 全員に通知
-        }, 30000);
+            // // pingを送信
+            // websocket.ws.clients.forEach(client => {
+            //     if (client.is_alive === false) {
+            //         return client.terminate()
+            //     }
+            //     client.is_alive = false
+            //     client.ping("", false, true)
+            // })
+            update_online_members()
+        }, 30000)
     })
 
 // 各サーバーのオンライン中のユーザーの管理を行う
 const bridge = (fastify, options, next) => {
-    fastify.decorate("online", new WebsocketBridge())
+    fastify.decorate("websocket_bridge", new WebsocketBridge())
     fastify.decorate("websocket_broadcast", broadcast)
     next()
 }

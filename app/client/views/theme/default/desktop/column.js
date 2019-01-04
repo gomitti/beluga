@@ -5,21 +5,22 @@ import classnames from "classnames"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
 import assert, { is_object, is_array, is_string, is_function, is_number } from "../../../../assert"
-import { ColumnStore } from "../../../../stores/theme/default/desktop/column"
+import { ColumnStore, ColumnOptions, ColumnSettings } from "../../../../stores/theme/default/desktop/column"
 import StatusView from "./status"
 import PostboxView from "./postbox"
 import TimelineView from "./timeline"
 import HomeTimelineHeaderView from "./timeline/header/home"
-import HashtagTimelineHeaderView from "./timeline/header/hashtag"
+import HashtagTimelineHeaderView from "./timeline/header/channel"
 import ThreadTimelineHeaderView from "./timeline/header/thread"
 import ServerTimelineHeaderView from "./timeline/header/server"
-import JoinedHashtagsListView from "../../../../views/theme/default/desktop/column/hashtags"
+import JoinedHashtagsListView from "../../../../views/theme/default/desktop/column/channels"
 import ServerDetailView from "../../../../views/theme/default/desktop/column/server"
 import { request } from "../../../../api"
 import UploadManager from "../../../../stores/theme/default/common/uploader"
 import StatusStore from "../../../../stores/theme/default/common/status"
 import PostboxStore, { destinations as postbox_destinations } from "../../../../stores/theme/default/common/postbox"
-import { get_current_settings } from "../../../../settings/desktop"
+import { get as get_desktop_settings } from "../../../../settings/desktop"
+import { TimelineOptions } from "../../../../stores/theme/default/desktop/timeline"
 
 @observer
 export class MultipleColumnsContainerView extends Component {
@@ -30,8 +31,8 @@ export class MultipleColumnsContainerView extends Component {
         if (a.type !== b.type) {
             return false
         }
-        if (a.params.hashtag && b.params.hashtag) {
-            if (a.params.hashtag.tagname === b.params.hashtag.tagname) {
+        if (a.params.channel && b.params.channel) {
+            if (a.params.channel.name === b.params.channel.name) {
                 return true
             }
         }
@@ -52,9 +53,9 @@ export class MultipleColumnsContainerView extends Component {
         for (const column of this.columns) {
             const { type, params } = column
             const param_ids = {}
-            if (type === enums.column.type.hashtag) {
-                const { hashtag } = params
-                param_ids.hashtag_id = hashtag.id
+            if (type === enums.column.type.channel) {
+                const { channel } = params
+                param_ids.channel_id = channel.id
             }
             if (type === enums.column.type.server) {
                 const { server } = params
@@ -86,17 +87,26 @@ export class MultipleColumnsContainerView extends Component {
             })
     }
     // 初期カラムを追加
-    // insert_position	この位置の左隣に追加する
+    // @param {string} type
+    // @param {object} params
+    // @param {ColumnOptions} column_options
+    // @param {ColumnSettings} column_settings
+    // @param {array} initial_statuses
+    // @param {number} target
+    // @param {number} insert_position この位置の左隣に追加する
+    // @param {array} muted_users
+    // @param {array} muted_words
     @action.bound
-    insert(type, params, options, initial_statuses, target, insert_position) {
+    insert(type, params, column_options, column_settings, initial_statuses, target, insert_position, muted_users, muted_words) {
         assert(is_object(params), "$params must be of type object")
-        assert(is_object(options), "$options must be of type object")
+        assert(column_options instanceof ColumnOptions, "$column_options must be an instance of ColumnOptions")
+        assert(column_settings instanceof ColumnSettings, "$column_settings must be an instance of ColumnSettings")
         assert(is_array(initial_statuses), "$initial_statuses must be of type array")
         assert(is_number(insert_position), "$insert_position must be of type number")
-        const settings = get_current_settings()
+        const settings = get_desktop_settings()
         target = target || settings.new_column_target
-        const column = new ColumnStore(target)
-        column.push(type, params, options, initial_statuses)
+        const column = new ColumnStore(target, column_settings, muted_users, muted_words)
+        column.push(type, params, column_options, initial_statuses)
         if (insert_position === -1) {
             this.columns.push(column)
         } else {
@@ -105,14 +115,22 @@ export class MultipleColumnsContainerView extends Component {
         return column
     }
     // ユーザー操作で追加
+    // @param {string} type
+    // @param {object} params
+    // @param {ColumnOptions} column_options
+    // @param {ColumnSettings} column_settings
+    // @param {array} initial_statuses
+    // @param {number} target
+    // @param {ColumnStore} source_column
     @action.bound
-    open = (type, params, options, initial_statuses, target, source_column) => {
+    open = (type, params, column_options, column_settings, initial_statuses, target, source_column) => {
         assert(is_string(type), "$type must be of type string")
         assert(is_object(params), "$params must be of type object")
-        assert(is_object(options), "$options must be of type object")
+        assert(column_options instanceof ColumnOptions, "$column_options must be an instance of ColumnOptions")
+        assert(column_settings instanceof ColumnSettings, "$column_settings must be an instance of ColumnSettings")
         assert(is_array(initial_statuses), "$initial_statuses must be of type array")
         assert(is_string(target), "$target must be of type string")
-        const settings = get_current_settings()
+        const settings = get_desktop_settings()
         if (settings.multiple_columns_enabled === false) {
             if (type === enums.column.type.home) {
                 const { server, user } = params
@@ -125,11 +143,11 @@ export class MultipleColumnsContainerView extends Component {
                 assert(is_object(server), "$server must be of type object")
                 return location.href = `/server/${server.name}/statuses`
             }
-            if (type === enums.column.type.hashtag) {
-                const { server, hashtag } = params
+            if (type === enums.column.type.channel) {
+                const { server, channel } = params
                 assert(is_object(server), "$server must be of type object")
-                assert(is_object(hashtag), "$hashtag must be of type object")
-                return location.href = `/server/${server.name}/${hashtag.tagname}`
+                assert(is_object(channel), "$channel must be of type object")
+                return location.href = `/server/${server.name}/${channel.name}`
             }
             if (type === enums.column.type.thread) {
                 const { status } = params
@@ -149,21 +167,22 @@ export class MultipleColumnsContainerView extends Component {
             if (target === enums.column.target.new) {
                 for (const column of this.columns) {	// 一度開いたカラムに上書き
                     if (column.target === enums.column.target.new) {
-                        column.push(type, params, options, initial_statuses)
+                        column.push(type, params, column_options, initial_statuses)
                         return column
                     }
                 }
                 // ない場合は2番目のカラムに上書き
                 if (this.columns.length >= 2) {
                     const column = this.columns[1]
-                    column.push(type, params, options, initial_statuses)
+                    column.push(type, params, column_options, initial_statuses)
                     return column
                 }
             }
 
             // 新しいカラムを作る
-            const column = new ColumnStore(target)
-            column.push(type, params, options, initial_statuses)
+            const { muted_users, muted_words } = this.props
+            const column = new ColumnStore(target, column_settings, muted_users, muted_words)
+            column.push(type, params, column_options, initial_statuses)
 
             if (this.columns.length === 0) {
                 this.columns.push(column)
@@ -215,9 +234,9 @@ export class MultipleColumnsContainerView extends Component {
             this.callback_change()
         }
     }
-    onClickHashtag = (event, source_column) => {
-        const settings = get_current_settings()
-        if (settings.multiple_columns_enabled === false) {
+    onClickChannel = (event, source_column) => {
+        const desktop_settings = get_desktop_settings()
+        if (desktop_settings.multiple_columns_enabled === false) {
             return true
         }
         event.preventDefault()
@@ -225,38 +244,51 @@ export class MultipleColumnsContainerView extends Component {
         const { server } = this.props
         assert(is_object(server), "$server must be of type object")
 
-        const tagname = event.target.getAttribute("data-tagname")
-        assert(is_string(tagname), "$tagname must be of type string")
+        const name = event.target.getAttribute("data-name")
+        assert(is_string(name), "$name must be of type string")
 
-        for (let i = 0; i < this.columns.length; i++) {
-            const column = this.columns[i]
-            if (column.type !== enums.column.type.hashtag) {
+        for (let j = 0; j < this.columns.length; j++) {
+            const column = this.columns[j]
+            if (column.type !== enums.column.type.channel) {
                 continue
             }
-            if (column.params.hashtag.tagname === tagname) {
+            if (column.params.channel.name === name) {
                 alert("すでに開いています")
                 return
             }
         }
 
         request
-            .get("/hashtag/show", { tagname, "server_id": server.id })
+            .get("/channel/show", { name, "server_id": server.id })
             .then(res => {
                 const data = res.data
-                const { hashtag, success } = data
+                const { channel, success } = data
                 if (success === false) {
                     alert(data.error)
                     return
                 }
-                if (!!hashtag === false) {
-                    alert("ルームが見つかりません")
+                if (!!channel === false) {
+                    alert("チャンネルが見つかりません")
                     return
                 }
-                this.open(enums.column.type.hashtag,
-                    { hashtag, server },
-                    {},
+
+                const { muted_users, muted_words } = this.props
+                const column_options = new ColumnOptions()
+                const opt = new TimelineOptions()
+                opt.muted_users = muted_users
+                opt.muted_words = muted_words
+                opt.has_newer_statuses = false
+                opt.has_older_statuses = true
+                column_options.timeline = opt
+
+                const column_settings = new ColumnSettings()
+
+                this.open(enums.column.type.channel,
+                    { channel, server },
+                    column_options,
+                    column_settings,
                     [],
-                    settings.new_column_target,
+                    desktop_settings.new_column_target,
                     source_column)
             })
             .catch(error => {
@@ -264,7 +296,7 @@ export class MultipleColumnsContainerView extends Component {
             })
     }
     onClickMention = (event, source_column) => {
-        const settings = get_current_settings()
+        const settings = get_desktop_settings()
         if (settings.multiple_columns_enabled === false) {
             return true
         }
@@ -300,9 +332,22 @@ export class MultipleColumnsContainerView extends Component {
                     alert("ユーザーが見つかりません")
                     return
                 }
+
+                const { muted_users, muted_words } = this.props
+                const column_options = new ColumnOptions()
+                const opt = new TimelineOptions()
+                opt.muted_users = muted_users
+                opt.muted_words = muted_words
+                opt.has_newer_statuses = false
+                opt.has_older_statuses = true
+                column_options.timeline = opt
+
+                const column_settings = new ColumnSettings()
+
                 this.open(enums.column.type.home,
                     { user, server },
-                    {},
+                    column_options,
+                    column_settings,
                     [],
                     settings.new_column_target,
                     source_column)
@@ -312,7 +357,7 @@ export class MultipleColumnsContainerView extends Component {
             })
     }
     onClickThread = (event, source_column, in_reply_to_status_id) => {
-        const settings = get_current_settings()
+        const settings = get_desktop_settings()
         if (settings.multiple_columns_enabled === false) {
             return true
         }
@@ -339,7 +384,7 @@ export class MultipleColumnsContainerView extends Component {
                 "id": in_reply_to_status_id,
                 "trim_user": false,
                 "trim_server": false,
-                "trim_hashtag": false,
+                "trim_channel": false,
                 "trim_recipient": false,
                 "trim_favorited_by": false,
                 "trim_commenters": false
@@ -355,9 +400,22 @@ export class MultipleColumnsContainerView extends Component {
                     alert("スレッドが見つかりません")
                     return
                 }
+
+                const { muted_users, muted_words } = this.props
+                const column_options = new ColumnOptions()
+                const opt = new TimelineOptions()
+                opt.muted_users = muted_users
+                opt.muted_words = muted_words
+                opt.has_newer_statuses = false
+                opt.has_older_statuses = true
+                column_options.timeline = opt
+
+                const column_settings = new ColumnSettings()
+
                 this.open(enums.column.type.thread,
                     { "in_reply_to_status": status, "server": server },
-                    {},
+                    column_options,
+                    column_settings,
                     [],
                     settings.new_column_target,
                     source_column)
@@ -367,7 +425,7 @@ export class MultipleColumnsContainerView extends Component {
             })
     }
     render() {
-        const { server, joined_hashtags, logged_in, request_query, pinned_media, recent_uploads } = this.props
+        const { server, joined_channels, logged_in, request_query, pinned_media, recent_uploads } = this.props
         const columnViews = []
         this.columns.forEach(column => {
             columnViews.push(
@@ -380,24 +438,24 @@ export class MultipleColumnsContainerView extends Component {
                     recent_uploads={recent_uploads}
                     request_query={request_query}
                     handle_close={this.onClose}
-                    handle_click_hashtag={this.onClickHashtag}
+                    handle_click_channel={this.onClickChannel}
                     handle_click_mention={this.onClickMention}
                     handle_click_thread={this.onClickThread} />
             )
         })
         return (
             <div className="inside column-container">
-                <div className="column hashtags">
+                <div className="column channels">
                     <JoinedHashtagsListView
-                        hashtags={joined_hashtags}
+                        channels={joined_channels}
                         server={server}
-                        handle_click_hashtag={this.onClickHashtag} />
+                        handle_click_channel={this.onClickChannel} />
                 </div>
                 {columnViews}
                 <div className="column server">
                     <ServerDetailView
                         server={server}
-                        handle_click_hashtag={this.onClickHashtag}
+                        handle_click_channel={this.onClickChannel}
                         handle_click_mention={this.onClickMention}
                         handle_click_thread={this.onClickThread}
                         is_members_hidden={false}
@@ -424,9 +482,9 @@ class ColumnView extends Component {
         assert(is_object(column), "$column must be of type object")
         column.pop()
     }
-    onClickHashtag = event => {
-        const { column, handle_click_hashtag } = this.props
-        handle_click_hashtag(event, column)
+    onClickChannel = event => {
+        const { column, handle_click_channel } = this.props
+        handle_click_channel(event, column)
     }
     onClickMention = event => {
         const { column, handle_click_mention } = this.props
@@ -445,7 +503,7 @@ class ColumnView extends Component {
         const { column, server, logged_in, request_query, pinned_media, recent_uploads } = this.props
 
         const props = {
-            "handle_click_hashtag": this.onClickHashtag,
+            "handle_click_channel": this.onClickChannel,
             "handle_click_mention": this.onClickMention,
             "handle_click_thread": this.onClickThread,
             "handle_close": this.onClose,
@@ -459,8 +517,8 @@ class ColumnView extends Component {
         if (column.type === enums.column.type.server) {
             return <ServerColumnView {...props} />
         }
-        if (column.type === enums.column.type.hashtag) {
-            return <HashtagColumnView {...props} />
+        if (column.type === enums.column.type.channel) {
+            return <ChannelColumnView {...props} />
         }
         if (column.type === enums.column.type.thread) {
             return <ThreadColumnView {...props} />
@@ -480,16 +538,16 @@ class ThreadColumnView extends Component {
         const { column } = props
         assert(column.type === enums.column.type.thread, "$column.type must be 'thread'")
 
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = props
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = props
         assert(is_function(handle_close), "$handle_close must be of type function at ThreadColumnView.constructor")
         assert(is_function(handle_back), "$handle_back must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_hashtag), "$handle_click_hashtag must be of type function at ThreadColumnView.constructor")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ThreadColumnView.constructor")
         assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ThreadColumnView.constructor")
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ThreadColumnView.constructor")
     }
     render() {
         const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = this.props
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { in_reply_to_status } = column.params
         const uploader = new UploadManager()
         const postbox = new PostboxStore(postbox_destinations.thread, column.params)
@@ -503,12 +561,14 @@ class ThreadColumnView extends Component {
                         handle_close={handle_close}
                         handle_back={handle_back} />
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         <PostboxView
                             postbox={postbox}
+                            timeline={column.timeline}
                             logged_in={logged_in}
                             uploader={uploader}
                             pinned_media={pinned_media}
+                            server={server}
                             recent_uploads={recent_uploads} />
                         <TimelineView
                             total_num_statuses={in_reply_to_status.comments_count}
@@ -517,7 +577,7 @@ class ThreadColumnView extends Component {
                             timeline={column.timeline}
                             request_query={request_query}
                             options={column.options}
-                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
                     </div>
@@ -536,7 +596,7 @@ class HomeColumnView extends Component {
     }
     render() {
         const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = this.props
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { user } = column.params
         const uploader = new UploadManager()
         const postbox = new PostboxStore(postbox_destinations.home, column.params)
@@ -549,19 +609,21 @@ class HomeColumnView extends Component {
                         handle_close={handle_close}
                         handle_back={handle_back} />
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         <PostboxView
                             logged_in={logged_in}
                             uploader={uploader}
                             pinned_media={pinned_media}
                             recent_uploads={recent_uploads}
-                            postbox={postbox} />
+                            server={server}
+                            postbox={postbox}
+                            timeline={column.timeline} />
                         <TimelineView
                             logged_in={logged_in}
                             timeline={column.timeline}
                             request_query={request_query}
                             options={column.options}
-                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
                     </div>
@@ -577,16 +639,16 @@ class ServerColumnView extends Component {
         super(props)
         const { column } = props
         assert(column.type === enums.column.type.server, "$column.type must be 'server'")
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = this.props
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         assert(is_function(handle_close), "$handle_close must be of type function at ServerColumnView.constructor")
         assert(is_function(handle_back), "$handle_back must be of type function at ServerColumnView.constructor")
-        assert(is_function(handle_click_hashtag), "$handle_click_hashtag must be of type function at ServerColumnView.constructor")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ServerColumnView.constructor")
         assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ServerColumnView.constructor")
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ServerColumnView.constructor")
     }
     render() {
         const { column, logged_in, pinned_media, recent_uploads, request_query } = this.props
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = this.props
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { server } = column.params
         return (
             <div className="column timeline">
@@ -597,13 +659,13 @@ class ServerColumnView extends Component {
                         handle_close={handle_close}
                         handle_back={handle_back} />
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         <TimelineView
                             logged_in={logged_in}
                             timeline={column.timeline}
                             request_query={request_query}
                             options={column.options}
-                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
                     </div>
@@ -614,32 +676,37 @@ class ServerColumnView extends Component {
 }
 
 @observer
-class HashtagColumnView extends Component {
+class ChannelColumnView extends Component {
     constructor(props) {
         super(props)
         const { column } = props
-        const { hashtag } = column.params
-        assert(column.type === enums.column.type.hashtag, "$column.type must be 'hashtag'")
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = this.props
-        assert(is_function(handle_close), "$handle_close must be of type function at HashtagColumnView.constructor")
-        assert(is_function(handle_back), "$handle_back must be of type function at HashtagColumnView.constructor")
-        assert(is_function(handle_click_hashtag), "$handle_click_hashtag must be of type function at HashtagColumnView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at HashtagColumnView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at HashtagColumnView.constructor")
+        const { channel } = column.params
+        assert(column.type === enums.column.type.channel, "$column.type must be 'channel'")
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
+        assert(is_function(handle_close), "$handle_close must be of type function at ChannelColumnView.constructor")
+        assert(is_function(handle_back), "$handle_back must be of type function at ChannelColumnView.constructor")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ChannelColumnView.constructor")
+        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ChannelColumnView.constructor")
+        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ChannelColumnView.constructor")
+
         this.state = {
-            "is_join_pending": false,
-            "joined": hashtag.joined
+            "pending_join": false,
+            "joined": channel.joined,
+            "invitation_needed": channel.invitation_needed,
         }
     }
     onJoin = event => {
         event.preventDefault()
         const { column } = this.props
-        const { hashtag } = column.params
+        const { channel } = column.params
+        if (this.state.pending_join === true) {
+            return
+        }
         this.setState({
-            "is_join_pending": true
+            "pending_join": true
         })
         request
-            .post("/hashtag/join", { "hashtag_id": hashtag.id })
+            .post("/channel/join", { "channel_id": channel.id })
             .then(res => {
                 const data = res.data
                 if (data.success == false) {
@@ -655,36 +722,42 @@ class HashtagColumnView extends Component {
             })
             .then(_ => {
                 this.setState({
-                    "is_join_pending": false
+                    "pending_join": false
                 })
             })
     }
     render() {
         const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = this.props
-        const { hashtag } = column.params
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
+        const { channel } = column.params
         const uploader = new UploadManager()
-        const postbox = new PostboxStore(postbox_destinations.hashtag, column.params)
+        const postbox = new PostboxStore(postbox_destinations.channel, column.params)
         return (
             <div className="column timeline">
                 <div className="inside timeline-container round">
                     <HashtagTimelineHeaderView
                         column={column}
-                        hashtag={hashtag}
+                        channel={channel}
+                        server={server}
                         handle_close={handle_close}
                         handle_back={handle_back} />
-                    {this.state.joined ? null :
+                    {(this.state.invitation_needed !== true || this.state.joined) ? null :
                         <div className="timeline-join">
-                            <p className="hint">このルームに参加すると投稿することができます</p>
+                            <p className="hint">このチャンネルは承認制です</p>
+                        </div>
+                    }
+                    {(this.state.invitation_needed || this.state.joined) ? null :
+                        <div className="timeline-join">
+                            <p className="hint">このチャンネルに参加すると投稿することができます</p>
                             <div className="submit">
                                 <button
-                                    className={classnames("button meiryo ready user-defined-bg-color", { "in-progress": this.state.is_join_pending })}
+                                    className={classnames("button meiryo ready user-defined-bg-color", { "in-progress": this.state.pending_join })}
                                     onClick={this.onJoin}>
                                     <span className="progress-text">参加する</span>
                                     <span className="display-text">参加する</span>
                                 </button>
                                 <button className="button meiryo neutral user-defined-bg-color" onClick={() => {
-                                    location.href = `/server/${hashtag.tagname}/about`
+                                    location.href = `/server/${channel.name}/about`
                                 }}>
                                     <span className="display-text">詳細を見る</span>
                                 </button>
@@ -692,13 +765,15 @@ class HashtagColumnView extends Component {
                         </div>
                     }
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         {this.state.joined === false ? null :
                             <PostboxView
                                 postbox={postbox}
+                                timeline={column.timeline}
                                 logged_in={logged_in}
                                 uploader={uploader}
                                 pinned_media={pinned_media}
+                                server={server}
                                 recent_uploads={recent_uploads} />
                         }
                         <TimelineView
@@ -706,7 +781,7 @@ class HashtagColumnView extends Component {
                             timeline={column.timeline}
                             request_query={request_query}
                             options={column.options}
-                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
                     </div>
@@ -723,28 +798,28 @@ class NotificationColumnView extends Component {
         const { column } = props
         assert(column.type === enums.column.type.notifications, "$column.type must be 'notifications'")
 
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = props
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = props
         assert(is_function(handle_close), "$handle_close must be of type function at ThreadColumnView.constructor")
         assert(is_function(handle_back), "$handle_back must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_hashtag), "$handle_click_hashtag must be of type function at ThreadColumnView.constructor")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ThreadColumnView.constructor")
         assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ThreadColumnView.constructor")
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ThreadColumnView.constructor")
     }
     render() {
         const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
-        const { handle_close, handle_back, handle_click_hashtag, handle_click_mention, handle_click_thread } = this.props
+        const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const uploader = new UploadManager()
         return (
             <div className="column timeline">
                 <div className="inside timeline-container round">
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         <TimelineView
                             logged_in={logged_in}
                             timeline={column.timeline}
                             request_query={request_query}
                             options={column.options}
-                            handle_click_hashtag={handle_click_hashtag}
+                            handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
                     </div>

@@ -9,13 +9,16 @@ const fetch = api.v1.timeline.server
 const memcached_diff = new Memcached(fetch)
 const memcached_whole = new Memcached(fetch)
 
-export const delete_timeline_server_from_cache = server_id => {
-    server_id = try_convert_to_hex_string(server_id, "$server_idが不正です")
-    memcached_diff.delete(server_id)
-    memcached_whole.delete(server_id)
+const register_flush_func = target => {
+    target.flush = server_id => {
+        server_id = try_convert_to_hex_string(server_id, "$server_idが不正です")
+        memcached_diff.delete(server_id)
+        memcached_whole.delete(server_id)
+    }
+    return target
 }
 
-export default async (db, params) => {
+export default register_flush_func(async (db, params) => {
     const server_id = try_convert_to_hex_string(params.server_id, "$server_idを指定してください")
     const { count } = params
     assert(is_number(count), "$count must be of type number")
@@ -32,4 +35,4 @@ export default async (db, params) => {
     }
 
     return await memcached_diff.fetch([server_id, since_id, count], db, params)
-}
+})

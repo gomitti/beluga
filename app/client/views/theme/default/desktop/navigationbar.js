@@ -18,27 +18,20 @@ class NavigationbarUserView extends Component {
         } else {
             const components = split_emoji_unicode([logged_in.display_name])
             const subviews = []
-            for (const substr of components) {
+            components.forEach(substr => {
                 // 絵文字（ユニコード）
                 if (parse_emoji_unicode(substr, subviews)) {
-                    continue
+                    return
                 }
                 // それ以外
                 subviews.push(substr)
-            }
+            })
             this.displayNameView = subviews
         }
         this.state = {
             "current_page": "menu",
             "active": false
         }
-    }
-    onClickMentions = event => {
-        event.preventDefault()
-        event.stopPropagation()
-        this.setState({
-            "current_page": "mentions"
-        })
     }
     toggle = event => {
         event.preventDefault()
@@ -73,16 +66,13 @@ class NavigationbarUserView extends Component {
                     <div className="menu">
                         <ul className="block">
                             <li><a href={`/user/${logged_in.name}`}>プロフィール</a></li>
-                            <li><a className="arrow" href={`/mentions`} onClick={this.onClickMentions}>@関連</a></li>
+                            <li><a href="/mentions">@関連</a></li>
                         </ul>
                         <ul className="block">
                             <li><a href="/settings/profile">設定とプライバシー</a></li>
                             <li><a href="/settings/profile">ヘルプセンター</a></li>
                             <li><a href="/logout">ログアウト</a></li>
                         </ul>
-                    </div>
-                    <div className="mentions">
-                        <MentionsPageView current_server={server} back={this.back} logged_in={logged_in} />
                     </div>
                 </div>
             </div>
@@ -113,8 +103,7 @@ export default class NavigationbarView extends Component {
                                             <li><a href="/settings/account">アカウント</a></li>
                                             <li><a href="/settings/pins">固定</a></li>
                                             <li><a href="/settings/uploads">アップロード</a></li>
-                                            <li><a href="/settings/security">セキュリティ</a></li>
-                                            <li><a href="/settings/authenticator">スマホ認証</a></li>
+                                            <li><a href="/settings/mute">ミュート</a></li>
                                             <li><a href="/settings/desktop">デスクトップ</a></li>
                                         </ul>
                                     </li>
@@ -175,10 +164,10 @@ export default class NavigationbarView extends Component {
                             }
                             {server ?
                                 <li>
-                                    <a href={`/server/${server.name}/hashtags`} className={classnames("user-defined-color-hover user-defined-color-active user-defined-border-color-hover user-defined-border-color-active", {
-                                        "active": active === "hashtags"
+                                    <a href={`/server/${server.name}/channels`} className={classnames("user-defined-color-hover user-defined-color-active user-defined-border-color-hover user-defined-border-color-active", {
+                                        "active": active === "channels"
                                     })}>
-                                        <span className="icon hashtags"></span>
+                                        <span className="icon channels"></span>
                                         <span className="text">みつける</span>
                                     </a>
                                 </li>

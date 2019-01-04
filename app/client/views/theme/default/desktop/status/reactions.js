@@ -15,7 +15,7 @@ export default class ReactionsView extends Component {
             return null
         }
         const buttons = []
-        for (const item of status.reactions.list) {
+        status.reactions.list.forEach(item => {
             const { shortname, count } = item
             buttons.push(
                 <button className="status-reaction" onClick={event => this.toggle(shortname)}>
@@ -23,7 +23,7 @@ export default class ReactionsView extends Component {
                     <span className="count">{count}</span>
                 </button>
             )
-        }
+        })
         return (
             <div className="status-reactions bar">
                 {buttons}

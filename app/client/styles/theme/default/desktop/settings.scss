@@ -114,6 +114,7 @@
 
 .settings-module {
     margin-top: 40px;
+    font-size: 15px;
 
     > .head {
         padding-bottom: 12px;
@@ -127,13 +128,9 @@
     }
 
     .description {
-        font-size: 14px;
+        font-size: 15px;
         line-height: 18px;
         margin-top: 20px;
-    }
-
-    .button {
-        padding: 6px 12px;
     }
 
     > .submit {
@@ -203,6 +200,147 @@
     > .item {
         > .title {
             margin-bottom: 6px;
+        }
+    }
+}
+
+.settings-module.mute {
+    width: 500px;
+
+    > .form-component {
+        > .description {
+            line-height: 20px;
+        }
+
+        > .username-component {
+            margin-top: 5px;
+            display: flex;
+            flex-direction: row;
+
+            > .input-component {
+                flex: 1 1 auto;
+                margin-right: 5px;
+                position: relative;
+
+                > input {
+                    height: 33px;
+                    width: 100%;
+                    padding: 2px;
+                    font-size: 16px;
+                    box-sizing: border-box;
+                }
+
+                > .complete-component {
+                    position: absolute;
+                    top: 36px;
+                    left: 0;
+                    right: 0;
+                    height: 200px;
+                    background-color: white;
+                    border: 1px solid rgb(220, 220, 220);
+                    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+                    border-radius: 4px;
+                    overflow-x: hidden;
+                    overflow-y: scroll;
+
+                    > .list {
+                        > .user {
+                            cursor: pointer;
+                            display: flex;
+                            flex-direction: row;
+                            height: 26px;
+                            padding: 4px 10px;
+                            overflow: hidden;
+
+                            > .avatar {
+                                flex: 0 0 auto;
+                                width: 26px;
+                                height: 26px;
+                                border-radius: 15px;
+                            }
+
+                            > .name {
+                                font-weight: bold;
+                                font-size: 15px;
+                                color: black;
+                                line-height: 26px;
+                                margin-left: 10px;
+                            }
+
+                            > .display-name {
+                                font-weight: normal;
+                                font-size: 15px;
+                                color: rgb(90, 90, 90);
+                                line-height: 26px;
+                                margin-left: 10px;
+                            }
+                        }
+                    }
+                }
+            }
+
+            > .button {
+                flex: 0 0 auto;
+            }
+        }
+
+        > .list-component {
+            > .description {
+                margin: 20px 0 10px 0;
+            }
+
+            > .list {
+                border: 1px solid #dcdcdc;
+                border-radius: 6px;
+
+                > .user {
+                    cursor: pointer;
+                    display: flex;
+                    flex-direction: row;
+                    height: 26px;
+                    padding: 10px 14px;
+                    overflow: hidden;
+                    border-bottom: 1px solid #dcdcdc;
+
+                    &:last-child {
+                        border-bottom: none;
+                    }
+
+                    > .avatar {
+                        flex: 0 0 auto;
+                        width: 26px;
+                        height: 26px;
+                        border-radius: 15px;
+                    }
+
+                    > .name {
+                        flex: 0 0 auto;
+                        font-weight: bold;
+                        font-size: 15px;
+                        color: black;
+                        line-height: 26px;
+                        margin-left: 10px;
+                    }
+
+                    > .display-name {
+                        flex: 1 1 auto;
+                        font-weight: normal;
+                        font-size: 15px;
+                        color: rgb(90, 90, 90);
+                        line-height: 26px;
+                        margin-left: 10px;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                    }
+
+                    > .destory-button {
+                        flex: 0 0 auto;
+                        font-size: 14px;
+                        line-height: 26px;
+                        margin-left: 10px;
+                    }
+                }
+            }
         }
     }
 }
@@ -501,6 +639,8 @@
 }
 
 .settings-module.uploads {
+    width: 500px;
+
     > .file-list {
         border: 1px solid rgb(220, 220, 220);
         border-radius: 6px;

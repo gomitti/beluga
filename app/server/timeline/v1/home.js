@@ -22,7 +22,7 @@ export default async (db, params) => {
     const status_params = assign(collection.v1.status.default_params, {
         "trim_user": false,
         "trim_server": false,
-        "trim_hashtag": false,
+        "trim_channel": false,
         "trim_recipient": false,
         "trim_favorited_by": false,
         "trim_commenters": false,

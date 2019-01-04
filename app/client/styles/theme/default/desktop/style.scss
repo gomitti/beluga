@@ -9,8 +9,8 @@
 @import "form";
 @import "emoji";
 @import "video";
-@import "hashtags";
-@import "hashtag";
+@import "channels";
+@import "channel";
 @import "settings";
 @import "account";
 @import "customize";
@@ -35,7 +35,7 @@
 
 body,
 .meiryo {
-    font-family: Verdana, "Hiragino Kaku Gothic Pro", Meiryo, "MS PGothic", sans-serif;
+    font-family: "Hiragino Kaku Gothic Pro", Meiryo, "MS PGothic", sans-serif;
 }
 
 #app {

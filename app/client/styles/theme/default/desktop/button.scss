@@ -11,8 +11,9 @@ button {
 .button {
     cursor: pointer;
     font-weight: normal;
-    font-size: 13px;
+    font-size: 14px;
     text-align: center;
+    height: 33px;
     white-space: nowrap;
     margin: 0;
     -webkit-appearance: none;
@@ -43,6 +44,10 @@ button {
 
     &:hover {
         transform: translateY(-1px);
+    }
+
+    &.neutral:hover {
+        transform: none;
     }
 
     &:focus {

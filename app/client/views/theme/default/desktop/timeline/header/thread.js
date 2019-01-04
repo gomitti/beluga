@@ -22,7 +22,7 @@ export default class HeaderView extends Component {
     componentDidMount() {
         ws.addEventListener("message", (e) => {
             const { column } = this.props
-            if (column.settings.enable_desktop_notification !== true) {
+            if (column.settings.desktop_notification_enabled !== true) {
                 return
             }
             const data = JSON.parse(e.data)
@@ -46,9 +46,7 @@ export default class HeaderView extends Component {
     }
     toggleNotification = event => {
         const { column } = this.props
-        column.update_settings({
-            "enable_desktop_notification": event.target.checked
-        })
+        column.settings.setDesktopNotificationEnabled(event.target.checked)
     }
     toggleSettings = event => {
         event.preventDefault()
@@ -77,7 +75,7 @@ export default class HeaderView extends Component {
                     })}>
                         <section>
                             <label className="form-react-toggle">
-                                <Toggle onChange={this.toggleNotification} checked={column.settings.enable_desktop_notification} defaultChecked={column.settings.enable_desktop_notification} />
+                                <Toggle onChange={this.toggleNotification} checked={column.settings.desktop_notification_enabled} defaultChecked={column.settings.desktop_notification_enabled} />
                                 <span>デスクトップ通知</span>
                             </label>
                         </section>

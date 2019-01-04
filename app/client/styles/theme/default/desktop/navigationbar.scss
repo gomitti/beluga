@@ -2,6 +2,7 @@
     z-index: 4;
     width: 100%;
     position: fixed;
+    height: 26px;
 
     > .top {
         background-color: rgba(47, 47, 47, 0.99);
@@ -25,6 +26,10 @@
         display: flex;
         flex-direction: row;
     }
+}
+
+#navigationbar.logged-in {
+    height: 70px;
 }
 
 .navigationbar-user {
@@ -344,7 +349,7 @@
                 content: "\E005";
             }
 
-            > .hashtags::before {
+            > .channels::before {
                 content: "\E006";
             }
 

@@ -10,21 +10,21 @@ export default async (db, params) => {
     }
     const map_shortname_count = {}
     const sorted_shortnames = []
-    for (const row of rows) {
+    rows.forEach(row => {
         const { shortname } = row
         if (!!(shortname in map_shortname_count) === false) {
             sorted_shortnames.push(shortname)
             map_shortname_count[shortname] = 1
-            continue
+            return
         }
         map_shortname_count[shortname] += 1
-    }
+    })
     const ret = []
-    for (const shortname of sorted_shortnames) {
+    sorted_shortnames.forEach(shortname => {
         const count = map_shortname_count[shortname]
         ret.push({
             shortname, count
         })
-    }
+    })
     return ret
 }

@@ -40,10 +40,10 @@ export default class StatusView extends Component {
         const lines = status.text.split("\n")
         const lineViews = []
         const is_server_side = typeof window === "undefined"
-        for (const str of lines) {
+        lines.forEach(str => {
             const components = str.split(/(https?:\/\/[^\s ]+)/)
             const subViews = []
-            for (const substr of components) {
+            components.forEach(substr => {
                 if (substr.indexOf("http") === 0) {
                     const url = substr
                     if (url.match(/\.(jpg|jpeg|png|gif)$/)) {
@@ -122,9 +122,9 @@ export default class StatusView extends Component {
                 } else {
                     subViews.push(<span>{substr}</span>)
                 }
-            }
+            })
             lineViews.push(<p>{subViews}</p>)
-        }
+        })
         return (
             <div className="status">
                 <div className="inside">

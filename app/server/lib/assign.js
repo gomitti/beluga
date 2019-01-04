@@ -45,8 +45,8 @@ export const merge = (target, source) => {
 }
 export default (...params) => {
     let obj = {}
-    for (const param of params) {
+    params.forEach(param => {
         obj = merge(obj, param)
-    }
+    })
     return obj
 }

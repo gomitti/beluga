@@ -1,6 +1,5 @@
 import { Component } from "react"
 import classnames from "classnames"
-import Router from "next/router"
 import { SliderPicker, CirclePicker } from 'react-color'
 import Head from "../../../../../views/theme/default/desktop/head"
 import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
@@ -9,6 +8,7 @@ import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import { is_object } from "../../../../../assert"
 import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import AppComponent from "../../../../../views/app"
 
 class ThemeComponent extends Component {
     constructor(props) {
@@ -106,9 +106,6 @@ class ThemeComponent extends Component {
                         "#cddc39", "#00d084", "#7bdcb5", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#ff8a65", "#795548",
                         "#607d8b", "#abb8c3"
                     ]} color={this.state.color} onChangeComplete={this.onColorChangeComplete} />
-                </div>
-                <div className="picker slider">
-                    <SliderPicker color={this.state.color} onChangeComplete={this.onColorChangeComplete} />
                 </div>
                 <div className="picker input">
                     <input className="input" value={this.state.color} style={{
@@ -277,24 +274,12 @@ class BackgroundComponent extends Component {
     }
 }
 
-export default class App extends Component {
-    static async getInitialProps({ query }) {
-        return query
-    }
+export default class App extends AppComponent {
     constructor(props) {
         super(props)
         const { logged_in } = props
         this.state = {
             "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
-        }
-        request.set_csrf_token(this.props.csrf_token)
-
-        // Safariのブラウザバック問題の解消
-        if (typeof window !== "undefined") {
-            Router.beforePopState(({ url, as, options }) => {
-                return false
-            });
-
         }
     }
     onUpdateThemeColor = color => {

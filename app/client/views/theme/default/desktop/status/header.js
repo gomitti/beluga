@@ -14,14 +14,14 @@ export class StatusHeaderDisplayNameView extends Component {
         }
         const components = split_emoji_unicode([user.display_name])
         const subviews = []
-        for (const substr of components) {
+        components.forEach(substr => {
             // 絵文字（ユニコード）
             if (parse_emoji_unicode(substr, subviews)) {
-                continue
+                return
             }
             // それ以外
             subviews.push(substr)
-        }
+        })
         return <span className="display-name element">{subviews}</span>
     }
 }
@@ -45,7 +45,7 @@ export class StatusHeaderUserStatusView extends Component {
                 ref={dom => this.dom = dom}
                 onMouseEnter={() => Tooltip.show(this.dom, content)}
                 onMouseOver={() => Tooltip.show(this.dom, content)}
-                onMouseOut={() => Tooltip.hide(this.dom, content)}>
+                onMouseOut={() => Tooltip.hide()}>
                 {imageView}
             </button>
         )

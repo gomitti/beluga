@@ -12,8 +12,8 @@ module.exports = (fastify, options, next) => {
         if (params.trim_user) {
             params.trim_user = parse_bool_str(params.trim_user)
         }
-        if (params.trim_hashtag) {
-            params.trim_hashtag = parse_bool_str(params.trim_hashtag)
+        if (params.trim_channel) {
+            params.trim_channel = parse_bool_str(params.trim_channel)
         }
         if (params.trim_server) {
             params.trim_server = parse_bool_str(params.trim_server)
@@ -54,7 +54,7 @@ module.exports = (fastify, options, next) => {
                 "trim_user": false,
                 "trim_recipient": false,
                 "trim_server": false,
-                "trim_hashtag": false
+                "trim_channel": false
             })
             mentions.forEach(user => {
                 fastify.websocket_broadcast("mention_received", { "recipient": user, status })

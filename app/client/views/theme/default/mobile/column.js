@@ -10,9 +10,8 @@ import PostboxView from "./postbox"
 import TimelineView from "./timeline"
 import HomeTimelineHeaderView from "./timeline/header/home"
 import ThreadTimelineHeaderView from "./timeline/header/thread"
-import HashtagTimelineHeaderView from "./timeline/header/hashtag"
+import HashtagTimelineHeaderView from "./timeline/header/channel"
 import ServerTimelineHeaderView from "./timeline/header/server"
-import settings from "../../../../settings/desktop"
 import { request } from "../../../../api"
 import UploadManager from "../../../../stores/theme/default/common/uploader"
 import StatusStore from "../../../../stores/theme/default/common/status"
@@ -32,22 +31,22 @@ export class HashtagColumnView extends ColumnView {
     constructor(props) {
         super(props)
         const { column } = props
-        const { hashtag } = column.params
-        assert(column.type === enums.column.type.hashtag, "$column.type must be 'hashtag'")
+        const { channel } = column.params
+        assert(column.type === enums.column.type.channel, "$column.type must be 'channel'")
         this.state = {
             "is_join_pending": false,
-            "joined": hashtag.joined
+            "joined": channel.joined
         }
     }
     onJoin = event => {
         event.preventDefault()
         const { column } = this.props
-        const { hashtag } = column.params
+        const { channel } = column.params
         this.setState({
             "is_join_pending": true
         })
         request
-            .post("/hashtag/join", { "hashtag_id": hashtag.id })
+            .post("/channel/join", { "channel_id": channel.id })
             .then(res => {
                 const data = res.data
                 if (data.success == false) {
@@ -69,17 +68,17 @@ export class HashtagColumnView extends ColumnView {
     }
     render() {
         const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
-        const { hashtag } = column.params
+        const { channel } = column.params
         const uploader = new UploadManager()
         const picker = get_shared_picker_store(server)
-        const postbox = new PostboxStore(postbox_destinations.hashtag, column.params)
+        const postbox = new PostboxStore(postbox_destinations.channel, column.params)
         return (
             <div className="column timeline">
                 <div className="inside timeline-container round">
-                    <HashtagTimelineHeaderView column={column} hashtag={hashtag} />
+                    <HashtagTimelineHeaderView column={column} channel={channel} />
                     {this.state.joined ? null :
                         <div className="timeline-join">
-                            <p className="hint">このルームに参加すると投稿することができます</p>
+                            <p className="hint">このチャンネルに参加すると投稿することができます</p>
                             <div className="submit">
                                 <button
                                     className={classnames("button meiryo ready user-defined-bg-color", { "in-progress": this.state.is_join_pending })}
@@ -88,7 +87,7 @@ export class HashtagColumnView extends ColumnView {
                                     <span className="display-text">参加する</span>
                                 </button>
                                 <button className="button meiryo neutral user-defined-bg-color" onClick={() => {
-                                    location.href = `/server/${hashtag.tagname}/about`
+                                    location.href = `/server/${channel.name}/about`
                                 }}>
                                     <span className="display-text">詳細を見る</span>
                                 </button>
@@ -100,6 +99,7 @@ export class HashtagColumnView extends ColumnView {
                         {this.state.joined === false ? null :
                             <PostboxView
                                 postbox={postbox}
+                                timeline={column.timeline}
                                 picker={picker}
                                 logged_in={logged_in}
                                 uploader={uploader}
@@ -155,9 +155,10 @@ export class HomeColumnView extends ColumnView {
                 <div className="inside timeline-container round">
                     <HomeTimelineHeaderView column={column} user={user} />
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         <PostboxView
                             postbox={postbox}
+                            timeline={column.timeline}
                             picker={picker}
                             logged_in={logged_in}
                             uploader={uploader}
@@ -197,6 +198,7 @@ export class ThreadColumnView extends ColumnView {
                         <div className="vertical"></div>
                         <PostboxView
                             postbox={postbox}
+                            timeline={column.timeline}
                             picker={picker}
                             logged_in={logged_in}
                             uploader={uploader}
@@ -204,16 +206,12 @@ export class ThreadColumnView extends ColumnView {
                             recent_uploads={recent_uploads} />
                         <TimelineView
                             total_num_statuses={in_reply_to_status.comments_count}
+                            in_reply_to_status={in_reply_to_status}
                             server={server}
                             timeline={column.timeline}
                             request_query={request_query}
                             options={column.options}
                             load_more_statuses={this.loadMoreStatuses} />
-                        <StatusView
-                            trim_comments={true}
-                            status={this.placeholder_status}
-                            server={server}
-                            options={{}} />
                     </div>
                 </div>
             </div>

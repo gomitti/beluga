@@ -13,6 +13,14 @@
         flex-wrap: nowrap;
         position: relative;
         z-index: 1;
+
+        > .vertical-line {
+            position: absolute;
+            top: 32px;
+            bottom: 122px;
+            left: 36px;
+            border-left: 0.15em solid #dcdcdc;
+        }
     }
 
     > .preview {

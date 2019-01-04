@@ -10,14 +10,15 @@ export default async (db, params) => {
 
     const server = await api.v1.server.create(db, params)
 
-    // ルームを作成する
+    // チャンネルを作成する
     const query = {
-        "tagname": config.server.first_hashtag_name,
+        "name": config.server.first_channel_name,
         "server_id": server.id,
+        "members_count": 0,
         "user_id": params.user_id
     }
     try {
-        const hashtag = await api.v1.hashtag.create(db, query)
+        const channel = await api.v1.channel.create(db, query)
     } catch (error) {
         // ロールバック
         const result = await api.v1.server.destroy(db, {
@@ -51,5 +52,6 @@ export default async (db, params) => {
         })
         throw error
     }
+
     return server
 }

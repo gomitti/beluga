@@ -8,14 +8,17 @@ const memcached = {
     "names": new Memcached(api.v1.user.show),
 }
 
-export const delete_user_from_cache = (user_id, name) => {
-    user_id = try_convert_to_hex_string(user_id, "$user_idが不正です")
-    assert(is_string(name), "$name must be of type string")
-    memcached.ids.delete(user_id)
-    memcached.names.delete(name)
+const register_flush_func = target => {
+    target.flush = (id, name) => {
+        id = try_convert_to_hex_string(id, "$user_idが不正です")
+        assert(is_string(name), "$name must be of type string")
+        memcached.ids.delete(id)
+        memcached.names.delete(name)
+    }
+    return target
 }
 
-export default async (db, params) => {
+export default register_flush_func(async (db, params) => {
     const user_id = convert_to_hex_string_or_null(params.id)
     if (is_string(user_id)) {
         return await memcached.ids.fetch(user_id, db, params)
@@ -24,5 +27,5 @@ export default async (db, params) => {
     if (is_string(name)) {
         return await memcached.names.fetch(name, db, params)
     }
-    assert(false, "$idまたは@nameを指定してください")
-}
+    assert(false, "$idまたは$nameを指定してください")
+})

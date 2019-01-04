@@ -27,12 +27,12 @@ export default async (db, params) => {
         }
         status.server = server
     }
-    if (status.hashtag_id && params.trim_hashtag === false) {
-        const hashtag = await model.v1.hashtag.show(db, { "id": status.hashtag_id })
-        if (hashtag === null) {
+    if (status.channel_id && params.trim_channel === false) {
+        const channel = await model.v1.channel.show(db, { "id": status.channel_id })
+        if (channel === null) {
             return null
         }
-        status.hashtag = hashtag
+        status.channel = channel
     }
     if (status.last_comment_status_id) {
         const last_comment = await model.v1.status.show(db, { "id": status.last_comment_status_id })

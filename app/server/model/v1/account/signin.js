@@ -12,7 +12,7 @@ export default async (db, params) => {
     })
 
     // キャッシュの消去
-    memcached.v1.delete_user_from_cache(user.id, user.name)
+    memcached.v1.user.show.flush(user.id, user.name)
 
     return await memcached.v1.user.show(db, { "id": user.id })
 }

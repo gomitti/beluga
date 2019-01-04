@@ -12,7 +12,7 @@ export default async (db, params) => {
 
     const collection = db.collection("kvs")
     const row = await collection.findOne({ user_id })
-    if (!!row == false) {
+    if (row === null) {
         return null
     }
     const value = row[key]

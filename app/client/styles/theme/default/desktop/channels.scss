@@ -1,0 +1,85 @@
+.channels-container {
+    > .content {
+        padding: 16px;
+
+        > .title {
+            position: relative;
+
+            > .text {
+                font-size: 16px;
+                font-weight: bold;
+                color: rgb(20, 20, 20);
+            }
+
+            > .create {
+                position: absolute;
+                right: 0;
+                top: 3px;
+                font-size: 12px;
+                font-weight: bold;
+                text-decoration: none;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+}
+
+.channels-list {
+    margin-top: 14px;
+    overflow: hidden;
+
+    > li {
+        display: block;
+        margin-bottom: 6px;
+
+        > .name {
+            height: 20px;
+            display: grid;
+
+            > a {
+                text-decoration: none;
+                font-weight: bold;
+                font-size: 15px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                display: block;
+                font-family: NotoSansJP,appleLogo,sans-serif;
+
+                &::before {
+                    content: "#";
+                    padding-right: 1px;
+                }
+
+                > .name-str {
+                    &:hover {
+                        text-decoration: underline;
+                    }
+                }
+            }
+        }
+
+        > .count {
+            margin: 1px 0 0 2px;
+            font-size: 12px;
+            color: rgb(119, 119, 119);
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+.channels-hint {
+    margin-top: 20px;
+    font-size: 15px;
+
+    > p {
+        line-height: 18px;
+        margin-bottom: 4px;
+    }
+}

@@ -31,7 +31,7 @@ export default class HeaderView extends Component {
     componentDidMount() {
         ws.addEventListener("message", (event) => {
             const data = JSON.parse(event.data)
-            if (data.online_changed) {
+            if (data.online_members_changed) {
                 this.setOnline(data.count)
             }
         })
@@ -42,7 +42,7 @@ export default class HeaderView extends Component {
                 <p><a href="/">トップ</a> / <a href="/signup">新規登録</a> / <a href="/login">ログイン</a></p>
                 <p><a href="/server/create">サーバーの作成</a> / {(() => {
                     if (this.props.server) {
-                        return <a href={`/hashtag/${this.props.server.name}/create`}>ルームの作成</a>
+                        return <a href={`/channel/${this.props.server.name}/create`}>チャンネルの作成</a>
                     }
                 })()}</p>
                 <p>アイコン:<a href="#" onClick={this.resetAvatar}>リセット</a> / </p>

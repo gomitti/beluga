@@ -6,12 +6,12 @@ export default async (db, params) => {
     const server_id = try_convert_to_object_id(params.server_id, "$server_idが不正です")
     const rows = await db.collection("emojis").find({ server_id }).sort({ "shortname": 1 }).toArray()
     const emojis = []
-    for (const row of rows) {
+    rows.forEach(row => {
         emojis.push({
             "shortname": row.shortname,
             "added_by": row.added_by,
             "added_at": row.added_at,
         })
-    }
+    })
     return emojis
 }

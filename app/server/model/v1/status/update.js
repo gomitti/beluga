@@ -12,7 +12,7 @@ const prev_updated_at = {}
 
 const request = axios.create({
     "responseType": "arraybuffer",
-    "timeout": config.status.embed.web.timeout * 1000,
+    "timeout": config.status.embedding.web.timeout * 1000,
 })
 
 const get_domain_from_url = url => {
@@ -117,8 +117,8 @@ const extract_metadata = async url => {
                 title = match[1]
             }
         }
-        if (description && description.length > config.status.embed.web.max_description_length) {
-            description = description.substring(0, config.status.embed.web.max_description_length + 1)
+        if (description && description.length > config.status.embedding.web.max_description_length) {
+            description = description.substring(0, config.status.embedding.web.max_description_length + 1)
         }
     } catch (error) {
         image = null
@@ -143,16 +143,16 @@ export default async (db, params) => {
         }
     }
 
-    let hashtag = null
-    if (params.hashtag_id) {
-        hashtag = await memcached.v1.hashtag.show(db, { "id": params.hashtag_id })
-        assert(hashtag !== null, "ルームがが見つかりません")
+    let channel = null
+    if (params.channel_id) {
+        channel = await memcached.v1.channel.show(db, { "id": params.channel_id })
+        assert(channel !== null, "チャンネルがが見つかりません")
 
-        const joined = await memcached.v1.hashtag.joined(db, { "hashtag_id": hashtag.id, "user_id": user.id })
-        assert(joined === true, "参加していないルームには投稿できません")
+        const joined = await memcached.v1.channel.joined(db, { "channel_id": channel.id, "user_id": user.id })
+        assert(joined === true, "参加していないチャンネルには投稿できません")
 
-        params.server_id = hashtag.server_id
-        params.is_public = !!hashtag.is_public
+        params.server_id = channel.server_id
+        params.is_public = !!channel.is_public
     }
 
     let recipient = null
@@ -171,8 +171,8 @@ export default async (db, params) => {
     let server = null
     if (params.server_id) {
         server = await memcached.v1.server.show(db, { "id": params.server_id })
-    } else if (hashtag) {
-        server = await memcached.v1.server.show(db, { "id": hashtag.server_id })
+    } else if (channel) {
+        server = await memcached.v1.server.show(db, { "id": channel.server_id })
         assert(server !== null, "サーバーが見つかりません")
         params.server_id = server.id
     } else if (in_reply_to_status) {
@@ -180,6 +180,10 @@ export default async (db, params) => {
         assert(server !== null, "サーバーが見つかりません")
         params.server_id = server.id
     }
+    assert(server !== null, "問題が発生しました")
+
+    let joined_server = await memcached.v1.server.joined(db, { "user_id": params.user_id, "server_id": server.id })
+    assert(joined_server === true, "参加していないサーバーのチャンネルには投稿できません")
 
     assert(is_string(params.text), "本文を入力してください")
     const urls = params.text.match(/!https?:\/\/[^\s 　]+/g)
@@ -187,7 +191,7 @@ export default async (db, params) => {
     const entities = {}
     if (Array.isArray(urls)) {
         const entity_urls = []
-        for (let n = 0; n < Math.min(urls.length, config.status.embed.web.limit); n++) {
+        for (let n = 0; n < Math.min(urls.length, config.status.embedding.web.limit); n++) {
             const original_url = urls[n].replace(/^!/, "")
             const { domain, image, title, description, url } = await extract_metadata(original_url)
             if (title && url) {
@@ -216,77 +220,83 @@ export default async (db, params) => {
                 "type": mentions_type.reply
             })
             mentions.push(user)
-            memcached.v1.delete_timeline_notifications_from_cache(user.id)
+            memcached.v1.timeline.notifications.flush(user.id)
         }
         match = regexp.exec(params.text)
     }
 
-    if (hashtag) {
-        memcached.v1.delete_timeline_hashtag_from_cache(hashtag.id)
-        const collection = db.collection("hashtags")
-        const result = await collection.updateOne(
-            { "_id": hashtag.id },
-            { "$inc": { "statuses_count": 1 } }
+    if (channel) {
+        const result = await db.collection("channels").updateOne(
+            { "_id": channel.id },
+            {
+                "$inc": { "statuses_count": 1 },
+                "$set": { "newest_status_id": status.id }
+            }
         )
+        memcached.v1.timeline.channel.flush(channel.id)
     }
 
     if (recipient) {
-        memcached.v1.delete_timeline_home_from_cache(recipient.id, server.id)
+        memcached.v1.timeline.home.flush(recipient.id, server.id)
     }
 
     if (server) {
-        memcached.v1.delete_timeline_server_from_cache(server.id)
+        memcached.v1.timeline.server.flush(server.id)
     }
 
     if (in_reply_to_status) {
-        memcached.v1.delete_timeline_thread_from_cache(in_reply_to_status.id)
+        // スレッド
+        if (!!in_reply_to_status.comments_count == false || in_reply_to_status.comments_count === 0) {
+            // 自分自身も追加しておくとタイムラインの取得が楽になる
+            await db.collection("threads").insertOne({
+                "status_id": in_reply_to_status.id,
+                "in_reply_to_status_id": in_reply_to_status.id,
+            })
+        }
+        await db.collection("threads").insertOne({
+            "status_id": status.id,
+            "in_reply_to_status_id": in_reply_to_status.id,
+            "user_id": user.id
+        })
+        memcached.v1.timeline.thread.flush(in_reply_to_status.id)
 
-        const user = await memcached.v1.user.show(db, { "id": in_reply_to_status.user_id })
-        if (user !== null) {
+        // 通知
+        const in_reply_to_user = await memcached.v1.user.show(db, { "id": in_reply_to_status.user_id })
+        if (in_reply_to_user !== null) {
             await api.v1.notifications.add(db, {
-                "user_id": user.id,
+                "user_id": in_reply_to_user.id,
                 "status_id": status.id,
                 "server_id": server.id,
                 "type": mentions_type.comment
             })
-            mentions.push(user)
-            memcached.v1.delete_timeline_notifications_from_cache(user.id)
+            mentions.push(in_reply_to_user)
+            memcached.v1.timeline.notifications.flush(in_reply_to_user.id)
         }
 
-        // 下のハックにより自分自身もin_reply_to_status_idを持っているので、
-        // コメント数は実際のカウントより1小さくなる
-        const collection = db.collection("statuses")
-        const comments_count = await collection.find({
+        const comments_count = await db.collection("statuses").find({
             "in_reply_to_status_id": in_reply_to_status.id
-        }).count() - 1
-        const user_ids = await collection.aggregate([
+        }).count()
+        const user_ids = await db.collection("threads").aggregate([
             { $match: { "in_reply_to_status_id": in_reply_to_status.id } },
             { $group: { _id: "$user_id" } }
         ]).toArray()
 
         const commenter_ids = []
         user_ids.forEach(user => {
-            commenter_ids.push(user._id)
+            const user_id = user._id
+            if (user_id) {
+                commenter_ids.push(user_id)
+            }
         })
 
         // 最新のコメントの投稿IDを追加しておくと、宛先の投稿でコメントをプレビューすることができる
         const last_comment_status_id = status.id
 
-        await collection.updateOne({ "_id": in_reply_to_status.id }, {
+        await db.collection("statuses").updateOne({ "_id": in_reply_to_status.id }, {
             "$set": { comments_count, commenter_ids, last_comment_status_id }
         })
 
-        memcached.v1.delete_status_from_cache(in_reply_to_status.id)
-    } else {
-        // 宛先の投稿のin_reply_to_status_idに自分自身のstatus_idをセットしておくと
-        // コメントのタイムラインを取得したときにタイムラインの最後に宛先の投稿が出てくるようになる
-        // 内部的なものなので投稿取得時はin_reply_to_status_idをnullに差し替える必要がある
-        const result = await db.collection("statuses").updateOne(
-            { "_id": status.id },
-            {
-                "$set": { "in_reply_to_status_id": status.id }
-            }
-        )
+        memcached.v1.status.show.flush(in_reply_to_status.id)
     }
 
     // 連投規制

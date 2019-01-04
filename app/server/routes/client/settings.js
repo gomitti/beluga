@@ -93,14 +93,14 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
-        const settings = await memcached.v1.kvs.restore(fastify.mongo.db, {
+        const desktop_settings = await memcached.v1.kvs.restore(fastify.mongo.db, {
             "user_id": logged_in.id,
             "key": "desktop_settings"
         })
 
         const device = fastify.device(req)
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/desktop`, {
-            csrf_token, logged_in, device, settings,
+            csrf_token, logged_in, device, desktop_settings,
             "platform": fastify.platform(req),
         })
     })
@@ -133,6 +133,21 @@ module.exports = (fastify, options, next) => {
         const device = fastify.device(req)
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/uploads`, {
             csrf_token, logged_in, device, media, aggregation_result,
+            "platform": fastify.platform(req),
+        })
+    })
+    fastify.next("/settings/mute", async (app, req, res) => {
+        const session = await fastify.session.start(req, res)
+        const csrf_token = await fastify.csrf_token(req, res, session)
+        const logged_in = await fastify.logged_in(req, res, session)
+        if (logged_in === null) {
+            return fastify.error(app, req, res, 404)
+        }
+        const users = await memcached.v1.users.list(fastify.mongo.db, {})
+        const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in.id })
+        const device = fastify.device(req)
+        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/mute`, {
+            csrf_token, logged_in, device, users, muted_users,
             "platform": fastify.platform(req),
         })
     })

@@ -23,8 +23,10 @@
 
     > .content {
         position: relative;
+        z-index: auto;
 
-        > .vertical {
+        > .vertical-line {
+            z-index: 0;
             position: absolute;
             top: 32px;
             bottom: 64px;
@@ -49,7 +51,10 @@
 }
 
 .timeline-module {
-    > .more-link {
+    position: relative;
+    z-index: 2;
+
+    > .fetch-statuses-button {
         display: block;
         background-color: rgb(244, 244, 244);
         padding: 8px 0;
@@ -59,7 +64,11 @@
         color: rgb(60, 60, 60);
         text-decoration: none;
         font-size: 15px;
-        font-weight: normal;
+        font-weight: bold;
+
+        &.newer-statuses {
+            margin-bottom: 6px;
+        }
     }
 }
 

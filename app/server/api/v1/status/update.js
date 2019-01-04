@@ -4,10 +4,10 @@ import assert, { is_string } from "../../../assert"
 import { try_convert_to_object_id } from "../../../lib/object_id"
 
 const verify_destination = params => {
-    let { hashtag_id, recipient_id, server_id, in_reply_to_status_id } = params
+    let { channel_id, recipient_id, server_id, in_reply_to_status_id } = params
 
-    if (hashtag_id) {
-        hashtag_id = try_convert_to_object_id(hashtag_id, "$hashtag_idが不正です")
+    if (channel_id) {
+        channel_id = try_convert_to_object_id(channel_id, "$channel_idが不正です")
     }
     if (recipient_id) {
         recipient_id = try_convert_to_object_id(recipient_id, "$recipient_idが不正です")
@@ -21,20 +21,20 @@ const verify_destination = params => {
     //     throw new Error("@server_idを指定してください")
     // }
 
-    if (recipient_id && hashtag_id) {
-        throw new Error("投稿先が重複しています（@recipient_id && @hashtag_id）")
+    if (recipient_id && channel_id) {
+        throw new Error("投稿先が重複しています（@recipient_id && @channel_id）")
     }
     if (recipient_id && in_reply_to_status_id) {
         throw new Error("投稿先が重複しています（@recipient_id && @in_reply_to_status_id")
     }
-    if (hashtag_id && in_reply_to_status_id) {
-        throw new Error("投稿先が重複しています（@hashtag_id && @in_reply_to_status_id")
+    if (channel_id && in_reply_to_status_id) {
+        throw new Error("投稿先が重複しています（@channel_id && @in_reply_to_status_id")
     }
-    if (!!recipient_id === false && !!hashtag_id === false && !!in_reply_to_status_id === false) {
+    if (!!recipient_id === false && !!channel_id === false && !!in_reply_to_status_id === false) {
         throw new Error("投稿先を指定してください")
     }
 
-    return { hashtag_id, recipient_id, server_id, in_reply_to_status_id }
+    return { channel_id, recipient_id, server_id, in_reply_to_status_id }
 }
 
 export default async (db, params) => {
@@ -64,12 +64,11 @@ export default async (db, params) => {
     if (typeof from_mobile !== "boolean") {
         throw new Error("@from_mobileが不正ですb")
     }
-
-    for (const word of config.status.forbidden_words) {
+    config.status.forbidden_words.forEach(word => {
         if (text.indexOf(word) !== -1) {
             throw new Error("禁止ワードが含まれています")
         }
-    }
+    })
 
     const query = {
         text,
@@ -84,11 +83,11 @@ export default async (db, params) => {
         "_ip_address": ip_address
     }
 
-    const { hashtag_id, recipient_id, server_id, in_reply_to_status_id } = verify_destination(params)
+    const { channel_id, recipient_id, server_id, in_reply_to_status_id } = verify_destination(params)
 
-    // ルームへの投稿
-    if (hashtag_id) {
-        query.hashtag_id = hashtag_id
+    // チャンネルへの投稿
+    if (channel_id) {
+        query.channel_id = channel_id
     }
     // ユーザーのホームへの投稿
     else if (recipient_id) {
