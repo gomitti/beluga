@@ -8,8 +8,8 @@ import StatusView from "../../../status"
 export default class View extends Component {
     constructor(props) {
         super(props)
-        const { logged_in } = props
-        this.store = new Store(logged_in.id, {})
+        const { logged_in_user } = props
+        this.store = new Store(logged_in_user.id, {})
     }
     componentDidMount() {
         this.store.update()
@@ -25,7 +25,7 @@ export default class View extends Component {
             <div className="timeline global scroller">
                 <div className="inside">
                     {this.store.statuses.map(status => {
-                        return <StatusView status={status} key={status.id} options={{ "show_belonging": true }} handle_click_channel={this.onClickHashtag} handle_click_mention={this.onClickMention} />
+                        return <StatusView status={status} key={status.id} options={{ "show_source_link": true }} handle_click_channel={this.onClickHashtag} handle_click_mention={this.onClickMention} />
                     })}
                 </div>
             </div>

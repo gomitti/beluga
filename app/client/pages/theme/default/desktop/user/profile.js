@@ -8,11 +8,11 @@ import Component from "../../../../../views/app"
 
 export default class App extends Component {
     render() {
-        const { platform, user, logged_in } = this.props
+        const { platform, user, logged_in_user } = this.props
         return (
             <div id="app" className="user-profile">
                 <Head title={`${user.display_name}@${user.name} / ${config.site.name}`} platform={platform} />
-                <NavigationBarView logged_in={logged_in} />
+                <NavigationBarView logged_in_user={logged_in_user} />
                 <div className="create-channel-container">
                 </div>
             </div>

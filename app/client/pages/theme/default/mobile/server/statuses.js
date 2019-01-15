@@ -37,26 +37,24 @@ export default class App extends Component {
         assert(is_string(type), "$type must be of type string")
 
         const column_options = new ColumnOptions()
-
-        const opt = new TimelineOptions()
-        opt.has_newer_statuses = has_newer_statuses
-        opt.has_older_statuses = has_older_statuses
+        column_options.status.show_source_link = true
+        column_options.timeline.has_newer_statuses = has_newer_statuses
+        column_options.timeline.has_older_statuses = has_older_statuses
         if (has_newer_statuses) {
-            opt.auto_reloading_enabled = false
+            column_options.timeline.auto_reloading_enabled = false
         }
-        opt.muted_users = muted_users
-        opt.muted_words = muted_words
-        column_options.timeline = opt
+        column_options.timeline.muted_users = muted_users
+        column_options.timeline.muted_words = muted_words
 
         this.column = new ColumnStore(type, params, column_options, statuses)
         add_custom_shortnames(custom_emoji_shortnames)
     }
     render() {
-        const { server, logged_in, platform, device, pinned_emoji_shortnames, custom_emoji_shortnames } = this.props
+        const { server, logged_in_user, platform, device, pinned_emoji_shortnames, custom_emoji_shortnames } = this.props
         return (
             <div id="app" className="timeline home">
-                <Head title={`${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} device={device} />
-                <NavigationBarView server={server} logged_in={logged_in} active="statuses" />
+                <Head title={`${server.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} device={device} />
+                <NavigationBarView server={server} logged_in_user={logged_in_user} active="statuses" />
                 <div id="content" className="timeline home">
                     <ServerColumnView {...this.props} column={this.column} />
                 </div>

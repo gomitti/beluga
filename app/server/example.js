@@ -6,7 +6,7 @@ fastify.after(() => {
     fastify.next("/", async (app, req, res) => {
         app.render(req.req, res.res, `/theme/default/desktop/entrance`, {
             "channels": {},
-            "logged_in": {}
+            "logged_in_user": {}
         })
     })
 })

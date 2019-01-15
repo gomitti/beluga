@@ -29,7 +29,7 @@ export default class App extends Component {
                     return
                 }
                 if (request_query && request_query.redirect) {
-                    if (request_query.redirect.match(/^\/[\w\/@]+$/)) {
+                    if (request_query.redirect.match(/^\/.+$/)) {
                         location.href = request_query.redirect
                         return
                     }
@@ -46,7 +46,7 @@ export default class App extends Component {
             })
     }
     render() {
-        const { platform, server, members, device, logged_in } = this.props
+        const { platform, server, members, device, logged_in_user } = this.props
         let membersView = null
         if (members.length > 0) {
             const memberListViews = []
@@ -68,7 +68,7 @@ export default class App extends Component {
         }
         return (
             <div id="app" className="join-server">
-                <Head title={`${server.display_name}に参加する / ${config.site.name}`} platform={platform} device={device} logged_in={logged_in} />
+                <Head title={`${server.display_name}に参加する / ${config.site.name}`} platform={platform} device={device} logged_in_user={logged_in_user} />
                 <div className="join-server-container">
                     <div className="content">
                         <div className="server-information">

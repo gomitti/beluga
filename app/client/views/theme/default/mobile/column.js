@@ -67,7 +67,7 @@ export class HashtagColumnView extends ColumnView {
             })
     }
     render() {
-        const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         const { channel } = column.params
         const uploader = new UploadManager()
         const picker = get_shared_picker_store(server)
@@ -95,13 +95,13 @@ export class HashtagColumnView extends ColumnView {
                         </div>
                     }
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         {this.state.joined === false ? null :
                             <PostboxView
                                 postbox={postbox}
                                 timeline={column.timeline}
                                 picker={picker}
-                                logged_in={logged_in}
+                                logged_in_user={logged_in_user}
                                 uploader={uploader}
                                 pinned_media={pinned_media}
                                 recent_uploads={recent_uploads} />
@@ -109,8 +109,10 @@ export class HashtagColumnView extends ColumnView {
                         <TimelineView
                             server={server}
                             timeline={column.timeline}
+                            logged_in_user={logged_in_user}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             load_more_statuses={this.loadMoreStatuses} />
                     </div>
                 </div>
@@ -121,19 +123,21 @@ export class HashtagColumnView extends ColumnView {
 
 export class ServerColumnView extends ColumnView {
     render() {
-        const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         assert(column.type === enums.column.type.server, "$column.type must be 'server'")
         return (
             <div className="column timeline">
                 <div className="inside timeline-container round">
                     <ServerTimelineHeaderView column={column} server={server} />
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         <TimelineView
                             server={server}
                             timeline={column.timeline}
+                            logged_in_user={logged_in_user}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             load_more_statuses={this.loadMoreStatuses} />
                     </div>
                 </div>
@@ -144,7 +148,7 @@ export class ServerColumnView extends ColumnView {
 
 export class HomeColumnView extends ColumnView {
     render() {
-        const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         assert(column.type === enums.column.type.home, "$column.type must be 'home'")
         const { user } = column.params
         const uploader = new UploadManager()
@@ -160,15 +164,17 @@ export class HomeColumnView extends ColumnView {
                             postbox={postbox}
                             timeline={column.timeline}
                             picker={picker}
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             uploader={uploader}
                             pinned_media={pinned_media}
                             recent_uploads={recent_uploads} />
                         <TimelineView
                             server={server}
                             timeline={column.timeline}
+                            logged_in_user={logged_in_user}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             load_more_statuses={this.loadMoreStatuses} />
                     </div>
                 </div>
@@ -184,7 +190,7 @@ export class ThreadColumnView extends ColumnView {
         this.placeholder_status = new StatusStore(in_reply_to_status)
     }
     render() {
-        const { in_reply_to_status, server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { in_reply_to_status, server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         assert(column.type === enums.column.type.thread, "$column.type must be 'thread'")
         const { user } = column.params
         const uploader = new UploadManager()
@@ -195,12 +201,12 @@ export class ThreadColumnView extends ColumnView {
                 <div className="inside timeline-container round">
                     <ThreadTimelineHeaderView column={column} in_reply_to_status={in_reply_to_status} />
                     <div className="content">
-                        <div className="vertical"></div>
+                        <div className="vertical-line"></div>
                         <PostboxView
                             postbox={postbox}
                             timeline={column.timeline}
                             picker={picker}
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             uploader={uploader}
                             pinned_media={pinned_media}
                             recent_uploads={recent_uploads} />
@@ -208,9 +214,11 @@ export class ThreadColumnView extends ColumnView {
                             total_num_statuses={in_reply_to_status.comments_count}
                             in_reply_to_status={in_reply_to_status}
                             server={server}
+                            logged_in_user={logged_in_user}
                             timeline={column.timeline}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             load_more_statuses={this.loadMoreStatuses} />
                     </div>
                 </div>

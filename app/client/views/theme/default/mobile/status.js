@@ -9,13 +9,16 @@ import { created_at_to_elapsed_time, time_string_from_create_at } from "../../..
 import { StatusHeaderDisplayNameView, StatusHeaderUserStatusView } from "./status/header"
 import Button from "./button"
 import EmojiPicker from "./emoji";
+import { StatusOptions } from "../../../../stores/theme/default/common/status"
+import { objectid_equals } from "../../../../libs/functions"
 
 @observer
 export default class StatusView extends Component {
     constructor(props) {
         super(props)
-        const { status, server, handle_click_channel, handle_click_mention } = props
+        const { status, options, server, handle_click_channel, handle_click_mention } = props
         assert(is_object(status), "$status must be of type object")
+        assert(options instanceof StatusOptions, "$options must be an instance of StatusOptions")
 
         // 本文のビューを構築しておく
         const { text, entities } = status
@@ -77,7 +80,7 @@ export default class StatusView extends Component {
         })
     }
     render() {
-        const { status, server, options, trim_comments } = this.props
+        const { status, server, options, trim_comments, logged_in_user } = this.props
         const { user } = status
         let likesView = null
         if (status.likes.count > 0) {
@@ -110,14 +113,14 @@ export default class StatusView extends Component {
             </div>
         }
 
-        let belongingView = null
+        let sourceLinkView = null
         const { channel, recipient } = status
-        if (options.show_belonging) {
+        if (options.show_source_link) {
             if (channel && server) {
-                belongingView = <a href={`/server/${server.name}/${channel.name}`} className="belonging channel meiryo">#{channel.name}</a>
+                sourceLinkView = <a href={`/server/${server.name}/${channel.name}`} className="source channel meiryo">#{channel.name}</a>
             }
             if (recipient && server) {
-                belongingView = <a href={`/server/${server.name}/@${recipient.name}`} className="belonging recipient meiryo">@{recipient.name}</a>
+                sourceLinkView = <a href={`/server/${server.name}/@${recipient.name}`} className="source recipient meiryo">@{recipient.name}</a>
             }
         }
 
@@ -172,18 +175,20 @@ export default class StatusView extends Component {
                         </div>
                         <div className="status-action" ref="action">
                             <div className="inside">
-                                {belongingView ?
+                                {sourceLinkView ?
                                     <div className="left">
-                                        {belongingView}
+                                        {sourceLinkView}
                                     </div>
                                     : null
                                 }
                                 <div className="right">
                                     <Button className="like user-defined-color-hover" onClick={this.createLike}></Button>
                                     <Button className="favorite user-defined-color-hover" onClick={this.toggleFavorite}></Button>
+                                    <Button className="emoji emoji-picker-ignore-click user-defined-color-hover" onClick={this.toggleReaction}></Button>
                                     <Button className="thread user-defined-color-hover" onClick={event => { location.href = `/server/${server.name}/thread/${status.id}` }}></Button>
-                                    <Button className="emoji emojipicker-ignore-click user-defined-color-hover" onClick={this.toggleReaction}></Button>
-                                    <Button className="destroy user-defined-color-hover" onClick={this.destroy}></Button>
+                                    {objectid_equals(logged_in_user.id, user.id) ?
+                                        <Button className="destroy user-defined-color-hover" onClick={this.destroy}></Button>
+                                        : null}
                                 </div>
                             </div>
                         </div>

@@ -19,11 +19,11 @@ configure({ "enforceActions": true })
 class UserStatusModuleItem extends Component {
     constructor(props) {
         super(props)
-        const { logged_in } = this.props
-        const shortname = logged_in.status_emoji_shortname
+        const { logged_in_user } = this.props
+        const shortname = logged_in_user.status_emoji_shortname
         this.state = {
             "selected_emoji": null,
-            "text": logged_in.status_text
+            "text": logged_in_user.status_text
         }
         if (shortname) {
             const category = get_category_by_shortname_or_null(shortname)
@@ -65,7 +65,7 @@ class UserStatusModuleItem extends Component {
                                 const { shortname } = selected_emoji
                                 return <img className="image" src={get_image_url_by_shortname_or_null(shortname)} />
                             } else {
-                                return <i className="emojipicker-ignore-click image"></i>
+                                return <i className="emoji-picker-ignore-click image"></i>
                             }
                         })()}
                     </button>
@@ -85,7 +85,7 @@ class UserStatusModuleItem extends Component {
 export default class App extends AppComponent {
     constructor(props) {
         super(props)
-        const { logged_in } = props
+        const { logged_in_user } = props
         this.state = {
             "crop": {
                 x: 0,
@@ -98,7 +98,7 @@ export default class App extends AppComponent {
             },
             "src": null,
             "extension": null,
-            "preview_src": logged_in.avatar_url,
+            "preview_src": logged_in_user.avatar_url,
             "is_crop_ready": false,
             "pending_update": false,
             "pending_reset": false,
@@ -106,13 +106,13 @@ export default class App extends AppComponent {
     }
     componentDidMount() {
         // stateで管理するのはあまり好きではない
-        const { logged_in } = this.props
-        if (!!logged_in.profile == false) {
+        const { logged_in_user } = this.props
+        if (!!logged_in_user.profile == false) {
             return
         }
-        this.refs.display_name.value = logged_in.display_name || ""
-        this.refs.description.value = logged_in.profile.description || ""
-        this.refs.location.value = logged_in.profile.location || ""
+        this.refs.display_name.value = logged_in_user.display_name || ""
+        this.refs.description.value = logged_in_user.profile.description || ""
+        this.refs.location.value = logged_in_user.profile.location || ""
 
     }
     onImageLoaded = image => {
@@ -317,20 +317,20 @@ export default class App extends AppComponent {
             })
     }
     render() {
-        const { profile_image_size, platform, logged_in, pinned_emoji_shortnames } = this.props
+        const { profile_image_size, platform, logged_in_user, pinned_emoji_shortnames } = this.props
         const { preview_src } = this.state
-        if (!!logged_in.profile === false) {
+        if (!!logged_in_user.profile === false) {
             return null
         }
         return (
             <div id="app" className="settings">
-                <Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationbarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content">
+                <Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container">
                     <div className="inside">
                         <SettingsMenuView active="profile" />
-                        <div className="settings-content-module">
-                            <div className="settings-module form profile meiryo">
+                        <div className="settings-container-main">
+                            <div className="settings-component form profile meiryo">
                                 <div className="head">
                                     <h1>プロフィール</h1>
                                 </div>
@@ -346,7 +346,7 @@ export default class App extends AppComponent {
                                     <textarea className="form-input user-defined-border-color-focus" ref="description"></textarea>
                                 </div>
 
-                                <UserStatusModuleItem ref="status" logged_in={logged_in} />
+                                <UserStatusModuleItem ref="status" logged_in_user={logged_in_user} />
 
                                 <div className="item">
                                     <h3 className="title">場所</h3>
@@ -359,7 +359,7 @@ export default class App extends AppComponent {
                                 </div>
                             </div>
 
-                            <div className="settings-module">
+                            <div className="settings-component">
                                 <div className="head">
                                     <h1>アイコン</h1>
                                 </div>

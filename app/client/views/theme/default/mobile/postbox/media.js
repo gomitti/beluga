@@ -50,13 +50,13 @@ export default class MediaView extends Component {
         }
         if (mediaViews.length == 0) {
             return (
-                <div className="postbox-media history no-media">
+                <div className="postbox-media-component history no-media">
                     <a href="/settings/pins" className="user-defined-color bold">画像を登録</a>するとここに表示されます
 				</div>
             )
         }
         return (
-            <div className="postbox-media history scroller-wrapper" ref="wrapper">
+            <div className="postbox-media-component history scroller-container" ref="wrapper">
                 <p className="title">{title}</p>
                 <div className="scroller">
                     {mediaViews}

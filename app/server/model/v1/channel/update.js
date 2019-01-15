@@ -13,7 +13,8 @@ export default async (db, params) => {
     await api.v1.channel.update(db, params)
 
     // キャッシュの消去
-    memcached.v1.channel.show.flush(channel.id, channel.name)
+    memcached.v1.channel.show.flush(channel.id, channel.server_id, channel.name)
+    memcached.v1.server.channels.flush(channel.server_id)
 
     return true
 }

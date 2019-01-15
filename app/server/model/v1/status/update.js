@@ -278,7 +278,8 @@ export default async (db, params) => {
         }).count()
         const user_ids = await db.collection("threads").aggregate([
             { $match: { "in_reply_to_status_id": in_reply_to_status.id } },
-            { $group: { _id: "$user_id" } }
+            { $group: { _id: "$user_id" } },
+            { $sort: { "_id": -1 } }
         ]).toArray()
 
         const commenter_ids = []

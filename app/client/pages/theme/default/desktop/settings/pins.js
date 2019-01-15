@@ -169,7 +169,7 @@ class MediaComponent extends Component {
             )
         })
         return (
-            <div className="settings-module pins meiryo">
+            <div className="settings-component pins meiryo">
                 <div className="head">
                     <h1>画像</h1>
                 </div>
@@ -179,7 +179,7 @@ class MediaComponent extends Component {
                     <p>ドラッグして並べ替えることができます。</p>
                 </div>
 
-                <div className="image-selector scroller-wrapper">
+                <div className="image-selector scroller-container">
                     <div className="list pins scroller">
                         {selectedImageViews}
                     </div>
@@ -255,10 +255,10 @@ class EmojiComponent extends Component {
         const selectedEmojiView = []
         this.selected_emojis.forEach(emoji => {
             const { shortname, category } = emoji
-            selectedEmojiView.push(<button onClick={event => this.pick(shortname)} ><i className={`emojipicker-ignore-click emoji-${category} shortname-${shortname}`}></i></button>)
+            selectedEmojiView.push(<button onClick={event => this.pick(shortname)} ><i className={`emoji-picker-ignore-click emoji-${category} shortname-${shortname}`}></i></button>)
         })
         return (
-            <div className="settings-module pins meiryo">
+            <div className="settings-component pins meiryo">
                 <div className="head">
                     <h1>絵文字</h1>
                 </div>
@@ -267,7 +267,7 @@ class EmojiComponent extends Component {
                     絵文字一覧に表示したい絵文字を選択してください。
 									</div>
 
-                <div className="emoji-selector scroller-wrapper">
+                <div className="emoji-selector scroller-container">
                     <div className="list pins scroller">
                         {selectedEmojiView}
                     </div>
@@ -286,7 +286,7 @@ class EmojiComponent extends Component {
 
 export default class App extends AppComponent {
     render() {
-        const { platform, logged_in, pinned_media, recent_uploads, pinned_emoji } = this.props
+        const { platform, logged_in_user, pinned_media, recent_uploads, pinned_emoji } = this.props
         if (Array.isArray(pinned_media) === false) {
             return null
         }
@@ -298,12 +298,12 @@ export default class App extends AppComponent {
         }
         return (
             <div id="app" className="settings">
-                <Head title={`固定 / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationbarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content">
+                <Head title={`固定 / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container">
                     <div className="inside">
                         <SettingsMenuView active="pins" />
-                        <div className="settings-content-module">
+                        <div className="settings-container-main">
                             <MediaComponent pinned={pinned_media} history={recent_uploads} />
                             <EmojiComponent pinned={pinned_emoji} />
                         </div>

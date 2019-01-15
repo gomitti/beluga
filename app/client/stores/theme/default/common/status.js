@@ -6,6 +6,12 @@ import FavoritesStore from "./status/favorites"
 import ReactionsStore from "./status/reactions"
 import CommentsStore from "./status/comments"
 
+export class StatusOptions {
+    constructor() {
+        this.show_source_link = false
+    }
+}
+
 export default class StatusStore {
     @observable deleted = false
     @observable favorited = false

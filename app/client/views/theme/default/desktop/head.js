@@ -13,11 +13,23 @@ const hex_to_rgba = (hex, alpha) => {
     return "rgba(0, 0, 0, 0)"
 }
 
+const BackgroundImageStyle = ({ background_image }) => {
+    if (background_image) {
+        return (
+            <style>{`
+                body {
+                    background-image: url(${background_image});
+                }
+            `}</style>
+        )
+    }
+    return null
+}
 export default class HeadView extends Component {
     render() {
-        const { platform, logged_in, title } = this.props
-        const color = (logged_in && logged_in.profile) ? logged_in.profile.theme_color : "#477da7"
-        const background_image = (logged_in && logged_in.profile.use_background_image) ? logged_in.profile.background_image : null
+        const { platform, logged_in_user, title } = this.props
+        const color = (logged_in_user && logged_in_user.profile) ? logged_in_user.profile.theme_color : "#477da7"
+        const background_image = (logged_in_user && logged_in_user.profile.use_background_image) ? logged_in_user.profile.background_image : null
         return (
             <Head>
                 <meta charSet="utf-8" />
@@ -43,7 +55,7 @@ export default class HeadView extends Component {
                     .user-defined-transparent-bg-color-hover:hover {
                         background-color: ${hex_to_rgba(color, 0.1)};
                     }
-                    .multiple-columns .timeline-module::-webkit-scrollbar-thumb {
+                    .webkit-scrollbar::-webkit-scrollbar-thumb {
                         background-color: ${hex_to_rgba(color, 0.8)};
                     }
                     .react-toggle--checked .react-toggle-track {
@@ -66,15 +78,7 @@ export default class HeadView extends Component {
                         color: ${color} !important;
                     }
                 `}</style>
-                {(() => {
-                    if (background_image) {
-                        return <style>{`
-                                body {
-                                    background-image: url(${background_image});
-                                }
-                            `}</style>
-                    }
-                })()}
+                <BackgroundImageStyle background_image={background_image} />
             </Head>
         );
     }

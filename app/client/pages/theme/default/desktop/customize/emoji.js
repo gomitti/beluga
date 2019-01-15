@@ -3,7 +3,6 @@ import classnames from "classnames"
 import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
 import ServerDetailView from "../../../../../views/theme/default/desktop/column/server"
 import Head from "../../../../../views/theme/default/desktop/head"
-import TimelineStore from "../../../../../stores/theme/default/desktop/timeline/server"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import assert from "../../../../../assert";
@@ -99,7 +98,7 @@ export default class App extends Component {
     }
 
     render() {
-        const { server, logged_in, platform, device, custom_emoji_list } = this.props
+        const { server, logged_in_user, platform, device, custom_emoji_list } = this.props
         const emojiListView = []
         custom_emoji_list.forEach(emoji => {
             const { shortname, user } = emoji
@@ -124,14 +123,14 @@ export default class App extends Component {
         })
         return (
             <div id="app" className="customize">
-                <Head title={`絵文字の追加 / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} device={device} />
-                <NavigationbarView server={server} logged_in={logged_in} />
-                <div id="content" className={classnames("timeline channels", { "logged_in": !!logged_in })}>
+                <Head title={`絵文字の追加 / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} device={device} />
+                <NavigationbarView server={server} logged_in_user={logged_in_user} />
+                <div id="content" className={classnames("timeline channels", { "logged_in_user": !!logged_in_user })}>
                     <div className="inside column-container">
                         <div className="column customize-emoji">
                             <div className="inside server-container round">
                                 <div className="content">
-                                    <div className="settings-module form">
+                                    <div className="settings-component form">
                                         <div className="head">
                                             <h1 className="title">絵文字の追加</h1>
                                         </div>

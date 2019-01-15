@@ -11,10 +11,8 @@ export default async (db, params) => {
     const channel = await collection.findOne({ "_id": channel_id })
     assert(channel, "チャンネルが存在しません")
 
+    const { name } = params
     const query = {}
-    const { name, is_public } = assign(params, {
-        "is_public": true
-    })
 
     if (is_string(name)) {
         if (name.length > config.channel.max_name_length) {
@@ -23,13 +21,12 @@ export default async (db, params) => {
         query.name = name
     }
 
-    if (is_bool(is_public)) {
-        query.is_public = is_public
+    try {
+        await collection.updateOne({ "_id": channel_id }, {
+            "$set": query
+        })
+    } catch (error) {
+        throw error
     }
-
-
-    const result = await collection.updateOne({ "_id": channel_id }, {
-        "$set": query
-    })
     return true
 }

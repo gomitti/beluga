@@ -240,17 +240,17 @@ export default class App extends Component {
             })
     }
     render() {
-        const { profile_image_size, platform, logged_in, server } = this.props
+        const { profile_image_size, platform, logged_in_user, server } = this.props
         const { preview_src } = this.state
         return (
             <div id="app" className="server-settings settings">
-                <Head title={`プロフィール / 設定 / ${server.name} / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationBarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content">
+                <Head title={`プロフィール / 設定 / ${server.name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationBarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container">
                     <div className="inside">
                         <SettingsMenuView active="profile" server={server} />
-                        <div className="settings-content-module">
-                            <div className="settings-module form profile meiryo">
+                        <div className="settings-container-main">
+                            <div className="settings-component form profile meiryo">
                                 <div className="head">
                                     <h1>プロフィール</h1>
                                 </div>
@@ -271,7 +271,7 @@ export default class App extends Component {
                                 </div>
                             </div>
 
-                            <div className="settings-module">
+                            <div className="settings-component">
                                 <div className="head">
                                     <h1>アイコン</h1>
                                 </div>

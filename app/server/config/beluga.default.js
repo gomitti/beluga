@@ -22,7 +22,7 @@ export default {
             }
         },
         "forbidden_words": [
-            "\u0C1C\u0C4D\u0C1E\u200C\u0C3E"	// Apple製品がクラッシュするため
+            "\u0C1C\u0C4D\u0C1E\u2427\u0C3E"	// Apple製品がクラッシュするため
         ]
     },
     "colors": ["#B9C4CA", "#E09580", "#E5D8CE", "#EBE39B", "#F9D2C9", "#FCC8B2", "#E5A0A6", "#B3D9DD",
@@ -84,7 +84,7 @@ export default {
         "channels": {
             "min_statuses_count_to_display": 10	// チャンネル一覧に表示される最低限の投稿数
         },
-        "first_channel_name": "general",
+        "first_channel_name": "ラウンジ",   // サーバー作成時に自動的に作られるチャンネルの名前
         "reserved_names": ["create"],
     },
     "auth": {

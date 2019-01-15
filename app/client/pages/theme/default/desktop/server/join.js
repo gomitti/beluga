@@ -30,7 +30,7 @@ export default class App extends Component {
                     return
                 }
                 if (request_query && request_query.redirect) {
-                    if (request_query.redirect.match(/^\/[\w\/@]+$/)) {
+                    if (request_query.redirect.match(/^\/.+$/)) {
                         location.href = request_query.redirect
                         return
                     }

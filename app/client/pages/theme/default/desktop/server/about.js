@@ -12,12 +12,12 @@ configure({ "enforceActions": true })
 
 export default class App extends Component {
     render() {
-        const { server, logged_in, platform, device } = this.props
+        const { server, logged_in_user, platform, device } = this.props
         return (
             <div id="app" className="server-about channels">
-                <Head title={`${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} device={device} />
-                <NavigationBarView server={server} logged_in={logged_in} active="channels" />
-                <div id="content" className={classnames("timeline channels", { "logged_in": !!logged_in })}>
+                <Head title={`${server.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} device={device} />
+                <NavigationBarView server={server} logged_in_user={logged_in_user} active="channels" />
+                <div id="content" className={classnames("timeline channels", { "logged_in_user": !!logged_in_user })}>
                     <div className="inside column-container">
                         <div className="column server-about">
                             <ServerDetailView server={server} is_members_hidden={false} ellipsis_description={false} collapse_members={false} />

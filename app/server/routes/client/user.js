@@ -4,8 +4,8 @@ module.exports = (fastify, options, next) => {
     fastify.next("/user/:name", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
-        const logged_in = await fastify.logged_in(req, res, session)
-        if (logged_in === null) {
+        const logged_in_user = await fastify.logged_in_user(req, res, session)
+        if (logged_in_user === null) {
             return fastify.error(app, req, res, 404)
         }
 
@@ -15,7 +15,7 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/user/profile`, {
-            csrf_token, user, logged_in
+            csrf_token, user, logged_in_user
         })
     })
     next()

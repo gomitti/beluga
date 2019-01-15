@@ -3,7 +3,7 @@
     z-index: 0;
 
     > .inside {
-        padding: 6px 16px 4px 16px;
+        padding: 6px 16px 0 16px;
         padding-left: 6px;
         display: flex;
         flex-direction: row;
@@ -120,7 +120,7 @@
         word-wrap: break-word;
         position: relative;
 
-        > p {
+        > .sentence {
             line-height: 18px;
             min-height: 16px;
 
@@ -129,11 +129,6 @@
             }
         }
     }
-}
-
-.status-body-link::before {
-    font-family: Beluga;
-    content: "\E00B";
 }
 
 .status-body-pre {
@@ -179,8 +174,8 @@
 .bigger-emoji {
     .status-body-emoji {
         > .image {
-            width: 26px;
-            height: 26px;
+            width: 30px;
+            height: 30px;
         }
     }
 }
@@ -233,6 +228,7 @@
     > .meta {
         font-size: 12px;
         position: relative;
+        line-height: 23px;
 
         > .sep {
             position: absolute;
@@ -247,7 +243,7 @@
             display: inline-block;
             margin-top: 4px;
             font-weight: bold;
-            margin-left: 14px;
+            margin-left: 16px;
         }
 
         > .unit {
@@ -347,7 +343,7 @@
 
             &::after {
                 font-family: Beluga;
-                content: "\E00E";
+                content: "\200E";
                 margin-left: 2px;
             }
         }
@@ -454,16 +450,17 @@
     > .inside {
         display: flex;
         flex-wrap: nowrap;
+        flex-direction: row;
 
         > .left {
             flex: 0 1 auto;
 
-            > .belonging {
+            > .source {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 font-size: 14px;
                 font-weight: normal;
-                line-height: 28px;
+                line-height: 26px;
                 color: rgb(100, 100, 100);
                 margin-right: 10px;
                 max-width: 200px;
@@ -476,6 +473,7 @@
             display: flex;
             flex-wrap: nowrap;
             justify-content: space-around;
+            flex-direction: row;
 
             > button {
                 flex: 0 0 auto;
@@ -484,28 +482,32 @@
                 background: transparent;
                 margin-right: 2px;
                 font-family: Beluga;
-                font-size: 20px;
+                font-size: 0;
                 color: rgb(100, 100, 100);
             }
 
+            > button::before {
+                font-size: 30px;
+            }
+
             > .like::before {
-                content: "\E003";
+                content: "\2428";
             }
 
             > .favorite::before {
-                content: "\E008";
+                content: "\2429";
             }
 
             > .emoji::before {
-                content: "\E000";
+                content: "\2430";
             }
 
             > .thread::before {
-                content: "\E00A";
+                content: "\2431";
             }
 
             > .destroy::before {
-                content: "\E009";
+                content: "\2432";
             }
         }
     }
@@ -515,10 +517,10 @@
     margin-top: 4px;
 
     > p {
-        width: 16px;
-        height: 16px;
-        font-size: 18px;
-        line-height: 1;
+        width: 18px;
+        height: 18px;
+        font-size: 32px;
+        line-height: 9px;
         display: inline-block;
         margin: 0 0 3px 0px;
         color: rgb(254, 197, 46);
@@ -526,7 +528,7 @@
 
     > p::before {
         font-family: Beluga;
-        content: "\E002";
+        content: "\245B";
     }
 }
 

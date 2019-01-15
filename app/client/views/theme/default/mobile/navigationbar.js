@@ -3,16 +3,16 @@ import classnames from "classnames"
 
 export default class NavigationBarView extends Component {
     render() {
-        const { server, logged_in, active } = this.props
+        const { server, logged_in_user, active } = this.props
         return (
             <div id="navigationbar">
                 <div className="inside">
                     <ul className="navigationbar-menu">
                         {(() => {
-                            if (server && logged_in) {
+                            if (server && logged_in_user) {
                                 return (
                                     <li>
-                                        <a href={`/server/${server.name}/@${logged_in.name}`} className={classnames("user-defined-color-active user-defined-border-color-active", {
+                                        <a href={`/server/${server.name}/@${logged_in_user.name}`} className={classnames("user-defined-color-active user-defined-border-color-active", {
                                             "active": active === "home"
                                         })}>
                                             <span className="icon home"></span>

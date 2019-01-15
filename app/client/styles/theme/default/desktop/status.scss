@@ -24,6 +24,7 @@
     > .avatar {
         position: relative;
         line-height: 0;
+        display: block;
 
         > .image {
             border-radius: 50%;
@@ -129,7 +130,7 @@
         word-wrap: break-word;
         position: relative;
 
-        > p {
+        > .sentence {
             line-height: 18px;
             min-height: 16px;
 
@@ -237,7 +238,7 @@
 
             &::after {
                 font-family: Beluga;
-                content: "\E00E";
+                content: "\200E";
                 margin-left: 2px;
             }
         }
@@ -253,8 +254,8 @@
 .bigger-emoji {
     .status-body-emoji {
         > .image {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
         }
     }
 }
@@ -472,7 +473,7 @@
     margin: 6px 0 8px 0;
     display: flex;
 
-    > .belonging {
+    > .source {
         font-weight: normal;
         font-size: 13px;
         color: rgb(200, 200, 200);
@@ -495,7 +496,7 @@
 
 .status:hover {
     .status-footer {
-        > .belonging {
+        > .source {
             color: black;
         }
 
@@ -521,43 +522,43 @@
             background: transparent;
             margin-right: 2px;
             font-family: Beluga;
-            font-size: 17px;
+            font-size: 26px;
             color: rgb(100, 100, 100);
             text-decoration: none;
             display: inline-block;
             cursor: pointer;
             font-weight: normal;
             text-align: center;
-            line-height: 20px;
+            line-height: 1;
         }
 
         > .like {
             > .icon::before {
-                content: "\E003";
+                content: "\2428";
             }
         }
 
         > .favorite {
             > .icon::before {
-                content: "\E008";
+                content: "\2429";
             }
         }
 
         > .emoji {
             > .icon::before {
-                content: "\E000";
+                content: "\2430";
             }
         }
 
         > .thread {
             > .icon::before {
-                content: "\E00A";
+                content: "\2431";
             }
         }
 
         > .destroy {
             > .icon::before {
-                content: "\E009";
+                content: "\2432";
             }
         }
     }
@@ -575,8 +576,8 @@
     > p {
         width: 16px;
         height: 16px;
-        font-size: 18px;
-        line-height: 1;
+        font-size: 28px;
+        line-height: 6px;
         display: inline-block;
         margin: 0 0 3px 0px;
         color: rgb(254, 197, 46);
@@ -584,7 +585,7 @@
 
     > p::before {
         font-family: Beluga;
-        content: "\E002";
+        content: "\245B";
     }
 }
 

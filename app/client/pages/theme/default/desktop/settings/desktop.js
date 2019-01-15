@@ -16,10 +16,10 @@ import Component from "../../../../../views/app"
 export default class App extends Component {
     constructor(props) {
         super(props)
-        const { logged_in } = props
+        const { logged_in_user } = props
         const desktop_settings = get_desktop_settings()
         this.state = {
-            "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
+            "color": logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color,
             "new_column_target": desktop_settings.new_column_target,
             "multiple_columns_enabled": desktop_settings.multiple_columns_enabled
         }
@@ -44,17 +44,17 @@ export default class App extends Component {
             })
     }
     render() {
-        const { platform, logged_in } = this.props
-        logged_in.profile.theme_color = this.state.color
+        const { platform, logged_in_user } = this.props
+        logged_in_user.profile.theme_color = this.state.color
         return (
             <div id="app" className="settings">
-                <Head title={`デスクトップ / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationBarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content">
+                <Head title={`デスクトップ / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationBarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container">
                     <div className="inside">
                         <SettingsMenuView active="desktop" />
-                        <div className="settings-content-module">
-                            <div className="settings-module form desktop">
+                        <div className="settings-container-main">
+                            <div className="settings-component form desktop">
                                 <div className="head">
                                     <h1>デスクトップ</h1>
                                 </div>

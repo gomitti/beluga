@@ -123,7 +123,7 @@ export default class PostboxView extends Component {
     }
 
     render() {
-        if (!this.props.logged_in) {
+        if (!this.props.logged_in_user) {
             return (
                 <div>投稿するにはログインしてください</div>
             )

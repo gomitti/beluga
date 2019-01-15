@@ -40,12 +40,9 @@ class Snackbar extends Component {
             "message": null,
         }
         if (typeof window !== "undefined") {
-            window.removeEventListener(event_types.show, this.show)
-            window.addEventListener(event_types.show, this.show, false)
-            window.removeEventListener(event_types.hide, this.hide)
-            window.addEventListener(event_types.hide, this.hide, false)
-            window.removeEventListener("resize", this.hide)
-            window.addEventListener("resize", this.hide, false)
+            window.addEventListener(event_types.show, this.show)
+            window.addEventListener(event_types.hide, this.hide)
+            window.addEventListener("resize", this.hide)
         }
     }
     show = payload => {

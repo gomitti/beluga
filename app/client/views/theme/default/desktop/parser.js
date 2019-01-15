@@ -1,4 +1,5 @@
 import { Component } from "react"
+import classnames from "classnames"
 import config from "../../../../beluga.config"
 import parser from "./parser/index"
 import assert, { is_object, is_string } from "../../../../assert"
@@ -139,6 +140,12 @@ const split = sentence => {
     components = split_channel(components)
     components = split_emoji_unicode(components)
     components = split_emoji_shortname(components)
+    if (components.length > 0) {
+        const last = components[components.length - 1]
+        if (last === "\n") {
+            components.pop()
+        }
+    }
     return components
 }
 
@@ -229,6 +236,7 @@ export const parse_emoji_shortname = (substr, subviews, server) => {
 export const parse = (sentence, server, status_entities, handlers) => {
     const subviews = []
     const components = split(sentence)
+    let num_emoji_components = 0
     components.forEach(substr => {
         // 埋め込み
         if (parse_embed(substr, subviews, status_entities)) {
@@ -244,13 +252,12 @@ export const parse = (sentence, server, status_entities, handlers) => {
         }
         // 絵文字（ユニコード）
         if (parse_emoji_unicode(substr, subviews)) {
+            num_emoji_components++;
             return
         }
         // 絵文字（shortname）
         if (parse_emoji_shortname(substr, subviews, server)) {
-            return
-        }
-        if (substr === "\n") {
+            num_emoji_components++;
             return
         }
         // インラインのMarkdown
@@ -260,7 +267,8 @@ export const parse = (sentence, server, status_entities, handlers) => {
         // それ以外
         subviews.push(substr.trim())
     })
-    return subviews
+    const contains_only_emojis = (num_emoji_components === components.length)
+    return { subviews, contains_only_emojis }
 }
 
 // 1行に複数のURLがあるものを分割する
@@ -310,8 +318,8 @@ const build_image_views = (urls, server, status_entities) => {
     if (urls.length <= 3) {
         const imageViews = []
         urls.forEach(image_source => {
-            const nodes = parse(image_source, server, status_entities, {})
-            nodes.forEach(view => {
+            const { subviews } = parse(image_source, server, status_entities, {})
+            subviews.forEach(view => {
                 imageViews.push(view)
             })
         })
@@ -324,8 +332,8 @@ const build_image_views = (urls, server, status_entities) => {
         const subset = urls.slice(n * 3, end)
         const imageViews = []
         subset.forEach(image_source => {
-            const nodes = parse(image_source, server, status_entities, {})
-            nodes.forEach(view => {
+            const { subviews } = parse(image_source, server, status_entities, {})
+            subviews.forEach(view => {
                 imageViews.push(view)
             })
         })
@@ -394,37 +402,27 @@ export const build_status_body_views = (text, server, status_entities, click_han
 
     const bodyViews = []
     blocks.forEach(component => {
-        // 絵文字だけの場合表示サイズを大きくする
-        let emoji_found = false
-        let emoji_continuing = true
-
         // 画像以外
         if (is_string(component)) {
             if (component === "\n") {
-                bodyViews.push(<p></p>)
+                bodyViews.push(<div className="sentence"></div>)
                 return
             }
-            const children = parse(component, server, status_entities, click_handlers)
-            if (children.length === 0) {
+            const { subviews, contains_only_emojis } = parse(component, server, status_entities, click_handlers)
+            if (subviews.length === 0) {
                 return
             }
-            children.forEach(dom => {
-                if (dom.key && dom.key.match(/^emoji-/)) {
-                    emoji_found = true
-                } else {
-                    emoji_continuing = false
-                }
-            })
-            let classname = null
-            if (emoji_found && emoji_continuing) {
-                classname = "bigger-emoji"
-            }
-            bodyViews.push(<p className={classname} key={`line-${bodyViews.length}`}>{children}</p>)
-            return
+            return bodyViews.push(
+                <div className={classnames("sentence", {
+                    "bigger-emoji": contains_only_emojis
+                })}
+                    key={`line-${bodyViews.length}`}>
+                    {subviews}
+                </div>
+            )
         }
         // それ以外のビュー
         bodyViews.push(component)
-        emoji_continuing = false
     })
     return bodyViews
 }

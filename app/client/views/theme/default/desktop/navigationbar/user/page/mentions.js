@@ -16,9 +16,9 @@ export default class View extends Component {
         ws.addEventListener("message", event => {
             const data = JSON.parse(event.data)
             if (data.mention_received) {
-                const { logged_in } = this.props
+                const { logged_in_user } = this.props
                 const { status, recipient } = data
-                if (recipient.id === logged_in.id) {
+                if (recipient.id === logged_in_user.id) {
                     let { text } = status
                     if (text.length > 140) {
                         text = text.slice(0, 140)
@@ -47,7 +47,7 @@ export default class View extends Component {
         })
     }
     render() {
-        const { current_server, logged_in } = this.props
+        const { current_server, logged_in_user } = this.props
         return (
             <div className="mentions navigationbar-user-mentions">
                 <div className="inside">
@@ -70,9 +70,9 @@ export default class View extends Component {
                             </ul>
                         </div>
                     </div>
-                    <div className={`timeline-container ${this.state.current_tab}-active scroller-wrapper`}>
-                        <GlobalTimelineView logged_in={logged_in} />
-                        <ServerTimelineView logged_in={logged_in} server={current_server} />
+                    <div className={`timeline-container ${this.state.current_tab}-active scroller-container`}>
+                        <GlobalTimelineView logged_in_user={logged_in_user} />
+                        <ServerTimelineView logged_in_user={logged_in_user} server={current_server} />
                     </div>
                 </div>
             </div>

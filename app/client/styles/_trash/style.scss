@@ -83,7 +83,7 @@ a {
 
 .status-body-link::before {
     font-family: Beluga;
-    content: "\E00B";
+    content: "\200B";
 }
 
 .status-body-emoji {
@@ -261,7 +261,7 @@ a {
     height: 15px;
     margin-bottom: 8px;
 
-    > .belonging {
+    > .source {
         font-size: 14px;
         color: rgb(200, 200, 200);
         margin-right: 10px;
@@ -276,7 +276,7 @@ a {
 
 .status:hover {
     .status-footer {
-        > .belonging {
+        > .source {
             color: black;
         }
 
@@ -319,23 +319,23 @@ a {
         }
 
         > .like::before {
-            content: "\E003";
+            content: "\2428";
         }
 
         > .favorite::before {
-            content: "\E008";
+            content: "\2429";
         }
 
         > .emoji::before {
-            content: "\E000";
+            content: "\2430";
         }
 
         > .comment::before {
-            content: "\E00A";
+            content: "\2431";
         }
 
         > .destroy::before {
-            content: "\E009";
+            content: "\2432";
         }
     }
 }

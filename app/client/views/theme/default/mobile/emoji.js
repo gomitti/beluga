@@ -5,9 +5,9 @@ import { EmojiPickerView } from "../desktop/emoji"
 import { get_shared_picker_store } from "../../../../stores/theme/default/common/emoji"
 
 const event_types = {
-    "show": "__event_emojipicker_show",
-    "toggle": "__event_emojipicker_toggle",
-    "hide": "__event_emojipicker_hide",
+    "show": "__event_emoji_picker_show",
+    "toggle": "__event_emoji_picker_toggle",
+    "hide": "__event_emoji_picker_hide",
 }
 
 const dispatch_event = (eventName, opts) => {
@@ -37,66 +37,46 @@ const register_methods = target => {
     }
 }
 
-@register_methods
-class EmojiPicker extends Component {
+@observer
+class EmojiPickerWindowComponent extends Component {
     constructor(props) {
         super(props)
-        this.state = {
-            "available": false,
-            "is_hidden": true,
-        }
-        this.picker = null
         if (typeof window !== "undefined") {
-            window.removeEventListener(event_types.show, this.show)
-            window.addEventListener(event_types.show, this.show, false)
-            window.removeEventListener(event_types.hide, this.hide)
-            window.addEventListener(event_types.hide, this.hide, false)
-            window.removeEventListener(event_types.toggle, this.toggle)
-            window.addEventListener(event_types.toggle, this.toggle, false)
-            this.state.available = true
-            const { server } = props
-            this.picker = get_shared_picker_store(server)
+            window.addEventListener(event_types.show, this.show)
+            window.addEventListener(event_types.hide, this.hide)
+            window.addEventListener(event_types.toggle, this.toggle)
         }
     }
     show = payload => {
-        if (this.state.is_hidden === false) {
-            return
-        }
+        const { picker } = this.props
         const { detail } = payload
         const { callback_pick, callback_hide } = detail
-        this.setState({
-            "is_hidden": false,
-        })
-        this.picker.show(callback_pick, callback_hide)
+        picker.show((shortname, category) => {
+            callback_pick(shortname, category)
+            picker.hide()
+        }, callback_hide)
     }
     toggle = payload => {
-        if (this.state.is_hidden) {
-            this.show(payload)
-            return true
-        } else {
+        const { picker } = this.props
+        if (picker.is_active) {
             this.hide()
-            return false
+        } else {
+            this.show(payload)
         }
     }
     hide = () => {
-        if (this.state.is_hidden) {
-            return
-        }
-        this.setState({
-            "is_hidden": true,
-        })
-        this.picker.hide()
+        const { picker } = this.props
+        picker.hide()
     }
     render() {
-        const empty = <div className={classnames("emoji-module", { "hidden": this.state.is_hidden })} ref="component"></div>
-        if (this.state.available === false) {
-            return empty
+        const { picker, pinned_shortnames, custom_shortnames, server } = this.props
+        if (picker === null) {
+            return null
         }
-        const { pinned_shortnames, custom_shortnames, server } = this.props
         return (
-            <div className={classnames("emoji-module", { "hidden": this.state.is_hidden })} ref="component">
+            <div className={classnames("emoji-picker-window-component", { "hidden": !picker.is_active })} ref="component">
                 <EmojiPickerView
-                    picker={this.picker}
+                    picker={picker}
                     server={server}
                     pinned_shortnames={pinned_shortnames}
                     custom_shortnames={custom_shortnames} />
@@ -104,4 +84,30 @@ class EmojiPicker extends Component {
         )
     }
 }
+
+@register_methods
+class EmojiPicker extends Component {
+    constructor(props) {
+        super(props)
+        this.picker = null
+        if (typeof window !== "undefined") {
+            const { server } = props
+            this.picker = get_shared_picker_store(server)
+        }
+    }
+    render() {
+        const { pinned_shortnames, custom_shortnames, server } = this.props
+        return (
+            <div>
+                <EmojiPickerWindowComponent
+                    pinned_shortnames={pinned_shortnames}
+                    custom_shortnames={custom_shortnames}
+                    picker={this.picker}
+                    server={server} />
+            </div>
+
+        )
+    }
+}
+
 export default EmojiPicker

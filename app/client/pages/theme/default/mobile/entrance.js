@@ -4,14 +4,14 @@ import Component from "../../../../views/app"
 
 export default class App extends Component {
     render() {
-        const { channels, logged_in } = this.props
+        const { channels, logged_in_user } = this.props
         const channelListView = channels ? channels.map(channel => {
             return <p><a href={`/server/${channel.server.name}/${channel.name}`}>${channel.server.name} / #{channel.name}</a></p>
         }) : null
         return (
             <div>
                 <Head title="Beluga" />
-                <HeaderView logged_in={logged_in} />
+                <HeaderView logged_in_user={logged_in_user} />
                 {channelListView}
             </div>
         )

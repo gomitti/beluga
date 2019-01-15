@@ -15,7 +15,7 @@
     font-family: "Beluga";
     font-weight: 400;
     font-style: normal;
-    src: url("/asset/theme/default/beluga.ttf?v=0.1.63") format("truetype");
+    src: url("/asset/theme/default/beluga.otf?v=0.8.25") format("opentype");
 }
 
 body {
@@ -33,7 +33,7 @@ body {
     display: none !important;
 }
 
-.scroller-wrapper {
+.scroller-container {
     display: flex;
     flex-direction: column;
 

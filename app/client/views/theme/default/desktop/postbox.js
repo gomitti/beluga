@@ -18,7 +18,7 @@ class TooltipButton extends Component {
     render() {
         const { type, handle_click, is_active, description } = this.props
         return (
-            <button className={classnames(`tooltip-button action ${type} emojipicker-ignore-click user-defined-color-active`, {
+            <button className={classnames(`tooltip-button action-button ${type} emoji-picker-ignore-click user-defined-color-active`, {
                 "active": !!is_active
             })}
                 onClick={event => {
@@ -362,7 +362,7 @@ export default class PostboxView extends Component {
         if (event.target.nodeName === "SPAN") {
             return
         }
-        const is_showing = EmojiPicker.toggle(event.target, shortname => {
+        const is_active = EmojiPicker.toggle(event.target, shortname => {
             const { textarea } = this.refs
             this.setText(textarea.value + `:${shortname}:`)
         }, () => {
@@ -371,7 +371,7 @@ export default class PostboxView extends Component {
             })
         })
         this.setState({
-            "show_emoji_picker": is_showing
+            "show_emoji_picker": is_active
         })
     }
     onClickActionText = event => {
@@ -411,8 +411,8 @@ export default class PostboxView extends Component {
         this.wrapWithTag(event, config.markdown.pre, true)
     }
     render() {
-        const { logged_in, pinned_media, recent_uploads } = this.props
-        if (!!logged_in === false) {
+        const { logged_in_user, pinned_media, recent_uploads } = this.props
+        if (!!logged_in_user === false) {
             return (
                 <div>投稿するには<a href="/login">ログイン</a>してください</div>
             )
@@ -423,76 +423,80 @@ export default class PostboxView extends Component {
 
         const preview_status = {
             "text": this.state.preview_text,
-            "user": logged_in,
+            "user": logged_in_user,
             "server": server
         }
         return (
-            <div className="postbox-module" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
+            <div className="postbox-component" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
                 <div className="inside">
                     <div className="postbox-left">
                         <a href="/user/" className="avatar link">
-                            <img src={logged_in.avatar_url} />
+                            <img src={logged_in_user.avatar_url} />
                         </a>
                     </div>
                     <div className="postbox-right">
-                        <div className="postbox-content">
-                            <div className="body">
-                                <textarea
-                                    className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })}
-                                    ref="textarea"
-                                    onChange={this.onChangeText}
-                                    onPaste={this.onPasteText}
-                                    onKeyUp={this.onKeyUp}
-                                    onKeyDown={this.onKeyDown} />
+                        <div className="padding-group">
+                            <div className="postbox-input-area">
+                                <div className="textarea-container">
+                                    <textarea
+                                        className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })}
+                                        ref="textarea"
+                                        onChange={this.onChangeText}
+                                        onPaste={this.onPasteText}
+                                        onKeyUp={this.onKeyUp}
+                                        onKeyDown={this.onKeyDown} />
+                                </div>
                             </div>
-                        </div>
-                        <ProgressView metadatas={uploading_file_metadatas} />
-                        <div className="postbox-footer">
-                            <input className="hidden" type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
-                            <div className="actions">
-                                <div className="unit">
-                                    <TooltipButton type="media-upload" handle_click={this.onClickActionMediaUpload} description="アップロード" />
-                                    <TooltipButton type="media-history" handle_click={this.onClickActionMediaHistory} description="アップロード履歴" is_active={this.state.show_recent_uploads} />
-                                    <TooltipButton type="media-pinned" handle_click={this.onClickActionPinnedMedia} description="よく使う画像" is_active={this.state.show_pinned_media} />
-                                </div>
-                                <div className="unit">
-                                    <TooltipButton type="emoji" handle_click={this.onClickActionEmoji} description="絵文字を入力" is_active={this.state.show_emoji_picker} />
-                                    <TooltipButton type="preview" handle_click={this.onClickActionPreview} description="投稿プレビュー" is_active={this.state.show_preview} />
-                                    <TooltipButton type="text-editing" handle_click={this.onClickActionText} description="テキストの装飾" is_active={this.state.show_text_actions} />
-                                </div>
-                                {this.state.show_text_actions ?
-                                    <div className="unit">
-                                        <TooltipButton type="text-big" handle_click={this.onClickActionTextBig} description="サイズ" />
-                                        <TooltipButton type="text-bold" handle_click={this.onClickActionTextEmphasis} description="太字" />
-                                        <TooltipButton type="text-underline" handle_click={this.onClickActionTextUnderline} description="下線" />
-                                        <TooltipButton type="text-strikethrough" handle_click={this.onClickActionTextStrikethrough} description="打ち消し線" />
-                                        <TooltipButton type="text-italic" handle_click={this.onClickActionTextItalic} description="イタリック" />
-                                        <TooltipButton type="text-code" handle_click={this.onClickActionTextPre} description="コード" />
+                            <ProgressView metadatas={uploading_file_metadatas} />
+                            <div className="postbox-footer">
+                                <input className="hidden" type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
+                                <div className="action-area">
+                                    <div className="button-group">
+                                        <TooltipButton type="media-upload" handle_click={this.onClickActionMediaUpload} description="アップロード" />
+                                        <TooltipButton type="media-history" handle_click={this.onClickActionMediaHistory} description="アップロード履歴" is_active={this.state.show_recent_uploads} />
+                                        <TooltipButton type="media-pinned" handle_click={this.onClickActionPinnedMedia} description="よく使う画像" is_active={this.state.show_pinned_media} />
                                     </div>
-                                    : null
-                                }
-                            </div>
-                            <div className="submit">
-                                <button className={classnames("button meiryo", {
-                                    "ready user-defined-bg-color": !postbox.is_pending && this.state.is_post_button_active,
-                                    "neutral": !postbox.is_pending && !this.state.is_post_button_active,
-                                    "in-progress": postbox.is_pending,
-                                })} onClick={this.post}>
-                                    <span className="progress-text">投稿する</span>
-                                    <span className="display-text">投稿する</span>
-                                </button>
+                                    <div className="button-group">
+                                        <TooltipButton type="emoji" handle_click={this.onClickActionEmoji} description="絵文字を入力" is_active={this.state.show_emoji_picker} />
+                                        <TooltipButton type="preview" handle_click={this.onClickActionPreview} description="投稿プレビュー" is_active={this.state.show_preview} />
+                                        <TooltipButton type="text-editing" handle_click={this.onClickActionText} description="テキストの装飾" is_active={this.state.show_text_actions} />
+                                    </div>
+                                    {this.state.show_text_actions ?
+                                        <div className="button-group">
+                                            <TooltipButton type="text-big" handle_click={this.onClickActionTextBig} description="サイズ" />
+                                            <TooltipButton type="text-bold" handle_click={this.onClickActionTextEmphasis} description="太字" />
+                                            <TooltipButton type="text-underline" handle_click={this.onClickActionTextUnderline} description="下線" />
+                                            <TooltipButton type="text-strikethrough" handle_click={this.onClickActionTextStrikethrough} description="打ち消し線" />
+                                            <TooltipButton type="text-italic" handle_click={this.onClickActionTextItalic} description="イタリック" />
+                                            <TooltipButton type="text-code" handle_click={this.onClickActionTextPre} description="コード" />
+                                        </div>
+                                        : null
+                                    }
+                                </div>
+                                <div className="submit-area">
+                                    <button className={classnames("button meiryo", {
+                                        "ready user-defined-bg-color": !postbox.is_pending && this.state.is_post_button_active,
+                                        "neutral": !postbox.is_pending && !this.state.is_post_button_active,
+                                        "in-progress": postbox.is_pending,
+                                    })} onClick={this.post}>
+                                        <span className="progress-text">投稿する</span>
+                                        <span className="display-text">投稿する</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        <MediaView
-                            is_hidden={!this.state.show_pinned_media}
-                            media={pinned_media}
-                            title="よく使う画像"
-                            append={this.appendMediaLink} />
-                        <MediaView
-                            is_hidden={!this.state.show_recent_uploads}
-                            media={recent_uploads}
-                            title="アップロード履歴"
-                            append={this.appendMediaLink} />
+                        <div className="postbox-media-area">
+                            <MediaView
+                                is_hidden={!this.state.show_pinned_media}
+                                media={pinned_media}
+                                title="よく使う画像"
+                                append={this.appendMediaLink} />
+                            <MediaView
+                                is_hidden={!this.state.show_recent_uploads}
+                                media={recent_uploads}
+                                title="アップロード履歴"
+                                append={this.appendMediaLink} />
+                        </div>
                     </div>
                 </div>
                 <div className="preview postbox-preview-bg-color">

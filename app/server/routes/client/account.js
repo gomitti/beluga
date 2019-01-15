@@ -7,7 +7,7 @@ module.exports = (fastify, options, next) => {
         const csrf_token = await fastify.csrf_token(req, res)
         const { redirect } = req.query
         if (redirect) {
-            if (!!redirect.match(/^\/[\w\/@]+$/) === false) {
+            if (!!redirect.match(/^\/.+$/) === false) {
                 return fastify.error(app, req, res, 404)
             }
         }

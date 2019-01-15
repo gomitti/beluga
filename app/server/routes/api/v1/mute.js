@@ -5,19 +5,36 @@ import storage from "../../../config/storage"
 
 module.exports = (fastify, options, next) => {
     let api_version = "v1"
+    fastify.post(`/api/v1/mute/word/create`, async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            await model.v1.mute.user.create(fastify.mongo.db, {
+                "requested_by": session.user_id,
+                "target_user_id": user.id
+            })
+            res.send({ "success": true })
+        } catch (error) {
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
     fastify.post(`/api/v1/mute/user/create`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": req.body.id, "name": req.body.name })
+            const user = await memcached.v1.user.show(fastify.mongo.db, {
+                "id": req.body.user_id_to_mute, "name": req.body.user_name_to_mute
+            })
             if (user === null) {
                 throw new Error("対象のユーザーが見つかりません")
             }
             await model.v1.mute.user.create(fastify.mongo.db, {
                 "requested_by": session.user_id,
-                "target_user_id": user.id
+                "user_id_to_mute": user.id
             })
             res.send({ "success": true })
         } catch (error) {
@@ -30,20 +47,22 @@ module.exports = (fastify, options, next) => {
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": req.body.id, "name": req.body.name })
+            const user = await memcached.v1.user.show(fastify.mongo.db, {
+                "id": req.body.user_id_to_mute, "name": req.body.user_name_to_mute
+            })
             if (user === null) {
                 throw new Error("対象のユーザーが見つかりません")
             }
             await model.v1.mute.user.destory(fastify.mongo.db, {
                 "requested_by": session.user_id,
-                "target_user_id": user.id
+                "user_id_to_unmute": user.id
             })
             res.send({ "success": true })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.get(`/api/v1/mute/user/list`, async (req, res) => {
+    fastify.get(`/api/v1/mute/users/list`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {

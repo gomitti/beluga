@@ -12,11 +12,11 @@ configure({ "enforceActions": true })
 
 export default class App extends Component {
     render() {
-        const { server, logged_in, joined_channels, server_channels, platform, device } = this.props
+        const { server, logged_in_user, joined_channels, server_channels, platform, device } = this.props
         return (
             <div id="app" className="timeline home">
-                <Head title={`みつける / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} device={device} />
-                <NavigationBarView server={server} logged_in={logged_in} active="channels" />
+                <Head title={`みつける / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} device={device} />
+                <NavigationBarView server={server} logged_in_user={logged_in_user} active="channels" />
                 <div id="content" className="timeline home">
                     <div className="column">
                         <HashtagListView channels={joined_channels} server={server} />

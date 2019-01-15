@@ -11,7 +11,7 @@
     background-color: white;
 }
 
-.settings-content {
+.settings-container {
     background-color: white;
     padding-top: 50px;
     margin: 0 auto;
@@ -51,15 +51,15 @@
 
         > .title.settings::before {
             font-family: Beluga;
-            content: "\E00C";
-            font-size: 16px;
+            content: "\2427";
+            font-size: 24px;
             margin-right: 4px;
         }
 
         > .title.developers::before {
             font-family: Beluga;
-            content: "\E011";
-            font-size: 16px;
+            content: "\245A";
+            font-size: 24px;
             margin-right: 4px;
         }
     }
@@ -89,13 +89,13 @@
 
             &.active::after {
                 font-family: Beluga;
-                content: "\E00E";
+                content: "\200E";
                 margin-left: 2px;
             }
 
             &:hover::after {
                 font-family: Beluga;
-                content: "\E00E";
+                content: "\200E";
                 margin-left: 2px;
             }
         }
@@ -106,15 +106,16 @@
     }
 }
 
-.settings-content-module {
+.settings-container-main {
     float: left;
     margin-left: 40px;
     margin-bottom: 100px;
 }
 
-.settings-module {
+.settings-component {
     margin-top: 40px;
     font-size: 15px;
+    width: 500px;
 
     > .head {
         padding-bottom: 12px;
@@ -146,7 +147,7 @@
     }
 }
 
-.settings-module.form {
+.settings-component.form {
     > .item {
         margin-top: 20px;
         font-size: 14px;
@@ -196,7 +197,7 @@
     }
 }
 
-.settings-module.desktop {
+.settings-component.desktop {
     > .item {
         > .title {
             margin-bottom: 6px;
@@ -204,7 +205,7 @@
     }
 }
 
-.settings-module.mute {
+.settings-component.mute {
     width: 500px;
 
     > .form-component {
@@ -335,17 +336,30 @@
 
                     > .destory-button {
                         flex: 0 0 auto;
-                        font-size: 14px;
+                        font-size: 13px;
                         line-height: 26px;
                         margin-left: 10px;
+                        color: rgb(100, 100, 100);
+                        text-decoration: none;
+
+                        &:hover {
+                            text-decoration: none;
+                            color: black;
+                        }
                     }
                 }
             }
         }
+
+        > .words {
+            margin-top: 4px;
+            width: 100%;
+            height: 400px;
+        }
     }
 }
 
-.settings-module.profile {
+.settings-component.profile {
     > .item.status {
         > .editor {
             display: flex;
@@ -373,11 +387,12 @@
                         width: 100%;
                         height: 100%;
                         font-family: Beluga;
-                        font-size: 20px;
+                        font-size: 28px;
+                        line-height: 38px;
                         color: rgb(100, 100, 100);
 
                         &::before {
-                            content: "\E000";
+                            content: "\2430";
                         }
                     }
                 }
@@ -412,7 +427,7 @@
     }
 }
 
-.settings-module.color-pickers {
+.settings-component.color-pickers {
     > .picker {
         margin-bottom: 26px;
     }
@@ -445,7 +460,7 @@
     }
 }
 
-.settings-module.background-image {
+.settings-component.background-image {
     .background-image-wrapper {
         > a {
             > img {
@@ -456,7 +471,7 @@
     }
 }
 
-.settings-module.pins {
+.settings-component.pins {
     > .description {
         > p {
             line-height: 18px;
@@ -619,7 +634,7 @@
     }
 }
 
-.settings-module.uploads-aggregation {
+.settings-component.uploads-aggregation {
     > .table {
         > .row {
             display: flex;
@@ -638,7 +653,7 @@
     }
 }
 
-.settings-module.uploads {
+.settings-component.uploads {
     width: 500px;
 
     > .file-list {
@@ -658,12 +673,13 @@
                 top: 16px;
                 right: 16px;
                 font-family: Beluga;
-                font-size: 17px;
+                font-size: 24px;
+                line-height: 26px;
                 color: rgb(100, 100, 100);
             }
 
             > .button.delete::before {
-                content: "\E009";
+                content: "\2432";
             }
 
             > .thumbnail {
@@ -707,6 +723,190 @@
 
             &:last-child {
                 border-bottom: none;
+            }
+        }
+    }
+}
+
+.settings-component.channel-access-control {
+    > .access-control {
+        > .choice {
+            display: block;
+            position: relative;
+            background-color: rgb(250, 250, 250);
+            border: 1px solid rgb(236, 236, 236);
+            border-radius: 4px;
+            margin-top: 5px;
+            padding: 10px;
+            cursor: pointer;
+
+            > .radio-button {
+                position: absolute;
+                top: 7px;
+                left: 10px;
+            }
+
+            > .name {
+                font-weight: bold;
+                font-size: 15px;
+                margin-left: 20px;
+            }
+
+            > .description {
+                font-size: 14px;
+                color: rgb(120, 120, 120);
+                line-height: 16px;
+                margin: 4px 0 0 20px;
+            }
+        }
+    }
+
+    > .form-component {
+        > .description {
+            line-height: 20px;
+        }
+
+        > .username-component {
+            margin-top: 5px;
+            display: flex;
+            flex-direction: row;
+
+            > .input-component {
+                flex: 1 1 auto;
+                margin-right: 5px;
+                position: relative;
+
+                > input {
+                    height: 33px;
+                    width: 100%;
+                    padding: 2px;
+                    font-size: 16px;
+                    box-sizing: border-box;
+                }
+
+                > .complete-component {
+                    position: absolute;
+                    top: 36px;
+                    left: 0;
+                    right: 0;
+                    height: 200px;
+                    background-color: white;
+                    border: 1px solid rgb(220, 220, 220);
+                    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+                    border-radius: 4px;
+                    overflow-x: hidden;
+                    overflow-y: scroll;
+
+                    > .list {
+                        > .user {
+                            cursor: pointer;
+                            display: flex;
+                            flex-direction: row;
+                            height: 26px;
+                            padding: 4px 10px;
+                            overflow: hidden;
+
+                            > .avatar {
+                                flex: 0 0 auto;
+                                width: 26px;
+                                height: 26px;
+                                border-radius: 15px;
+                            }
+
+                            > .name {
+                                font-weight: bold;
+                                font-size: 15px;
+                                color: black;
+                                line-height: 26px;
+                                margin-left: 10px;
+                            }
+
+                            > .display-name {
+                                font-weight: normal;
+                                font-size: 15px;
+                                color: rgb(90, 90, 90);
+                                line-height: 26px;
+                                margin-left: 10px;
+                            }
+                        }
+                    }
+                }
+            }
+
+            > .button {
+                flex: 0 0 auto;
+            }
+        }
+
+        > .list-component {
+            > .description {
+                margin: 20px 0 10px 0;
+            }
+
+            > .list {
+                border: 1px solid #dcdcdc;
+                border-radius: 6px;
+
+                > .user {
+                    cursor: pointer;
+                    display: flex;
+                    flex-direction: row;
+                    height: 26px;
+                    padding: 10px 14px;
+                    overflow: hidden;
+                    border-bottom: 1px solid #dcdcdc;
+
+                    &:last-child {
+                        border-bottom: none;
+                    }
+
+                    > .avatar {
+                        flex: 0 0 auto;
+                        width: 26px;
+                        height: 26px;
+                        border-radius: 15px;
+                    }
+
+                    > .name {
+                        flex: 0 0 auto;
+                        font-weight: bold;
+                        font-size: 15px;
+                        color: black;
+                        line-height: 26px;
+                        margin-left: 10px;
+                    }
+
+                    > .display-name {
+                        flex: 1 1 auto;
+                        font-weight: normal;
+                        font-size: 15px;
+                        color: rgb(90, 90, 90);
+                        line-height: 26px;
+                        margin-left: 10px;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                    }
+
+                    > .kick-button {
+                        flex: 0 0 auto;
+                        font-size: 14px;
+                        line-height: 26px;
+                        margin-left: 10px;
+                        color: rgb(100, 100, 100);
+                        text-decoration: none;
+
+                        &:hover {
+                            text-decoration: none;
+                            color: black;
+                        }
+
+                        &::before {
+                            font-family: Beluga;
+                            content: "\245C";
+                            font-size: 18px;
+                        }
+                    }
+                }
             }
         }
     }

@@ -129,7 +129,7 @@ class UserMuteComponent extends Component {
         try {
             {
                 const res = await request.post("/mute/user/create", {
-                    "name": name.replace("@", "")
+                    "user_name_to_mute": name.replace("@", "")
                 })
                 const { data } = res
                 if (data.success == false) {
@@ -137,7 +137,7 @@ class UserMuteComponent extends Component {
                 }
             }
             {
-                const res = await request.get("/mute/user/list", {})
+                const res = await request.get("/mute/users/list", {})
                 const { data } = res
                 if (data.success == false) {
                     throw new Error(data.error)
@@ -159,7 +159,7 @@ class UserMuteComponent extends Component {
         try {
             {
                 const res = await request.post("/mute/user/destory", {
-                    "id": user.id
+                    "user_id_to_mute": user.id
                 })
                 const { data } = res
                 if (data.success == false) {
@@ -167,7 +167,7 @@ class UserMuteComponent extends Component {
                 }
             }
             {
-                const res = await request.get("/mute/user/list", {})
+                const res = await request.get("/mute/users/list", {})
                 const { data } = res
                 if (data.success == false) {
                     throw new Error(data.error)
@@ -185,7 +185,7 @@ class UserMuteComponent extends Component {
         const { users } = this.props
         const { match, muted_users } = this.state
         return (
-            <div className="settings-module mute">
+            <div className="settings-component mute">
                 <div className="head">
                     <h1>ユーザー</h1>
                 </div>
@@ -211,21 +211,41 @@ class UserMuteComponent extends Component {
     }
 }
 
+class WordMuteComponent extends Component {
+    constructor(props) {
+        super(props)
+    }
+    render() {
+        return (
+            <div className="settings-component mute">
+                <div className="head">
+                    <h1>ワード</h1>
+                </div>
+                <div className="form-component">
+                    <p className="description">表示したくない単語を改行で区切って入力してください</p>
+                    <textarea className="words form-input user-defined-border-color-focus" ref="textarea"></textarea>
+                </div>
+            </div>
+        )
+    }
+}
+
 export default class App extends AppComponent {
     render() {
-        const { platform, logged_in, users, muted_users } = this.props
+        const { platform, logged_in_user, users, muted_users } = this.props
         return (
             <div id="app" className="settings">
-                <Head title={`ミュート / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationbarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content">
+                <Head title={`ミュート / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container">
                     <div className="inside">
                         <SettingsMenuView active="mute" />
-                        <div className="settings-content-module">
+                        <div className="settings-container-main">
                             <UserMuteComponent
-                                logged_in={logged_in}
+                                logged_in_user={logged_in_user}
                                 users={users}
                                 muted_users={muted_users} />
+                            <WordMuteComponent />
                         </div>
                     </div>
                 </div>

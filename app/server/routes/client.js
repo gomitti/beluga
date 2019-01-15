@@ -20,7 +20,7 @@ module.exports = (fastify, options, next) => {
         }
         return sha256(session.id)
     })
-    fastify.decorate("logged_in", async (req, res, session) => {
+    fastify.decorate("logged_in_user", async (req, res, session) => {
         if (!!session === false) {
             session = await fastify.session.start(req, res)
         }
@@ -54,7 +54,7 @@ module.exports = (fastify, options, next) => {
         }
         return "desktop"
     })
-    fastify.decorate("build_columns", async (stored_columns, initial_column, logged_in, request_query, source_server) => {
+    fastify.decorate("build_columns", async (stored_columns, initial_column, logged_in_user, request_query, source_server) => {
         if (stored_columns.length == 0) {
             stored_columns.push(initial_column)
         }
@@ -81,7 +81,7 @@ module.exports = (fastify, options, next) => {
                 "trim_channel": false,
                 "trim_favorited_by": false,
                 "trim_recipient": false,
-                "requested_by": logged_in.id
+                "requested_by": logged_in_user.id
             }, timeline_query)
 
             const { server_id, user_id, channel_id, in_reply_to_status_id } = param_ids
@@ -108,7 +108,7 @@ module.exports = (fastify, options, next) => {
                 }
                 const channel = await model.v1.channel.show(fastify.mongo.db, {
                     "id": channel_id,
-                    "requested_by": logged_in.id
+                    "requested_by": logged_in_user.id
                 })
                 if (channel === null) {
                     continue
@@ -157,7 +157,7 @@ module.exports = (fastify, options, next) => {
                     "trim_recipient": false,
                     "trim_favorited_by": false,
                     "trim_commenters": false,
-                    "requested_by": logged_in.id
+                    "requested_by": logged_in_user.id
                 })
                 if (in_reply_to_status === null) {
                     continue
@@ -170,7 +170,7 @@ module.exports = (fastify, options, next) => {
             }
             if (type === "notifications") {
                 const statuses = await timeline.v1.notifications(fastify.mongo.db, assign(query, {
-                    "user_id": logged_in.id,
+                    "user_id": logged_in_user.id,
                     "server_id": server_id
                 }))
                 column.statuses = statuses
@@ -192,7 +192,7 @@ module.exports = (fastify, options, next) => {
 
     fastify.next("/", async (app, req, res) => {
         try {
-            const logged_in = await fastify.logged_in(req, res)
+            const logged_in_user = await fastify.logged_in_user(req, res)
             const db = fastify.mongo.db
             const rows = await db.collection("channels").find({}).toArray()
             const channels = []
@@ -206,7 +206,7 @@ module.exports = (fastify, options, next) => {
                 channels.push(channel)
             }
             const device = fastify.device(req)
-            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/entrance`, { channels, logged_in })
+            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/entrance`, { channels, logged_in_user })
         } catch (error) {
             console.log(error)
             return fastify.error(app, req, res, 500)
@@ -217,6 +217,12 @@ module.exports = (fastify, options, next) => {
     })
     fastify.next("/gradients", async (app, req, res) => {
         app.render(req.req, res.res, `/common/gradients`, { "gradients": config.gradients })
+    })
+    fastify.next("/sprite", async (app, req, res) => {
+        app.render(req.req, res.res, `/common/sprite`)
+    })
+    fastify.next("/emoji", async (app, req, res) => {
+        app.render(req.req, res.res, `/common/emoji`)
     })
     fastify.get("/embed/tweet/:user_name/:status_id", (req, res) => {
         const user_name = req.params.user_name
@@ -231,19 +237,16 @@ module.exports = (fastify, options, next) => {
         const href = `https://twitter.com/${user_name}/status/${status_id}`
         const html = `
 <html>
-    <head></head>
-    <body>
-        <div>
-            <Head>
-                <meta charSet="utf-8" />
-                <link type="text/css" rel="stylesheet" href="https://platform.twitter.com/css/tweet.ab9101be6980fafdba47e88fa54bd311.light.ltr.css" />
-            </Head>
-            <blockquote class="twitter-tweet" data-lang="ja">
-                <p lang="ja" dir="ltr"><a href=${href}></a></p>
-                <a href=${href}></a>
-            </blockquote>
-            <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-        </div>
+    <head>
+        <meta charSet="utf-8" />
+        <link type="text/css" rel="stylesheet" href="https://platform.twitter.com/css/tweet.ab9101be6980fafdba47e88fa54bd311.light.ltr.css" />
+    </head>
+    <body style="width:100%;">
+        <blockquote class="twitter-tweet" data-lang="ja">
+            <p lang="ja" dir="ltr"><a href=${href}></a></p>
+            <a href=${href}></a>
+        </blockquote>
+        <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     </body>
 </html>
         `

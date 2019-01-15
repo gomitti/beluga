@@ -1,4 +1,4 @@
-.postbox-module {
+.postbox-component {
     position: relative;
     z-index: 1;
 
@@ -6,8 +6,7 @@
         position: relative;
         z-index: 1;
         min-height: 65px;
-        padding: 6px 16px;
-        padding-left: 6px;
+        padding: 6px 0 6px 6px;
         display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
@@ -63,12 +62,16 @@
     flex: 1 1 auto;
     z-index: 3;
     position: relative;
+
+    > .padding-group {
+        padding-right: 16px;
+    }
 }
 
-.postbox-content {
+.postbox-input-area {
     margin-top: 5px;
 
-    > .body {
+    > .textarea-container {
         line-height: 0;
 
         > textarea {
@@ -96,20 +99,20 @@
     margin-top: 6px;
     justify-content: flex-end;
 
-    > .actions {
+    > .action-area {
         flex: 1 1 auto;
         display: flex;
         flex-wrap: wrap;
         flex-direction: row;
 
-        > .unit {
+        > .button-group {
             flex: 0 0 auto;
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
             margin: 0 6px 6px 0;
 
-            > .action {
+            > .action-button {
                 display: block;
                 width: 30px;
                 height: 30px;
@@ -118,8 +121,8 @@
                 border-width: 1px 0 1px 1px;
                 position: relative;
                 font-family: Beluga;
-                font-size: 18px;
-                line-height: 1;
+                font-size: 28px;
+                line-height: 32px;
                 padding: 0;
                 color: rgb(120, 120, 120);
 
@@ -143,61 +146,61 @@
                 }
 
                 &.media-upload::before {
-                    content: "\E020";
+                    content: "\2433";
                 }
 
                 &.media-history::before {
-                    content: "\E021";
+                    content: "\2434";
                 }
 
                 &.media-pinned::before {
-                    content: "\E01F";
+                    content: "\2428";
                 }
 
                 &.emoji::before {
-                    content: "\E02A";
+                    content: "\2430";
                 }
 
                 &.preview::before {
-                    content: "\E029";
+                    content: "\2435";
                 }
 
                 &.text-editing::before {
-                    content: "\E022";
+                    content: "\2436";
                 }
 
                 &.misc::before {
-                    content: "\E004";
+                    content: "\2004";
                 }
 
                 &.text-big::before {
-                    content: "\E023";
+                    content: "\2437";
                 }
 
                 &.text-bold::before {
-                    content: "\E024";
+                    content: "\2438";
                 }
 
                 &.text-underline::before {
-                    content: "\E025";
+                    content: "\2439";
                 }
 
                 &.text-strikethrough::before {
-                    content: "\E026";
+                    content: "\2450";
                 }
 
                 &.text-italic::before {
-                    content: "\E027";
+                    content: "\2451";
                 }
 
                 &.text-code::before {
-                    content: "\E028";
+                    content: "\2452";
                 }
             }
         }
     }
 
-    > .submit {
+    > .submit-area {
         display: flex;
         flex: 0 1 auto;
         flex-direction: row;
@@ -210,7 +213,7 @@
     }
 }
 
-.postbox-media {
+.postbox-media-component {
     display: flex;
     position: relative;
     width: 100%;
@@ -228,6 +231,7 @@
         flex-direction: column;
         flex-wrap: nowrap;
         padding-bottom: 2px;
+        padding-right: 16px;
 
         > .row {
             display: flex;
@@ -276,7 +280,7 @@
     }
 }
 
-.postbox-media.no-media {
+.postbox-media-component.no-media {
     padding: 20px;
     text-align: center;
     font-size: 15px;

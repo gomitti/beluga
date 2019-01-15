@@ -18,6 +18,10 @@ const copy = (target, source) => {
             continue
         }
         if (typeof value === "object") {
+            if (typeof value.toHexString === "function") {
+                target[key] = value.toHexString()
+                continue
+            }
             target[key] = copy({}, value)
             continue
         }

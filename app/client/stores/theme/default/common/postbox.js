@@ -9,6 +9,12 @@ export const destinations = {
     "thread": 3,
 }
 
+export class PostboxOptions {
+    constructor() {
+        this.is_hidden = false
+    }
+}
+
 export default class PostboxStore {
     @observable is_pending = false
     constructor(destination, params) {
@@ -17,7 +23,7 @@ export default class PostboxStore {
             assert(is_object(channel), "$channel must be of type object")
         } else if (destination === destinations.home) {
             assert(is_object(user), "$user must be of type object")
-            assert(is_object(server), "$server must be of type object at PostboxStore.constructor")
+            assert(is_object(server), "$server must be of type object")
         } else if (destination === destinations.thread) {
             assert(is_object(in_reply_to_status), "$in_reply_to_status must be of type object")
         } else {

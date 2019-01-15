@@ -24,10 +24,10 @@ configure({ "enforceActions": true })
 class MultipleColumnsContainer extends MultipleColumnsContainerView {
     constructor(props) {
         super(props)
-        const { server, logged_in, columns, channel, callback_change,
+        const { server, logged_in_user, columns, channel, callback_change,
             muted_users, muted_words, request_query, has_newer_statuses, has_older_statuses } = props
-        assert(is_object(server), "$server must be of type object at HashtagMultipleColumnsContainer.constructor")
-        assert(is_object(logged_in), "$logged_in must be of type object")
+        assert(is_object(server), "$server must be of type object")
+        assert(is_object(logged_in_user), "$logged_in_user must be of type object")
         assert(is_array(columns), "$columns must be of type array")
         assert(is_array(muted_users), "$muted_users must be of type array")
         assert(is_array(muted_words), "$muted_words must be of type array")
@@ -47,7 +47,7 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
 
                 const column_options = new ColumnOptions()
                 if (type === enums.column.type.server) {
-                    column_options.status.show_belonging = true
+                    column_options.status.show_source_link = true
                     column_options.postbox.is_hidden = true
                 }
                 if (type === enums.column.type.channel) {
@@ -59,19 +59,17 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
                     }
                 }
 
-                const opt = new TimelineOptions()
                 if (column_index == 0) {
-                    opt.has_newer_statuses = has_newer_statuses
-                    opt.has_older_statuses = has_older_statuses
+                    column_options.timeline.has_newer_statuses = has_newer_statuses
+                    column_options.timeline.has_older_statuses = has_older_statuses
                     if (has_newer_statuses) {
-                        opt.auto_reloading_enabled = false
+                        column_options.timeline.auto_reloading_enabled = false
                     }
                 } else {
-                    opt.has_older_statuses = true
+                    column_options.timeline.has_older_statuses = true
                 }
-                opt.muted_users = muted_users
-                opt.muted_words = muted_words
-                column_options.timeline = opt
+                column_options.timeline.muted_users = muted_users
+                column_options.timeline.muted_words = muted_words
 
                 const column_settings = new ColumnSettings()
 
@@ -91,15 +89,13 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
             const { type, params, statuses } = column
             const column_options = new ColumnOptions()
 
-            const opt = new TimelineOptions()
-            opt.has_newer_statuses = has_newer_statuses
-            opt.has_older_statuses = has_older_statuses
+            column_options.timeline.has_newer_statuses = has_newer_statuses
+            column_options.timeline.has_older_statuses = has_older_statuses
             if (has_newer_statuses) {
-                opt.auto_reloading_enabled = false
+                column_options.timeline.auto_reloading_enabled = false
             }
-            opt.muted_users = muted_users
-            opt.muted_words = muted_words
-            column_options.timeline = opt
+            column_options.timeline.muted_users = muted_users
+            column_options.timeline.muted_words = muted_words
 
             const column_settings = new ColumnSettings()
 
@@ -120,7 +116,7 @@ export default class App extends Component {
     constructor(props) {
         super(props)
         const { server } = props
-        assert(is_object(server), "$server must be of type object at App.constructor")
+        assert(is_object(server), "$server must be of type object")
 
         this.state = {
             "app_inline_flex": false
@@ -156,16 +152,16 @@ export default class App extends Component {
         }
     }
     render() {
-        const { channel, server, logged_in, platform, pinned_emoji_shortnames, custom_emoji_shortnames } = this.props
+        const { channel, server, logged_in_user, platform, pinned_emoji_shortnames, custom_emoji_shortnames } = this.props
         const desktop_settings = get_desktop_settings()
         return (
             <div id="app" className={classnames("timeline channel", {
                 "inline-flex": this.state.app_inline_flex,
                 "multiple-columns": desktop_settings.multiple_columns_enabled
             })}>
-                <Head title={`${channel.name} / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationBarView server={server} logged_in={logged_in} active="channels" />
-                <div id="content" className={classnames("timeline channel tooltip-offset-base", { "logged_in": !!logged_in })}>
+                <Head title={`${channel.name} / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationBarView server={server} logged_in_user={logged_in_user} active="channels" />
+                <div id="content" className={classnames("timeline channel tooltip-offset-base", { "logged_in_user": !!logged_in_user })}>
                     <MultipleColumnsContainer {...this.props} />
                 </div>
                 <EmojiPicker

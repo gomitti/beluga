@@ -13,9 +13,9 @@ import AppComponent from "../../../../../views/app"
 class ThemeComponent extends Component {
     constructor(props) {
         super(props)
-        const { logged_in } = props
+        const { logged_in_user } = props
         this.state = {
-            "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
+            "color": logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color,
             "pending_change": false,
             "pending_reset": false,
         }
@@ -95,7 +95,7 @@ class ThemeComponent extends Component {
     }
     render() {
         return (
-            <div className="settings-module color-pickers">
+            <div className="settings-component color-pickers">
                 <div className="head">
                     <h1>テーマカラー</h1>
                 </div>
@@ -134,8 +134,8 @@ class ThemeComponent extends Component {
 class BackgroundComponent extends Component {
     constructor(props) {
         super(props)
-        const { logged_in } = props
-        const background_image = logged_in.profile.use_background_image ? logged_in.profile.background_image : null
+        const { logged_in_user } = props
+        const background_image = logged_in_user.profile.use_background_image ? logged_in_user.profile.background_image : null
         this.state = {
             "file_selected": false,
             "background_image": null,
@@ -232,7 +232,7 @@ class BackgroundComponent extends Component {
     }
     render() {
         return (
-            <div className="settings-module background-image">
+            <div className="settings-component background-image">
                 <div className="head">
                     <h1>背景画像</h1>
                 </div>
@@ -277,27 +277,27 @@ class BackgroundComponent extends Component {
 export default class App extends AppComponent {
     constructor(props) {
         super(props)
-        const { logged_in } = props
+        const { logged_in_user } = props
         this.state = {
-            "color": logged_in ? logged_in.profile.theme_color : config.default_theme_color,
+            "color": logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color,
         }
     }
     onUpdateThemeColor = color => {
         this.setState({ color })
     }
     render() {
-        const { platform, logged_in } = this.props
-        logged_in.profile.theme_color = this.state.color
+        const { platform, logged_in_user } = this.props
+        logged_in_user.profile.theme_color = this.state.color
         return (
             <div id="app" className="settings">
-                <Head title={`デザイン / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationbarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content">
+                <Head title={`デザイン / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container">
                     <div className="inside">
                         <SettingsMenuView active="design" />
-                        <div className="settings-content-module">
-                            <ThemeComponent logged_in={logged_in} onUpdate={this.onUpdateThemeColor} />
-                            <BackgroundComponent logged_in={logged_in} />
+                        <div className="settings-container-main">
+                            <ThemeComponent logged_in_user={logged_in_user} onUpdate={this.onUpdateThemeColor} />
+                            <BackgroundComponent logged_in_user={logged_in_user} />
                         </div>
                     </div>
                 </div>

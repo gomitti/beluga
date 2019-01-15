@@ -1,5 +1,4 @@
 import memcached from "../../../memcached"
-import config from "../../../config/beluga"
 
 export default async (db, params) => {
     const user_ids = await memcached.v1.server.members(db, { "id": params.id })

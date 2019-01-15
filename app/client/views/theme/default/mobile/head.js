@@ -15,8 +15,8 @@ const hex_to_rgba = (hex, alpha) => {
 
 export default class HeadView extends Component {
     render() {
-        const { platform, logged_in, title } = this.props
-        const color = (logged_in && logged_in.profile) ? logged_in.profile.theme_color : "#477da7"
+        const { platform, logged_in_user, title } = this.props
+        const color = (logged_in_user && logged_in_user.profile) ? logged_in_user.profile.theme_color : "#477da7"
         return (
             <Head>
                 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />

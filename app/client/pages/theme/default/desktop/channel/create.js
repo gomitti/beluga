@@ -83,11 +83,11 @@ export default class App extends Component {
         this.setState({ type })
     }
     render() {
-        const { platform, server, logged_in } = this.props
+        const { platform, server, logged_in_user } = this.props
         return (
             <div id="app" className="create-channel">
                 <Head title={`チャンネルの作成 / ${config.site.name}`} platform={platform} />
-                <NavigationBarView logged_in={logged_in} server={server} />
+                <NavigationBarView logged_in_user={logged_in_user} server={server} />
                 <div className="create-channel-container">
                     <h1 className="title">チャンネルの作成</h1>
                     <div className="content">

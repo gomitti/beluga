@@ -425,7 +425,7 @@ export class MultipleColumnsContainerView extends Component {
             })
     }
     render() {
-        const { server, joined_channels, logged_in, request_query, pinned_media, recent_uploads } = this.props
+        const { server, joined_channels, logged_in_user, request_query, pinned_media, recent_uploads } = this.props
         const columnViews = []
         this.columns.forEach(column => {
             columnViews.push(
@@ -433,7 +433,7 @@ export class MultipleColumnsContainerView extends Component {
                     key={column.identifier}
                     column={column}
                     server={server}
-                    logged_in={logged_in}
+                    logged_in_user={logged_in_user}
                     pinned_media={pinned_media}
                     recent_uploads={recent_uploads}
                     request_query={request_query}
@@ -500,7 +500,7 @@ class ColumnView extends Component {
         timeline.more()
     }
     render() {
-        const { column, server, logged_in, request_query, pinned_media, recent_uploads } = this.props
+        const { column, server, logged_in_user, request_query, pinned_media, recent_uploads } = this.props
 
         const props = {
             "handle_click_channel": this.onClickChannel,
@@ -508,7 +508,7 @@ class ColumnView extends Component {
             "handle_click_thread": this.onClickThread,
             "handle_close": this.onClose,
             "handle_back": this.onBack,
-            column, server, logged_in, request_query, pinned_media, recent_uploads
+            column, server, logged_in_user, request_query, pinned_media, recent_uploads
         }
 
         if (column.type === enums.column.type.home) {
@@ -539,14 +539,14 @@ class ThreadColumnView extends Component {
         assert(column.type === enums.column.type.thread, "$column.type must be 'thread'")
 
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = props
-        assert(is_function(handle_close), "$handle_close must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_back), "$handle_back must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ThreadColumnView.constructor")
+        assert(is_function(handle_close), "$handle_close must be of type function")
+        assert(is_function(handle_back), "$handle_back must be of type function")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
+        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
+        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
     }
     render() {
-        const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { in_reply_to_status } = column.params
         const uploader = new UploadManager()
@@ -565,7 +565,7 @@ class ThreadColumnView extends Component {
                         <PostboxView
                             postbox={postbox}
                             timeline={column.timeline}
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             uploader={uploader}
                             pinned_media={pinned_media}
                             server={server}
@@ -573,10 +573,11 @@ class ThreadColumnView extends Component {
                         <TimelineView
                             total_num_statuses={in_reply_to_status.comments_count}
                             in_reply_to_status={in_reply_to_status}
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             timeline={column.timeline}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -595,7 +596,7 @@ class HomeColumnView extends Component {
         assert(column.type === enums.column.type.home, "$column.type must be 'home'")
     }
     render() {
-        const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { user } = column.params
         const uploader = new UploadManager()
@@ -611,7 +612,7 @@ class HomeColumnView extends Component {
                     <div className="content">
                         <div className="vertical-line"></div>
                         <PostboxView
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             uploader={uploader}
                             pinned_media={pinned_media}
                             recent_uploads={recent_uploads}
@@ -619,10 +620,11 @@ class HomeColumnView extends Component {
                             postbox={postbox}
                             timeline={column.timeline} />
                         <TimelineView
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             timeline={column.timeline}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -640,14 +642,14 @@ class ServerColumnView extends Component {
         const { column } = props
         assert(column.type === enums.column.type.server, "$column.type must be 'server'")
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
-        assert(is_function(handle_close), "$handle_close must be of type function at ServerColumnView.constructor")
-        assert(is_function(handle_back), "$handle_back must be of type function at ServerColumnView.constructor")
-        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ServerColumnView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ServerColumnView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ServerColumnView.constructor")
+        assert(is_function(handle_close), "$handle_close must be of type function")
+        assert(is_function(handle_back), "$handle_back must be of type function")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
+        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
+        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
     }
     render() {
-        const { column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { server } = column.params
         return (
@@ -661,10 +663,11 @@ class ServerColumnView extends Component {
                     <div className="content">
                         <div className="vertical-line"></div>
                         <TimelineView
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             timeline={column.timeline}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -683,19 +686,17 @@ class ChannelColumnView extends Component {
         const { channel } = column.params
         assert(column.type === enums.column.type.channel, "$column.type must be 'channel'")
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
-        assert(is_function(handle_close), "$handle_close must be of type function at ChannelColumnView.constructor")
-        assert(is_function(handle_back), "$handle_back must be of type function at ChannelColumnView.constructor")
-        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ChannelColumnView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ChannelColumnView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ChannelColumnView.constructor")
+        assert(is_function(handle_close), "$handle_close must be of type function")
+        assert(is_function(handle_back), "$handle_back must be of type function")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
+        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
+        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
 
         this.state = {
             "pending_join": false,
-            "joined": channel.joined,
-            "invitation_needed": channel.invitation_needed,
         }
     }
-    onJoin = event => {
+    onJoin = async event => {
         event.preventDefault()
         const { column } = this.props
         const { channel } = column.params
@@ -705,29 +706,22 @@ class ChannelColumnView extends Component {
         this.setState({
             "pending_join": true
         })
-        request
-            .post("/channel/join", { "channel_id": channel.id })
-            .then(res => {
-                const data = res.data
-                if (data.success == false) {
-                    alert(data.error)
-                    return
-                }
-                this.setState({
-                    "joined": true
-                })
-            })
-            .catch(error => {
-                alert(error)
-            })
-            .then(_ => {
-                this.setState({
-                    "pending_join": false
-                })
-            })
+        try {
+            const res = await request.post("/channel/join", { "channel_id": channel.id })
+            const { data } = res
+            if (data.success == false) {
+                throw new Error(data.error)
+            }
+            channel.joined = true
+        } catch (error) {
+            alert(error)
+        }
+        this.setState({
+            "pending_join": false
+        })
     }
     render() {
-        const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { channel } = column.params
         const uploader = new UploadManager()
@@ -741,12 +735,12 @@ class ChannelColumnView extends Component {
                         server={server}
                         handle_close={handle_close}
                         handle_back={handle_back} />
-                    {(this.state.invitation_needed !== true || this.state.joined) ? null :
+                    {(channel.invitation_needed !== true || channel.joined) ? null :
                         <div className="timeline-join">
                             <p className="hint">このチャンネルは承認制です</p>
                         </div>
                     }
-                    {(this.state.invitation_needed || this.state.joined) ? null :
+                    {(channel.invitation_needed || channel.joined) ? null :
                         <div className="timeline-join">
                             <p className="hint">このチャンネルに参加すると投稿することができます</p>
                             <div className="submit">
@@ -766,21 +760,22 @@ class ChannelColumnView extends Component {
                     }
                     <div className="content">
                         <div className="vertical-line"></div>
-                        {this.state.joined === false ? null :
+                        {channel.joined === false ? null :
                             <PostboxView
                                 postbox={postbox}
                                 timeline={column.timeline}
-                                logged_in={logged_in}
+                                logged_in_user={logged_in_user}
                                 uploader={uploader}
                                 pinned_media={pinned_media}
                                 server={server}
                                 recent_uploads={recent_uploads} />
                         }
                         <TimelineView
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             timeline={column.timeline}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -799,14 +794,14 @@ class NotificationColumnView extends Component {
         assert(column.type === enums.column.type.notifications, "$column.type must be 'notifications'")
 
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = props
-        assert(is_function(handle_close), "$handle_close must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_back), "$handle_back must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at ThreadColumnView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at ThreadColumnView.constructor")
+        assert(is_function(handle_close), "$handle_close must be of type function")
+        assert(is_function(handle_back), "$handle_back must be of type function")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
+        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
+        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
     }
     render() {
-        const { server, column, logged_in, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const uploader = new UploadManager()
         return (
@@ -815,10 +810,11 @@ class NotificationColumnView extends Component {
                     <div className="content">
                         <div className="vertical-line"></div>
                         <TimelineView
-                            logged_in={logged_in}
+                            logged_in_user={logged_in_user}
                             timeline={column.timeline}
                             request_query={request_query}
-                            options={column.options}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />

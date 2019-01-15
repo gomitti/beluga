@@ -31,7 +31,7 @@
             font-weight: bold;
             height: 44px;
             width: 100%;
-            line-height: 1;
+            line-height: 49px;
             overflow: hidden;
             border: solid transparent;
             border-width: 0 0 3px 0;
@@ -40,35 +40,30 @@
             > .icon {
                 width: 18px;
                 height: 100%;
-                font-size: 22px;
+                font-size: 34px;
                 font-family: Beluga;
                 display: inline-block;
-                padding-top: 13px;
                 box-sizing: border-box;
             }
 
             > .home::before {
-                content: "\E001";
+                content: "\2001";
             }
 
             > .notifications::before {
-                content: "\E005";
+                content: "\2005";
             }
 
             > .channels::before {
-                content: "\E006";
+                content: "\2006";
             }
 
             > .world::before {
-                content: "\E007";
+                content: "\2007";
             }
 
             > .settings::before {
-                content: "\E00C";
-            }
-
-            > .misc::before {
-                content: "\E004";
+                content: "\2427";
             }
         }
     }

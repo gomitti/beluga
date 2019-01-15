@@ -4,15 +4,20 @@ import StatusView from "./status"
 import assign from "../../../../libs/assign"
 import assert, { is_function, is_number } from "../../../../assert";
 import { get as get_desktop_settings } from "../../../../settings/desktop";
+import { TimelineOptions } from "../../../../stores/theme/default/desktop/timeline"
+import { StatusOptions } from "../../../../stores/theme/default/common/status"
 
 @observer
 export default class TimelineView extends Component {
     constructor(props) {
         super(props)
-        const { timeline, options, handle_click_channel, handle_click_mention, handle_click_thread, request_query } = this.props
-        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at TimelineView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function at TimelineView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function at TimelineView.constructor")
+        const { timeline, timeline_options, status_options,
+            handle_click_channel, handle_click_mention, handle_click_thread, request_query } = this.props
+        assert(timeline_options instanceof TimelineOptions, "$timeline_options must be an instance of TimelineOptions")
+        assert(status_options instanceof StatusOptions, "$status_options must be an instance of StatusOptions")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
+        assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
+        assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
         this.fetching_older_statuses_started = false
     }
     fetchOlder = event => {
@@ -49,8 +54,9 @@ export default class TimelineView extends Component {
         }
     }
     render() {
-        const { timeline, options, handle_click_channel, handle_click_mention, handle_click_thread,
-            request_query, logged_in, in_reply_to_status } = this.props
+        const { timeline, timeline_options, status_options,
+            handle_click_channel, handle_click_mention, handle_click_thread,
+            request_query, logged_in_user, in_reply_to_status } = this.props
         let fetchOlderButton = null
         let fetchNewerButton = null
         if (timeline.has_newer_statuses) {
@@ -106,17 +112,17 @@ export default class TimelineView extends Component {
             statusViewList.push(
                 <StatusView status={status}
                     key={status.id}
-                    options={options.status || {}}
+                    options={status_options}
                     handle_click_channel={handle_click_channel}
                     handle_click_mention={handle_click_mention}
                     handle_click_thread={handle_click_thread}
                     trim_comments={trim_comments}
-                    logged_in={logged_in} />
+                    logged_in_user={logged_in_user} />
             )
         })
 
         return (
-            <div className="timeline-module" ref="module">
+            <div className="timeline-component webkit-scrollbar" ref="module">
                 <div className="inside">
                     <div className="vertical-line"></div>
                     {fetchNewerButton}

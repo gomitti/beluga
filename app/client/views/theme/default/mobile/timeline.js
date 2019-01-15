@@ -34,8 +34,8 @@ export default class TimelineView extends Component {
         this.more_link_clicked_more_than_once = true
     }
     render() {
-        const { placeholder, server, timeline, options,
-            handle_click_channel, handle_click_mention, request_query, in_reply_to_status } = this.props
+        const { placeholder, server, timeline, status_options, logged_in_user,
+            handle_click_channel, handle_click_mention, request_query, in_reply_to_status, } = this.props
 
         let fetchOlderButton = null
         let fetchNewerButton = null
@@ -93,8 +93,9 @@ export default class TimelineView extends Component {
                 <StatusView
                     status={status}
                     server={server}
+                    logged_in_user={logged_in_user}
                     key={status.id}
-                    options={options.status}
+                    options={status_options}
                     trim_comments={trim_comments}
                     handle_click_channel={handle_click_channel}
                     handle_click_mention={handle_click_mention} />
@@ -102,7 +103,7 @@ export default class TimelineView extends Component {
         })
 
         return (
-            <div className="timeline-module">
+            <div className="timeline-component">
                 {fetchNewerButton}
                 {statusViewList}
                 {fetchOlderButton}

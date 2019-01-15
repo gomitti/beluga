@@ -11,11 +11,12 @@ const memcached = {
 
 
 const register_flush_func = target => {
-    target.flush = (id, name) => {
-        id = try_convert_to_hex_string(id, "$channel_idが不正です")
-        assert(is_string(name), "$name must be of type string")
-        memcached.ids.delete(id)
-        memcached.names.delete(name)
+    target.flush = (channel_id, server_id, channel_name) => {
+        channel_id = try_convert_to_hex_string(channel_id, "$channel_idが不正です")
+        server_id = try_convert_to_hex_string(server_id, "$server_idが不正です")
+        assert(is_string(channel_name), "$channel_name must be of type string")
+        memcached.ids.delete(channel_id)
+        memcached.names.delete([server_id, channel_name])
     }
     return target
 }

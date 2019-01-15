@@ -4,7 +4,7 @@ import storage from "../../../config/storage"
 
 module.exports = (fastify, options, next) => {
     // オンラインのユーザーを取得
-    fastify.decorate("online_members", async (server, logged_in) => {
+    fastify.decorate("online_members", async (server, logged_in_user) => {
         const online_user_ids = fastify.websocket_bridge.get_users_by_server(server)
         const member = []
         let including_me = false
@@ -13,13 +13,13 @@ module.exports = (fastify, options, next) => {
             const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
             if (user) {
                 member.push(user)
-                if (logged_in && user.id.equals(logged_in.id)) {
+                if (logged_in_user && user.id.equals(logged_in_user.id)) {
                     including_me = true
                 }
             }
         }
-        if (logged_in && including_me === false) {
-            member.push(logged_in)
+        if (logged_in_user && including_me === false) {
+            member.push(logged_in_user)
         }
         return member
     })

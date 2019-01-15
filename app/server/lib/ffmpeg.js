@@ -1,7 +1,7 @@
 import ffprobe from "node-ffprobe"
 import ffmpeg from "fluent-ffmpeg"
 
-export const ff_metadata = async filepath => {
+export const ff_metadata = filepath => {
     return new Promise((resolve, reject) => {
         ffprobe(filepath, function (error, probeData) {
             if (error) {
@@ -12,7 +12,7 @@ export const ff_metadata = async filepath => {
     })
 }
 
-export const ff_screenshot = async (video_filepath, poster_filename, directory) => {
+export const ff_screenshot = (video_filepath, poster_filename, directory) => {
     return new Promise((resolve, reject) => {
         ffmpeg(video_filepath)
             .on("end", function () {

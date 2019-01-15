@@ -14,7 +14,8 @@ export default async (db, params) => {
 
     const collection = db.collection("channels")
     const rows = await collection.find({
-        server_id,
+        "server_id": server_id,
+        "is_public": false,
         "statuses_count": { "$gt": params.threshold }
     }).sort({ "statuses_count": -1 }).toArray()
 

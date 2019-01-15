@@ -53,7 +53,7 @@ export class Memcached {
         }
         return null
     }
-    clear_if_needed_recursively(keys) {
+    clear_recursively_if_needed(keys) {
         let root = this.cache
         for (let i = 0; i < keys.length - 1; i++) {
             const key = keys[i]
@@ -113,7 +113,7 @@ export class Memcached {
             return null
         }
 
-        this.clear_if_needed_recursively(keys)
+        this.clear_recursively_if_needed(keys)
         this.store_recursively(keys, data)
 
         if (is_array(data)) {

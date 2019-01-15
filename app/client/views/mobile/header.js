@@ -29,8 +29,8 @@ export default class HeaderView extends Component {
 					}
 				})()}</p>
 				{(() => {
-					if (this.props.logged_in) {
-						return <p>ログイン中:@{this.props.logged_in.name}</p>
+					if (this.props.logged_in_user) {
+						return <p>ログイン中:@{this.props.logged_in_user.name}</p>
 					}
 				})()}
 				<p>オンライン:{this.online}</p>

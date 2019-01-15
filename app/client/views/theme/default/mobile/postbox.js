@@ -258,8 +258,8 @@ export default class PostboxView extends Component {
         this.wrapWithTag(event, config.markdown.pre, true)
     }
     render() {
-        const { logged_in, pinned_media, recent_uploads } = this.props
-        if (!!logged_in === false) {
+        const { logged_in_user, pinned_media, recent_uploads } = this.props
+        if (!!logged_in_user === false) {
             return (
                 <div>投稿するには<a href="/login">ログイン</a>してください</div>
             )
@@ -270,20 +270,20 @@ export default class PostboxView extends Component {
 
         const preview_status = {
             "text": this.state.preview_text,
-            "user": logged_in,
+            "user": logged_in_user,
             "server": {}
         }
         return (
-            <div className="postbox-module" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
+            <div className="postbox-component" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
                 <div className="inside">
                     <div className="postbox-left">
                         <a href="/user/" className="avatar link">
-                            <img src={logged_in.avatar_url} />
+                            <img src={logged_in_user.avatar_url} />
                         </a>
                     </div>
                     <div className="postbox-right">
-                        <div className="postbox-content">
-                            <div className="body">
+                        <div className="postbox-input-area">
+                            <div className="textarea-container">
                                 <textarea
                                     className={classnames("form-input user-defined-border-color-focus user-defined-border-color-drag-entered", { "drag-entered": this.state.drag_entered })}
                                     ref="textarea"
@@ -294,38 +294,38 @@ export default class PostboxView extends Component {
                         <ProgressView metadatas={uploading_file_metadatas} />
                         <div className="postbox-footer">
                             <input className="hidden" type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
-                            <div className="actions">
-                                <div className="unit">
-                                    <Button className="action media-upload" onClick={this.onClickActionMediaUpload}></Button>
-                                    <Button className={classnames("action media-history user-defined-color-active", {
+                            <div className="action-area">
+                                <div className="button-group">
+                                    <Button className="action-button media-upload" onClick={this.onClickActionMediaUpload}></Button>
+                                    <Button className={classnames("action-button media-history user-defined-color-active", {
                                         "active": this.state.show_recent_uploads
                                     })} onClick={this.onClickActionMediaHistory}></Button>
-                                    <Button className={classnames("action media-pinned user-defined-color-active", {
+                                    <Button className={classnames("action-button media-pinned user-defined-color-active", {
                                         "active": this.state.show_pinned_media
                                     })} onClick={this.onClickActionPinnedMedia}></Button>
-                                    <Button className="action emoji user-defined-color-active"
+                                    <Button className="action-button emoji user-defined-color-active"
                                         onClick={this.onClickActionEmoji}></Button>
                                 </div>
-                                <div className="unit">
-                                    <Button className={classnames("action preview user-defined-color-active", {
+                                <div className="button-group">
+                                    <Button className={classnames("action-button preview user-defined-color-active", {
                                         "active": this.state.show_preview
                                     })} onClick={this.onClickActionPreview}></Button>
-                                    <Button className={classnames("action text-editing user-defined-color-active", {
+                                    <Button className={classnames("action-button text-editing user-defined-color-active", {
                                         "active": this.state.show_text_actions
                                     })} onClick={this.onClickActionText}></Button>
                                 </div>
                                 {this.state.show_text_actions ?
-                                    <div className="unit">
-                                        <Button className="action text-big" onClick={this.onClickActionTextBig}></Button>
-                                        <Button className="action text-bold" onClick={this.onClickActionTextEmphasis}></Button>
-                                        <Button className="action text-underline" onClick={this.onClickActionTextUnderline}></Button>
-                                        <Button className="action text-strikethrough" onClick={this.onClickActionTextStrikethrough}></Button>
-                                        <Button className="action text-italic" onClick={this.onClickActionTextItalic}></Button>
-                                        <Button className="action text-code" onClick={this.onClickActionTextPre}></Button>
+                                    <div className="button-group">
+                                        <Button className="action-button text-big" onClick={this.onClickActionTextBig}></Button>
+                                        <Button className="action-button text-bold" onClick={this.onClickActionTextEmphasis}></Button>
+                                        <Button className="action-button text-underline" onClick={this.onClickActionTextUnderline}></Button>
+                                        <Button className="action-button text-strikethrough" onClick={this.onClickActionTextStrikethrough}></Button>
+                                        <Button className="action-button text-italic" onClick={this.onClickActionTextItalic}></Button>
+                                        <Button className="action-button text-code" onClick={this.onClickActionTextPre}></Button>
                                     </div>
                                     : null}
                             </div>
-                            <div className="submit">
+                            <div className="submit-area">
                                 <Button className={classnames("button meiryo", {
                                     "ready user-defined-bg-color": !postbox.is_pending && this.state.is_post_button_active,
                                     "neutral": !postbox.is_pending && !this.state.is_post_button_active,

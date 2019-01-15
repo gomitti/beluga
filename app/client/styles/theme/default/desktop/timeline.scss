@@ -135,7 +135,7 @@
                 > .header-options {
                     position: absolute;
                     right: 0;
-                    top: 0;
+                    top: -8px;
                     text-align: right;
                     display: flex;
                     flex-direction: row;
@@ -150,20 +150,20 @@
 
                     > .back-button::before {
                         font-family: Beluga;
-                        content: "\E00F";
+                        content: "\200F";
                     }
 
                     > .settings-button {
                         display: inline-block;
-                        width: 20px;
-                        height: 20px;
-                        font-size: 20px;
+                        width: 32px;
+                        height: 32px;
+                        font-size: 32px;
                         line-height: 20px;
                     }
 
                     > .settings-button::before {
                         font-family: Beluga;
-                        content: "\E00C";
+                        content: "\2427";
                     }
                 }
             }
@@ -191,8 +191,8 @@
 
                     > .close::before {
                         font-family: Beluga;
-                        content: "\E010";
-                        font-weight: bold;
+                        content: "\245C";
+                        font-size: 18px;
                     }
 
                     > .move {
@@ -206,13 +206,13 @@
 
                         > .left::before {
                             font-family: Beluga;
-                            content: "\E00F";
+                            content: "\200F";
                             margin-right: 6px;
                         }
 
                         > .right::before {
                             font-family: Beluga;
-                            content: "\E00E";
+                            content: "\200E";
                         }
                     }
                 }
@@ -235,6 +235,7 @@
 
 .multiple-columns .timeline-container {
     flex: 1 1 auto;
+    min-height: 0;
     display: flex;
     flex-direction: column;
 
@@ -244,15 +245,16 @@
 
     > .content {
         flex: 0 1 auto;
+        min-height: 0;
         display: flex;
         flex-direction: column;
 
-        > .postbox-module {
+        > .postbox-component {
             z-index: 1;
             flex: 0 0 auto;
         }
 
-        > .timeline-module {
+        > .timeline-component {
             overflow-y: scroll;
             flex: 0 1 auto;
         }
@@ -273,7 +275,7 @@
     }
 }
 
-.timeline-module {
+.timeline-component {
     position: relative;
     z-index: 2;
 
@@ -304,18 +306,6 @@
                 margin-bottom: 6px;
             }
         }
-    }
-}
-
-.multiple-columns .timeline-module {
-    &::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    &::-webkit-scrollbar-track {}
-
-    &::-webkit-scrollbar-thumb {
-        border-radius: 10px;
     }
 }
 

@@ -1,4 +1,5 @@
-import React, { Component } from "react"
+import { Component } from "react"
+import TweetEmbed from "react-tweet-embed"
 
 const detect_widget_loaded = iframe => {
     const { contentDocument } = iframe
@@ -43,7 +44,8 @@ export default class TweetView extends Component {
         setTimeout(timer_func, 200)
     }
     render() {
-        const { src } = this.props
+        const { src, id } = this.props
+        return <TweetEmbed id={id} />
         return (
             <iframe className="status-body-tweet" scrolling="no" frameBorder="no" src={src} onLoad={this.onLoad} ref="iframe"></iframe>
         )

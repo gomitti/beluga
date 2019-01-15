@@ -10,31 +10,6 @@ export default async (db, params) => {
 
     const server = await api.v1.server.create(db, params)
 
-    // チャンネルを作成する
-    const query = {
-        "name": config.server.first_channel_name,
-        "server_id": server.id,
-        "members_count": 0,
-        "user_id": params.user_id
-    }
-    try {
-        const channel = await api.v1.channel.create(db, query)
-    } catch (error) {
-        // ロールバック
-        const result = await api.v1.server.destroy(db, {
-            "id": server.id,
-            "created_by": params.user_id
-        })
-        logger.log({
-            "level": "error",
-            "message": "Failed to create a server",
-            "error": error.toString(),
-            "server": server,
-            "params": params
-        })
-        throw new Error("サーバーで問題が発生しました")
-    }
-
     // アイコン
     const remote = storage.servers[0]
     try {

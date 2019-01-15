@@ -33,7 +33,7 @@ const restore_columns = async (db, user_id, pathname) => {
 
 module.exports = (fastify, options, next) => {
     // オンラインのユーザーを取得
-    fastify.decorate("online_members", async (server, logged_in) => {
+    fastify.decorate("online_members", async (server, logged_in_user) => {
         const online_user_ids = fastify.websocket_bridge.get_users_by_server(server)
         const member = []
         let including_me = false
@@ -42,26 +42,27 @@ module.exports = (fastify, options, next) => {
             const user = await model.v1.user.show(fastify.mongo.db, { "id": user_id })
             if (user) {
                 member.push(user)
-                if (logged_in && user.id.equals(logged_in.id)) {
+                if (logged_in_user && user.id.equals(logged_in_user.id)) {
                     including_me = true
                 }
             }
         }
-        if (logged_in && including_me === false) {
-            member.push(logged_in)
+        if (logged_in_user && including_me === false) {
+            member.push(logged_in_user)
         }
         return member
     })
-    fastify.decorate("generate_pagination_flags", async (count_query, request_query, redirect_func) => {
+    fastify.decorate("generate_pagination_flags", async (count_query, request_query) => {
         let has_newer_statuses = false
         let has_older_statuses = false
+        let needs_redirect = false
         const expected_count = request_query.count ? request_query.count : config.timeline.default_count
         if (request_query.since_id) {
             const count = await api.v1.statuses.count(fastify.mongo.db, assign(count_query, {
                 "since_id": request_query.since_id
             }))
             if (count < expected_count) {
-                return redirect_func()
+                needs_redirect = true
             }
             has_newer_statuses = true
             has_older_statuses = true
@@ -81,7 +82,7 @@ module.exports = (fastify, options, next) => {
                 }
             }
         }
-        return { has_newer_statuses, has_older_statuses }
+        return { has_newer_statuses, has_older_statuses, needs_redirect }
     })
     fastify.next("/server/create", async (app, req, res) => {
         const csrf_token = await fastify.csrf_token(req, res)
@@ -91,19 +92,19 @@ module.exports = (fastify, options, next) => {
     fastify.next("/server/:server_name/join", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
-        const logged_in = await fastify.logged_in(req, res, session)
-        if (logged_in === null) {
+        const logged_in_user = await fastify.logged_in_user(req, res, session)
+        if (logged_in_user === null) {
             return fastify.error(app, req, res, 404)
         }
 
         const { server_name } = req.params
-        const server = await model.v1.server.show(fastify.mongo.db, { "name": server_name, "requested_by": logged_in.id })
+        const server = await model.v1.server.show(fastify.mongo.db, { "name": server_name, "requested_by": logged_in_user.id })
         if (server === null) {
             return fastify.error(app, req, res, 404)
         }
 
         const { redirect } = req.query
-        if (redirect && !!redirect.match(/^\/[\w\/@]+$/) === false) {
+        if (redirect && !!redirect.match(/^\/.+$/) === false) {
             return fastify.error(app, req, res, 404)
         }
         if (server.joined === true) {
@@ -116,7 +117,7 @@ module.exports = (fastify, options, next) => {
         const members = await model.v1.server.members(fastify.mongo.db, { "id": server.id })
 
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/server/join`, {
-            csrf_token, server, logged_in, members,
+            csrf_token, server, logged_in_user, members,
             "platform": fastify.platform(req),
             "request_query": req.query
         })
@@ -125,12 +126,12 @@ module.exports = (fastify, options, next) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
-            const logged_in = await fastify.logged_in(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
 
             const server_name = req.params.server_name
             const server = await model.v1.server.show(fastify.mongo.db, {
                 "name": server_name,
-                "requested_by": logged_in.id
+                "requested_by": logged_in_user.id
             })
             if (server === null) {
                 return fastify.error(app, req, res, 404)
@@ -141,18 +142,20 @@ module.exports = (fastify, options, next) => {
 
             const joined_channels = await collection.v1.channels.joined(fastify.mongo.db, {
                 "server_id": server.id,
-                "user_id": logged_in.id
+                "user_id": logged_in_user.id
             })
 
-            const server_channels = await model.v1.server.channels(fastify.mongo.db, { "id": server.id })
-            assert(Array.isArray(server_channels), "$channels must be of type array")
+            const server_channels = await model.v1.server.channels(fastify.mongo.db, {
+                "id": server.id,
+                "threshold": 0
+            })
 
-            server.online_members = await fastify.online_members(server, logged_in)
+            server.online_members = await fastify.online_members(server, logged_in_user)
             fastify.websocket_broadcast("online_members_changed", {})
 
             const device = fastify.device(req)
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/channels`, {
-                csrf_token, server, logged_in, joined_channels, server_channels, device,
+                csrf_token, server, logged_in_user, joined_channels, server_channels, device,
                 "platform": fastify.platform(req),
                 "request_query": req.query
             })
@@ -165,7 +168,7 @@ module.exports = (fastify, options, next) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
-            const logged_in = await fastify.logged_in(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
 
             const server_name = req.params.server_name
             const server = await model.v1.server.show(fastify.mongo.db, { "name": server_name })
@@ -173,12 +176,12 @@ module.exports = (fastify, options, next) => {
                 return fastify.error(app, req, res, 404)
             }
 
-            server.online_members = await fastify.online_members(server, logged_in)
+            server.online_members = await fastify.online_members(server, logged_in_user)
             fastify.websocket_broadcast("online_members_changed", {})
 
             const device = fastify.device(req)
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/about`, {
-                csrf_token, server, logged_in, device,
+                csrf_token, server, logged_in_user, device,
                 "platform": fastify.platform(req),
                 "request_query": req.query
             })
@@ -187,20 +190,21 @@ module.exports = (fastify, options, next) => {
         }
     })
     // チャンネル
-    fastify.next("/server/:server_name/:name", async (app, req, res) => {
+    fastify.next("/server/:server_name/:channel_name", async (app, req, res) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
-            const logged_in = await fastify.logged_in(req, res, session)
-
-            if (logged_in === null) {
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
+            
+            if (logged_in_user === null) {
                 return res.redirect(`/login?redirect=${req.raw.originalUrl}`)
             }
-
-            const server_name = req.params.server_name
+            
+            
+            const { server_name } = req.params
             const server = await model.v1.server.show(fastify.mongo.db, {
                 "name": server_name,
-                "requested_by": logged_in.id
+                "requested_by": logged_in_user.id
             })
             if (server === null) {
                 return fastify.error(app, req, res, 404)
@@ -208,17 +212,17 @@ module.exports = (fastify, options, next) => {
             if (server.joined !== true) {
                 return res.redirect(`/server/${server.name}/join?redirect=${req.raw.originalUrl}`)
             }
-
-            const name = req.params.name
+            
+            const { channel_name } = req.params
             const channel = await model.v1.channel.show(fastify.mongo.db, {
-                "server_id": server.id, name
+                "server_id": server.id, "name": channel_name
             })
             if (channel === null) {
-                return fastify.error(app, req, res, 404)
+                return res.redirect(`/server/${server.name}/channels`)
             }
-
+            
             const desktop_settings = await memcached.v1.kvs.restore(fastify.mongo.db, {
-                "user_id": logged_in.id,
+                "user_id": logged_in_user.id,
                 "key": "desktop_settings"
             })
             const { originalUrl } = req.raw
@@ -228,42 +232,45 @@ module.exports = (fastify, options, next) => {
                 },
                 "type": "channel"
             }
-            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in.id, originalUrl) : []
-            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in, req.query)
-
-            const { has_newer_statuses, has_older_statuses } = await fastify.generate_pagination_flags({
+            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in_user.id, originalUrl) : []
+            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in_user, req.query)
+            
+            
+            const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags({
                 "channel_id": channel.id,
-            }, req.query, () => {
-                res.redirect(`/server/${server.name}/${channel.name}`)
-            })
-
+            }, req.query)
+            
+            if (needs_redirect) {
+                return res.redirect(`/server/${server.name}/${encodeURI(channel.name)}`)
+            }
+            
             const joined_channels = await collection.v1.channels.joined(fastify.mongo.db, {
                 "server_id": server.id,
-                "user_id": logged_in.id
+                "user_id": logged_in_user.id
             })
-
-            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in.id })
+            
+            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const muted_words = []
-
-            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in.id })
-            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in.id, "count": 100 })
-            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+            
+            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in_user.id })
+            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in_user.id, "count": 100 })
+            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const custom_emoji_list = await memcached.v1.emoji.list(fastify.mongo.db, { "server_id": server.id })
-
+            
             const custom_emoji_shortnames = []
             custom_emoji_list.forEach(emoji => {
                 custom_emoji_shortnames.push(emoji.shortname)
             })
             custom_emoji_shortnames.sort(compare_shortname)
-
-            server.online_members = await fastify.online_members(server, logged_in)
+            
+            server.online_members = await fastify.online_members(server, logged_in_user)
             fastify.websocket_broadcast("online_members_changed", {})
-
+            
             const device = fastify.device(req)
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/channel`, {
                 "platform": fastify.platform(req),
                 "request_query": req.query,
-                csrf_token, server, channel, logged_in, joined_channels, device, desktop_settings,
+                csrf_token, server, channel, logged_in_user, joined_channels, device, desktop_settings,
                 columns, pinned_media, recent_uploads, pinned_emoji_shortnames, custom_emoji_shortnames,
                 muted_users, muted_words, has_newer_statuses, has_older_statuses
             })
@@ -276,9 +283,9 @@ module.exports = (fastify, options, next) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
-            const logged_in = await fastify.logged_in(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
 
-            if (logged_in === null) {
+            if (logged_in_user === null) {
                 return res.redirect(`/login?redirect=${req.raw.originalUrl}`)
             }
 
@@ -289,31 +296,31 @@ module.exports = (fastify, options, next) => {
             }
 
             const { originalUrl } = req.raw
-            const stored_columns = await restore_columns(fastify.mongo.db, logged_in.id, originalUrl)
+            const stored_columns = await restore_columns(fastify.mongo.db, logged_in_user.id, originalUrl)
             if (stored_columns.length == 0) {
                 stored_columns.push({
                     "param_ids": {},
                     "type": "notifications"
                 })
             }
-            const columns = await fastify.build_columns(stored_columns, logged_in, server)
+            const columns = await fastify.build_columns(stored_columns, logged_in_user, server)
 
             const joined_channels = await collection.v1.channels.joined(fastify.mongo.db, {
                 "server_id": server.id,
-                "user_id": logged_in.id
+                "user_id": logged_in_user.id
             })
 
-            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in.id })
+            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const muted_words = []
 
             const desktop_settings = await memcached.v1.kvs.restore(fastify.mongo.db, {
-                "user_id": logged_in.id,
+                "user_id": logged_in_user.id,
                 "key": "desktop_settings"
             })
 
-            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in.id })
-            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in.id, "count": 100 })
-            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in_user.id })
+            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in_user.id, "count": 100 })
+            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const custom_emoji_list = await memcached.v1.emoji.list(fastify.mongo.db, { "server_id": server.id })
 
             const custom_emoji_shortnames = []
@@ -322,14 +329,14 @@ module.exports = (fastify, options, next) => {
             })
             custom_emoji_shortnames.sort(compare_shortname)
 
-            server.online_members = await fastify.online_members(server, logged_in)
+            server.online_members = await fastify.online_members(server, logged_in_user)
             fastify.websocket_broadcast("online_members_changed", {})
 
             const device = fastify.device(req)
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/notifications`, {
                 "platform": fastify.platform(req),
                 "request_query": req.query,
-                csrf_token, server, logged_in, joined_channels, device, desktop_settings,
+                csrf_token, server, logged_in_user, joined_channels, device, desktop_settings,
                 columns, pinned_media, recent_uploads, pinned_emoji_shortnames, custom_emoji_shortnames
             })
         } catch (error) {
@@ -341,16 +348,16 @@ module.exports = (fastify, options, next) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
-            const logged_in = await fastify.logged_in(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
 
-            if (logged_in === null) {
+            if (logged_in_user === null) {
                 return res.redirect(`/login?redirect=${req.raw.originalUrl}`)
             }
 
             const server_name = req.params.server_name
             const server = await model.v1.server.show(fastify.mongo.db, {
                 "name": server_name,
-                "requested_by": logged_in.id
+                "requested_by": logged_in_user.id
             })
             if (server === null) {
                 return fastify.error(app, req, res, 404)
@@ -368,14 +375,14 @@ module.exports = (fastify, options, next) => {
                 "trim_recipient": false,
                 "trim_favorited_by": false,
                 "trim_commenters": false,
-                "requested_by": logged_in.id
+                "requested_by": logged_in_user.id
             })
             if (in_reply_to_status === null) {
                 return fastify.error(app, req, res, 404)
             }
 
             const desktop_settings = await memcached.v1.kvs.restore(fastify.mongo.db, {
-                "user_id": logged_in.id,
+                "user_id": logged_in_user.id,
                 "key": "desktop_settings"
             })
 
@@ -386,26 +393,28 @@ module.exports = (fastify, options, next) => {
                 },
                 "type": "thread"
             }
-            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in.id, originalUrl) : []
-            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in, req.query)
+            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in_user.id, originalUrl) : []
+            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in_user, req.query)
 
             const joined_channels = await collection.v1.channels.joined(fastify.mongo.db, {
                 "server_id": server.id,
-                "user_id": logged_in.id
+                "user_id": logged_in_user.id
             })
 
-            const { has_newer_statuses, has_older_statuses } = await fastify.generate_pagination_flags({
+            const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags({
                 "in_reply_to_status_id": in_reply_to_status.id,
-            }, req.query, () => {
-                res.redirect(`/server/${server.name}/thread/${in_reply_to_status.id}`)
-            })
+            }, req.query)
 
-            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in.id })
+            if (needs_redirect) {
+                return res.redirect(`/server/${server.name}/thread/${in_reply_to_status.id}`)
+            }
+
+            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const muted_words = []
 
-            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in.id })
-            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in.id, "count": 100 })
-            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in_user.id })
+            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in_user.id, "count": 100 })
+            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const custom_emoji_list = await memcached.v1.emoji.list(fastify.mongo.db, { "server_id": server.id })
 
             const custom_emoji_shortnames = []
@@ -414,14 +423,14 @@ module.exports = (fastify, options, next) => {
             })
             custom_emoji_shortnames.sort(compare_shortname)
 
-            server.online_members = await fastify.online_members(server, logged_in)
+            server.online_members = await fastify.online_members(server, logged_in_user)
             fastify.websocket_broadcast("online_members_changed", {})
 
             const device = fastify.device(req)
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/thread`, {
                 "platform": fastify.platform(req),
                 "request_query": req.query,
-                csrf_token, server, in_reply_to_status, logged_in, joined_channels, device, desktop_settings,
+                csrf_token, server, in_reply_to_status, logged_in_user, joined_channels, device, desktop_settings,
                 columns, pinned_media, recent_uploads, pinned_emoji_shortnames, custom_emoji_shortnames,
                 muted_users, muted_words, has_newer_statuses, has_older_statuses
             })
@@ -434,16 +443,16 @@ module.exports = (fastify, options, next) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
-            const logged_in = await fastify.logged_in(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
 
-            if (logged_in === null) {
+            if (logged_in_user === null) {
                 return res.redirect(`/login?redirect=${req.raw.originalUrl}`)
             }
 
             const server_name = req.params.server_name
             const server = await model.v1.server.show(fastify.mongo.db, {
                 "name": server_name,
-                "requested_by": logged_in.id
+                "requested_by": logged_in_user.id
             })
             if (server === null) {
                 return fastify.error(app, req, res, 404)
@@ -460,7 +469,7 @@ module.exports = (fastify, options, next) => {
             }
 
             const desktop_settings = await memcached.v1.kvs.restore(fastify.mongo.db, {
-                "user_id": logged_in.id,
+                "user_id": logged_in_user.id,
                 "key": "desktop_settings"
             })
 
@@ -472,27 +481,29 @@ module.exports = (fastify, options, next) => {
                 },
                 "type": "home"
             }
-            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in.id, originalUrl) : []
-            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in, req.query)
+            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in_user.id, originalUrl) : []
+            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in_user, req.query)
 
             const joined_channels = await collection.v1.channels.joined(fastify.mongo.db, {
                 "server_id": server.id,
-                "user_id": logged_in.id
+                "user_id": logged_in_user.id
             })
 
-            const { has_newer_statuses, has_older_statuses } = await fastify.generate_pagination_flags({
+            const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags({
                 "user_id": user.id,
                 "server_id": server.id,
-            }, req.query, () => {
-                res.redirect(`/server/${server.name}/@${user.name}`)
-            })
+            }, req.query)
 
-            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in.id })
+            if (needs_redirect) {
+                return res.redirect(`/server/${server.name}/@${user.name}`)
+            }
+
+            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const muted_words = []
 
-            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in.id })
-            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in.id, "count": 100 })
-            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in_user.id })
+            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in_user.id, "count": 100 })
+            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const custom_emoji_list = await memcached.v1.emoji.list(fastify.mongo.db, { "server_id": server.id })
 
             const custom_emoji_shortnames = []
@@ -501,14 +512,14 @@ module.exports = (fastify, options, next) => {
             })
             custom_emoji_shortnames.sort(compare_shortname)
 
-            server.online_members = await fastify.online_members(server, logged_in)
+            server.online_members = await fastify.online_members(server, logged_in_user)
             fastify.websocket_broadcast("online_members_changed", {})
 
             const device = fastify.device(req)
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/home`, {
                 "platform": fastify.platform(req),
                 "request_query": req.query,
-                csrf_token, server, user, logged_in, joined_channels, device, desktop_settings,
+                csrf_token, server, user, logged_in_user, joined_channels, device, desktop_settings,
                 columns, pinned_media, recent_uploads, pinned_emoji_shortnames, custom_emoji_shortnames,
                 muted_users, muted_words, has_newer_statuses, has_older_statuses
             })
@@ -521,16 +532,16 @@ module.exports = (fastify, options, next) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
-            const logged_in = await fastify.logged_in(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
 
-            if (logged_in === null) {
+            if (logged_in_user === null) {
                 return res.redirect(`/login?redirect=${req.raw.originalUrl}`)
             }
 
             const server_name = req.params.server_name
             const server = await model.v1.server.show(fastify.mongo.db, {
                 "name": server_name,
-                "requested_by": logged_in.id
+                "requested_by": logged_in_user.id
             })
             if (server === null) {
                 return fastify.error(app, req, res, 404)
@@ -540,7 +551,7 @@ module.exports = (fastify, options, next) => {
             }
 
             const desktop_settings = await memcached.v1.kvs.restore(fastify.mongo.db, {
-                "user_id": logged_in.id,
+                "user_id": logged_in_user.id,
                 "key": "desktop_settings"
             })
 
@@ -551,30 +562,32 @@ module.exports = (fastify, options, next) => {
                 },
                 "type": "server"
             }
-            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in.id, originalUrl) : []
-            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in, req.query)
+            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await restore_columns(fastify.mongo.db, logged_in_user.id, originalUrl) : []
+            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in_user, req.query)
 
             const joined_channels = await collection.v1.channels.joined(fastify.mongo.db, {
                 "server_id": server.id,
-                "user_id": logged_in.id
+                "user_id": logged_in_user.id
             })
 
-            const { has_newer_statuses, has_older_statuses } = await fastify.generate_pagination_flags({
+            const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags({
                 "server_id": server.id,
-            }, req.query, () => {
-                res.redirect(`/server/${server.name}/statuses`)
-            })
+            }, req.query)
 
-            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in.id })
+            if (needs_redirect) {
+                return res.redirect(`/server/${server.name}/statuses`)
+            }
+
+            const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const muted_words = []
-            server.online_members = await fastify.online_members(server, logged_in)
+            server.online_members = await fastify.online_members(server, logged_in_user)
 
             // オンラインを更新
             fastify.websocket_broadcast("online_members_changed", {})
 
-            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in.id })
-            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in.id, "count": 100 })
-            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in.id })
+            const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in_user.id })
+            const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in_user.id, "count": 100 })
+            const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const custom_emoji_list = await memcached.v1.emoji.list(fastify.mongo.db, { "server_id": server.id })
 
             const custom_emoji_shortnames = []
@@ -587,7 +600,7 @@ module.exports = (fastify, options, next) => {
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/statuses`, {
                 "platform": fastify.platform(req),
                 "request_query": req.query,
-                csrf_token, server, logged_in, joined_channels, device, desktop_settings,
+                csrf_token, server, logged_in_user, joined_channels, device, desktop_settings,
                 columns, pinned_media, recent_uploads, pinned_emoji_shortnames, custom_emoji_shortnames,
                 muted_users, muted_words, has_newer_statuses, has_older_statuses
             })
@@ -598,8 +611,8 @@ module.exports = (fastify, options, next) => {
     fastify.next("/server/:server_name/settings/profile", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
-        const logged_in = await fastify.logged_in(req, res, session)
-        if (logged_in === null) {
+        const logged_in_user = await fastify.logged_in_user(req, res, session)
+        if (logged_in_user === null) {
             return fastify.error(app, req, res, 404)
         }
 
@@ -609,22 +622,22 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
-        if (logged_in.id.equals(server.created_by) === false) {
+        if (logged_in_user.id.equals(server.created_by) === false) {
             return fastify.error(app, req, res, 404)
         }
 
         const profile_image_size = config.server.profile.image_size
         const device = fastify.device(req)
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/server/settings/profile`, {
-            csrf_token, profile_image_size, logged_in, device, server,
+            csrf_token, profile_image_size, logged_in_user, device, server,
             "platform": fastify.platform(req),
         })
     })
     fastify.next("/server/:server_name/create_new_channel", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
-        const logged_in = await fastify.logged_in(req, res, session)
-        if (logged_in === null) {
+        const logged_in_user = await fastify.logged_in_user(req, res, session)
+        if (logged_in_user === null) {
             return fastify.error(app, req, res, 404)
         }
 
@@ -634,7 +647,7 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/channel/create`, {
-            csrf_token, server, logged_in
+            csrf_token, server, logged_in_user
         })
     })
     next()

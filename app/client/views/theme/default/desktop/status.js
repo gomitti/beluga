@@ -10,6 +10,8 @@ import { StatusHeaderDisplayNameView, StatusHeaderUserStatusView } from "./statu
 import { get_shared_picker_store } from "../../../../stores/theme/default/common/emoji"
 import Tooltip from "./tooltip"
 import EmojiPicker from "./emoji"
+import { StatusOptions } from "../../../../stores/theme/default/common/status"
+import { objectid_equals } from "../../../../libs/functions"
 
 class ActionButton extends Component {
     render() {
@@ -47,11 +49,12 @@ export class StatusTimeView extends Component {
 export default class StatusView extends Component {
     constructor(props) {
         super(props)
-        const { status, handle_click_channel, handle_click_mention, handle_click_thread, cache_body } = props
+        const { status, options, handle_click_channel, handle_click_mention, handle_click_thread, cache_body } = props
         assert(is_object(status), "$status must be of type object")
-        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function at StatusView.constructor")
-        assert(is_function(handle_click_mention), "$handle_click_channel must be of type function at StatusView.constructor")
-        assert(is_function(handle_click_thread), "$handle_click_channel must be of type function at StatusView.constructor")
+        assert(options instanceof StatusOptions, "$options must be an instance of StatusOptions")
+        assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
+        assert(is_function(handle_click_mention), "$handle_click_channel must be of type function")
+        assert(is_function(handle_click_thread), "$handle_click_channel must be of type function")
 
         // 本文のビューを構築しておく
         const { text, server, entities } = status
@@ -70,7 +73,7 @@ export default class StatusView extends Component {
     onMouseEnter = event => {
         const { footer, action } = this.refs
         if (action) {
-            action.style.top = `${footer.offsetTop - 3}px`
+            action.style.top = `${footer.offsetTop - 5}px`
             this.prev_footer_offset_top = footer.offsetTop
         }
     }
@@ -80,7 +83,7 @@ export default class StatusView extends Component {
             return
         }
         if (footer.offsetTop !== this.prev_footer_offset_top) {
-            action.style.top = `${footer.offsetTop - 3}px`
+            action.style.top = `${footer.offsetTop - 5}px`
             this.prev_footer_offset_top = footer.offsetTop
         }
     }
@@ -135,7 +138,7 @@ export default class StatusView extends Component {
         })
     }
     render() {
-        const { status, options, handle_click_channel, handle_click_mention, handle_click_thread, logged_in, trim_comments } = this.props
+        const { status, options, handle_click_channel, handle_click_mention, handle_click_thread, logged_in_user, trim_comments } = this.props
         console.log(`[status] rendering ${status.id}`)
         const { user } = status
         let likesView = null
@@ -169,14 +172,14 @@ export default class StatusView extends Component {
             </div>
         }
 
-        let belongingView = null
+        let sourceLinkView = null
         const { server, channel, recipient } = status
-        if (options.show_belonging) {
+        if (options.show_source_link) {
             if (channel && server) {
-                belongingView = <a href={`/server/${server.name}/${channel.name}`} onClick={handle_click_channel} className="belonging channel meiryo" data-name={channel.name}>#{channel.name}</a>
+                sourceLinkView = <a href={`/server/${server.name}/${channel.name}`} onClick={handle_click_channel} className="source channel meiryo" data-name={channel.name}>#{channel.name}</a>
             }
             if (recipient && server) {
-                belongingView = <a href={`/server/${server.name}/@${recipient.name}`} onClick={handle_click_mention} className="belonging recipient meiryo" data-name={recipient.name}>@{recipient.name}</a>
+                sourceLinkView = <a href={`/server/${server.name}/@${recipient.name}`} onClick={handle_click_mention} className="source recipient meiryo" data-name={recipient.name}>@{recipient.name}</a>
             }
         }
 
@@ -230,18 +233,18 @@ export default class StatusView extends Component {
                             <ReactionsView status={status} server={server} />
                         </div>
                         <div className="status-footer" ref="footer">
-                            {belongingView}
+                            {sourceLinkView}
                             <StatusTimeView href={`/status/${user.name}/${status.id}`} string={this.state.created_at_str} description={this.state.date_str} />
                         </div>
                     </div>
-                    {logged_in ?
+                    {logged_in_user ?
                         <div className="status-action" ref="action">
                             <div className="inside">
                                 <ActionButton type="like" description="いいね" handle_click={this.createLike} />
                                 <ActionButton type="favorite" description="ふぁぼ" handle_click={this.toggleFavorite} />
                                 <ActionButton type="emoji" description="リアクション" handle_click={this.toggleReaction} />
                                 <ActionButton type="thread" description="コメント" handle_click={event => handle_click_thread(event, status.id)} href={`/server/${server.name}/thread/${status.id}`} />
-                                {logged_in.id === status.user.id ?
+                                {objectid_equals(logged_in_user.id, status.user.id) ?
                                     <ActionButton type="destroy" description="削除" handle_click={this.destroy} />
                                     : null}
                             </div>

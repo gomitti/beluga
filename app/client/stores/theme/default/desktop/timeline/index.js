@@ -3,7 +3,8 @@ import { request } from "../../../../../api"
 import StatusStore from "../../common/status"
 import assign from "../../../../../libs/assign"
 import ws from "../../../../../websocket"
-import assert, { is_string, is_object, is_array } from "../../../../../assert";
+import assert, { is_string, is_object, is_array } from "../../../../../assert"
+import { objectid_equals } from "../../../../../libs/functions"
 
 const fetch_types = {
     "latest": 0,
@@ -30,7 +31,11 @@ export class TimelineOptions {
     }
 }
 
-export default class TimelineStore {
+// @param {string} endpoint
+// @param {object} request_query
+// @param {object} params
+// @param {TimelineOptions} options
+class ClientSideTimelineStore {
     @observable.shallow filtered_status_stores = []
     @observable pending_fetch_newer = false
     @observable pending_fetch_older = false
@@ -105,6 +110,10 @@ export default class TimelineStore {
         if (this.raw_status_objects.length === 0) {
             return null
         }
+        // 2個くらい被せる
+        if (this.raw_status_objects.length > 2) {
+            return this.raw_status_objects[this.raw_status_objects.length - 3].id
+        }
         return this.raw_status_objects[this.raw_status_objects.length - 1].id
     }
     count = () => {
@@ -137,7 +146,8 @@ export default class TimelineStore {
             // ユーザーミュート
             for (let j = 0; j < this.muted_users.length; j++) {
                 const muted_user = this.muted_users[j]
-                if (status_obj.user.id === muted_user.id) {
+                // idはサーバー側ではObjectIdでクライアント側ではstringになっているので注意
+                if (objectid_equals(status_obj.user.id, muted_user.id)) {
                     return
                 }
             }
@@ -161,7 +171,6 @@ export default class TimelineStore {
 
         this.filtered_status_stores = filtered_status_stores
         this.raw_status_objects = status_objs
-
     }
     fetchLatestIfNeeded = async () => {
         if (this.pending_fetch_latest === false && this.auto_reloading_enabled) {
@@ -302,3 +311,116 @@ export default class TimelineStore {
         this.setPendingFetchNewer(false)
     }
 }
+
+
+class ServerSideTimelineStore {
+    constructor(endpoint, request_query, params, options) {
+        assert(is_string(endpoint), "$endpoint must be of type string")
+        assert(is_object(request_query), "$request_query must be of type object")
+        assert(options instanceof TimelineOptions, "$options must be an instance of TimelineOptions")
+        options.validate()
+
+        this.endpoint = endpoint
+        this.request_query = assign(request_query)
+        this.params = params
+
+        this.current_fetch_type = null
+        this.auto_reloading_enabled = options.auto_reloading_enabled
+        this.timer_id = null
+        this.pending_fetch_latest = false
+        this.raw_status_objects = []
+        this.filtered_status = []
+        this.pending_fetch_newer = false
+        this.pending_fetch_older = false
+
+        this.fetch_type = options.fetch_type
+        this.reload_interval_sec = options.reload_interval_sec
+        this.auto_reloading_enabled = options.auto_reloading_enabled
+        this.statuses_count_to_fetch_latest = options.statuses_count_to_fetch_latest
+        this.statuses_count_to_fetch_older = options.statuses_count_to_fetch_older
+        this.statuses_count_to_fetch_newer = options.statuses_count_to_fetch_newer
+        this.muted_users = options.muted_users
+        this.muted_words = options.muted_words
+        this.has_newer_statuses = options.has_newer_statuses
+        this.has_older_statuses = options.has_older_statuses
+        this.original_has_newer_statuses = options.has_newer_statuses
+        this.original_has_older_statuses = options.has_older_statuses
+    }
+    // 継承先のクラスでこのメソッドをオーバーライドする
+    // ある投稿がこのタイムラインに含まれているかどうかを判定する
+    statusBelongsTo(status) {
+        return true
+    }
+    getSinceId = () => {
+        if (this.raw_status_objects.length === 0) {
+            return null
+        }
+        return this.raw_status_objects[0].id
+    }
+    getMaxId = () => {
+        if (this.raw_status_objects.length === 0) {
+            return null
+        }
+        // 2個くらい被せる
+        if (this.raw_status_objects.length > 2) {
+            return this.raw_status_objects[this.raw_status_objects.length - 3].id
+        }
+        return this.raw_status_objects[this.raw_status_objects.length - 1].id
+    }
+    count = () => {
+        return this.raw_status_objects.length
+    }
+    setStatuses = statuses => {
+        const filtered_statuses = []
+        statuses.forEach(status => {
+            // 削除済み
+            if (status.deleted) {
+                return
+            }
+            // ユーザーミュート
+            for (let j = 0; j < this.muted_users.length; j++) {
+                const muted_user = this.muted_users[j]
+                // idはサーバー側ではObjectIdでクライアント側ではstringになっているので注意
+                if (objectid_equals(status.user.id, muted_user.id)) {
+                    return
+                }
+            }
+            // 単語ミュート
+            for (let j = 0; j < this.muted_words.length; j++) {
+                const muted_word_str = this.muted_words[j]
+                if (status.text.indexOf(muted_word_str) !== -1) {
+                    return
+                }
+            }
+            status.likes = {
+                "count": status.likes_count
+            }
+            status.favorites = {
+                "count": is_array(status.favorited_by) ? status.favorited_by.length : 0,
+                "users": status.favorited_by
+            }
+            status.reactions = {
+                "count": is_array(status.reactions) ? status.reactions.length : 0,
+                "list": status.reactions
+            }
+            status.comments = {
+                "count": status.comments_count,
+                "commenters": status.commenters
+            }
+            filtered_statuses.push(assign(status))
+        })
+
+        this.filtered_statuses = filtered_statuses
+        this.raw_status_objects = statuses
+    }
+}
+
+const get_store_class = () => {
+    if (typeof window === "undefined") {
+        return ServerSideTimelineStore
+    } else {
+        return ClientSideTimelineStore
+    }
+}
+
+export default get_store_class()

@@ -81,19 +81,19 @@ export default class App extends AppComponent {
         }
     }
     render() {
-        const { platform, logged_in, aggregation_result } = this.props
+        const { platform, logged_in_user, aggregation_result } = this.props
         const { media } = this.state
         const bytes_unit_str = convert_bytes_to_optimal_unit(aggregation_result.total_bytes)
         return (
             <div id="app" className="settings">
-                <Head title={`アップロード / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationbarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content tooltip-offset-base">
+                <Head title={`アップロード / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container tooltip-offset-base">
                     <div className="inside">
                         <SettingsMenuView active="uploads" />
-                        <div className="settings-content-module">
+                        <div className="settings-container-main">
 
-                            <div className="settings-module form uploads-aggregation meiryo">
+                            <div className="settings-component form uploads-aggregation meiryo">
                                 <div className="head">
                                     <h1>統計</h1>
                                 </div>
@@ -109,7 +109,7 @@ export default class App extends AppComponent {
                                 </div>
                             </div>
                             {Array.isArray(media) && media.length > 0 ?
-                                <div className="settings-module form uploads meiryo">
+                                <div className="settings-component form uploads meiryo">
                                     <div className="head">
                                         <h1>ファイル一覧</h1>
                                     </div>

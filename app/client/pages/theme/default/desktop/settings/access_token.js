@@ -50,16 +50,16 @@ export default class App extends Component {
             })
     }
     render() {
-        const { profile_image_size, platform, logged_in } = this.props
+        const { profile_image_size, platform, logged_in_user } = this.props
         return (
             <div id="app" className="settings">
-                <Head title={`APIキー / 設定 / ${config.site.name}`} platform={platform} logged_in={logged_in} />
-                <NavigationbarView logged_in={logged_in} is_bottom_hidden={true} />
-                <div className="settings-content">
+                <Head title={`APIキー / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <div className="settings-container">
                     <div className="inside">
                         <SettingsMenuView active="access_token" />
-                        <div className="settings-content-module">
-                            <div className="settings-module form profile meiryo">
+                        <div className="settings-container-main">
+                            <div className="settings-component form profile meiryo">
                                 <div className="head">
                                     <h1>APIキー</h1>
                                 </div>

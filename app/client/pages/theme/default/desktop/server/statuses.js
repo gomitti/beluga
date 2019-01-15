@@ -24,10 +24,10 @@ configure({ "enforceActions": true })
 class MultipleColumnsContainer extends MultipleColumnsContainerView {
     constructor(props) {
         super(props)
-        const { server, logged_in, columns, callback_change,
+        const { server, logged_in_user, columns, callback_change,
             muted_users, muted_words, request_query, has_newer_statuses, has_older_statuses } = props
         assert(is_object(server), "$server must be of type object")
-        assert(is_object(logged_in), "$logged_in must be of type object")
+        assert(is_object(logged_in_user), "$logged_in_user must be of type object")
         assert(is_array(columns), "$columns must be of type array")
         if (callback_change) {
             assert(is_function(callback_change), "$callback_change must be of type function")
@@ -47,7 +47,7 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
 
                 const column_options = new ColumnOptions()
                 if (type === enums.column.type.server) {
-                    column_options.status.show_belonging = true
+                    column_options.status.show_source_link = true
                     column_options.postbox.is_hidden = true
                     if (params.server.id === server.id) {
                         column_options.is_closable = false
@@ -59,19 +59,17 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
                     }
                 }
 
-                const opt = new TimelineOptions()
-                if(column_index == 0){
-                    opt.has_newer_statuses = has_newer_statuses
-                    opt.has_older_statuses = has_older_statuses
+                if (column_index == 0) {
+                    column_options.timeline.has_newer_statuses = has_newer_statuses
+                    column_options.timeline.has_older_statuses = has_older_statuses
                     if (has_newer_statuses) {
-                        opt.auto_reloading_enabled = false
+                        column_options.timeline.auto_reloading_enabled = false
                     }
                 } else {
-                    opt.has_older_statuses = true
+                    column_options.timeline.has_older_statuses = true
                 }
-                opt.muted_users = muted_users
-                opt.muted_words = muted_words
-                column_options.timeline = opt
+                column_options.timeline.muted_users = muted_users
+                column_options.timeline.muted_words = muted_words
 
                 const column_settings = new ColumnSettings()
 
@@ -91,15 +89,14 @@ class MultipleColumnsContainer extends MultipleColumnsContainerView {
             const { type, params, statuses } = column
             const column_options = new ColumnOptions()
 
-            const opt = new TimelineOptions()
-            opt.has_newer_statuses = has_newer_statuses
-            opt.has_older_statuses = has_older_statuses
+            column_options.status.show_source_link = true
+            column_options.timeline.has_newer_statuses = has_newer_statuses
+            column_options.timeline.has_older_statuses = has_older_statuses
             if (has_newer_statuses) {
-                opt.auto_reloading_enabled = false
+                column_options.timeline.auto_reloading_enabled = false
             }
-            opt.muted_users = muted_users
-            opt.muted_words = muted_words
-            column_options.timeline = opt
+            column_options.timeline.muted_users = muted_users
+            column_options.timeline.muted_words = muted_words
 
             const column_settings = new ColumnSettings()
 
@@ -153,7 +150,7 @@ export default class App extends Component {
         }
     }
     render() {
-        const { server, logged_in, channels, platform, pinned_emoji_shortnames, custom_emoji_shortnames, statuses_home, statuses_server } = this.props
+        const { server, logged_in_user, channels, platform, pinned_emoji_shortnames, custom_emoji_shortnames, statuses_home, statuses_server } = this.props
         const desktop_settings = get_desktop_settings()
         let title = `${server.display_name} / ${config.site.name}`
         return (
@@ -161,9 +158,9 @@ export default class App extends Component {
                 "inline-flex": this.state.app_inline_flex,
                 "multiple-columns": desktop_settings.multiple_columns_enabled
             })}>
-                <Head title={title} platform={platform} logged_in={logged_in} />
-                <NavigationBarView server={server} logged_in={logged_in} active="statuses" />
-                <div id="content" className={classnames("timeline world tooltip-offset-base", { "logged_in": !!logged_in })}>
+                <Head title={title} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationBarView server={server} logged_in_user={logged_in_user} active="statuses" />
+                <div id="content" className={classnames("timeline world tooltip-offset-base", { "logged_in_user": !!logged_in_user })}>
                     <MultipleColumnsContainer {...this.props} />
                 </div>
                 <EmojiPicker

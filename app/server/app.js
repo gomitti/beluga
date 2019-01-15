@@ -9,6 +9,23 @@ const app = require("fastify")({
     "maxParamLength": config.channel.max_name_length * 10
 })
 
+function check_heap_size() {
+
+    // gc.
+    try {
+        global.gc();
+    } catch (e) {
+        console.log('You have to run this program as `node --expose-gc app_memory_leak.js`');
+        process.exit();
+    }
+
+    // Check heap memory.
+    const heapUsed = process.memoryUsage().heapUsed;
+    console.log('heapSize: ', heapUsed);
+}
+
+// setInterval(check_heap_size, 1000);
+
 mongodb.MongoClient
     .connect(mongo.url)
     .then(client => {
@@ -32,7 +49,7 @@ mongodb.MongoClient
             .register(require("./auth/plugin"))
             .register(bridge)
             .register(require("./routes/api"))
-            .register(require("fastify-react"))
+            .register(require("fastify-nextjs"))
 
         app.after(() => {
             app.register(require("./routes/client"))
