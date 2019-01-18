@@ -88,7 +88,7 @@ export default class App extends AppComponent {
             <div id="app" className="settings">
                 <Head title={`アップロード / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
                 <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
-                <div className="settings-container tooltip-offset-base">
+                <div className="settings-container tooltip-offset-base emoji-picker-offset-base">
                     <div className="inside">
                         <SettingsMenuView active="uploads" />
                         <div className="settings-container-main">

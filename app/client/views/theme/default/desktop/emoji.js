@@ -1,7 +1,6 @@
 import { Component } from "react"
 import classnames from "classnames"
-import { observer } from "mobx-react"
-import { observable, action } from "mobx"
+import { observer } from "../../../../stores/theme/default/common/mobx"
 import assert, { is_string, is_object, is_array } from "../../../../assert"
 import { get_category_by_shortname_or_null, get_all_categories, get_title_by_category, get_shortnames_by_category, search_by_shortname, get_image_url_by_shortname_or_null, EmojiPickerStore } from "../../../../stores/theme/default/common/emoji"
 import { get_shared_picker_store } from "../../../../stores/theme/default/common/emoji"
@@ -13,7 +12,7 @@ class EmojiListView extends Component {
         if (is_hidden) {
             return null
         }
-        if (!!emojis === false) {
+        if (is_array(emojis) === false) {
             return null
         }
         if (emojis.length === 0) {
@@ -352,26 +351,54 @@ class EmojiPickerWindowComponent extends Component {
         const { picker } = this.props
         const { detail } = payload
         const { dom, callback_pick, callback_hide } = detail
-        let { x, y } = dom.getBoundingClientRect()
+        const target_rect = dom.getBoundingClientRect()
+        const target_x = target_rect.x
+        const target_y = target_rect.y
+        let x = target_x
+        let y = target_y + 40
 
-        const { component } = this.refs
+        const picker_width = 366
+        const picker_height = 320
+
         const { body } = document
 
+        // マルチカラム時の横スクロール量
+        let offset_left = 0
+        let offset_top = 0
+        const base = document.getElementsByClassName("emoji-picker-offset-base")
+        if (base.length == 1) {
+            const offset = base[0].getBoundingClientRect()
+            offset_left += offset.left
+            offset_top += offset.top
+        }
+        const page_height = document.getElementById("app").clientHeight
+
         const padding = 10
-        const width = component.clientWidth
-        const height = component.clientHeight
-        if (x + width + padding > body.clientWidth) {
-            x = body.clientWidth - width - padding
+        // console.log("x", x, "picker_width", picker_width, "body.clientWidth", body.clientWidth)
+        // console.log("x + picker_width + padding", x + picker_width + padding)
+        // 画面右端にはみ出た場合
+        if (x + picker_width + padding > body.clientWidth) {
+            x = body.clientWidth - picker_width - padding
+            // console.log("adjust x")
         }
-        console.log(x, y, height, padding)
-        console.log(window.innerHeight, window.pageYOffset)
-        if (y + height + padding > window.innerHeight + window.pageYOffset) {
-            y = window.innerHeight + window.pageYOffset - height - padding
+        // console.log("x", x, "target_x", target_x)
+
+        // console.log("y", y, "target_y", target_y)
+        if (y + picker_height + padding > window.innerHeight) {
+            y = window.innerHeight - picker_height - padding
+            // console.log("adjust y")
         }
+        // console.log("y", y, "target_y", target_y)
+        // 画面下にはみ出た場合
+        if (y < target_y && y + picker_height > target_y) {
+            y = target_y - picker_height - padding
+            // console.log("adjust y")
+        }
+        // console.log("y", y, "target_y", target_y)
 
         this.setState({
-            "left": x,
-            "top": y
+            "left": x - offset_left,
+            "top": y + window.pageYOffset
         })
         picker.show((shortname, category) => {
             callback_pick(shortname, category)
@@ -411,10 +438,11 @@ class EmojiPickerWindowComponent extends Component {
             <div className={classnames("emoji-picker-window-component", {
                 "hidden": !picker.is_active
             })}
-                ref="component"
                 style={{
                     "top": this.state.top,
-                    "left": this.state.left
+                    "left": this.state.left,
+                    "width": "366px",
+                    "height": "320px"
                 }}>
                 <EmojiPickerView
                     picker={picker}

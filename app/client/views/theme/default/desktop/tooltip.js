@@ -69,12 +69,12 @@ class Tooltip extends Component {
             offset_left += offset.left
             offset_top += offset.top
         }
-        const client_height = document.getElementById("app").clientHeight
+        const page_height = document.getElementById("app").clientHeight
         this.setState({
             "is_hidden": false,
             "content": content,
             "left": rect.left + rect.width / 2 - 100 - offset_left,
-            "bottom": client_height - rect.top + padding + offset_top
+            "bottom": page_height - rect.top + padding + offset_top
         })
     }
     hide = () => {

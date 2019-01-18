@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { observer } from "mobx-react"
+import { observer } from "../../../../stores/theme/default/common/mobx"
 import classnames from "classnames"
 import assert from "../../../../assert"
 import assign from "../../../../libs/assign"

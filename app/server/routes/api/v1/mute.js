@@ -2,18 +2,23 @@ import memcached from "../../../memcached"
 import model from "../../../model"
 import collection from "../../../collection"
 import storage from "../../../config/storage"
+import { is_string } from "../../../assert"
 
 module.exports = (fastify, options, next) => {
     let api_version = "v1"
-    fastify.post(`/api/v1/mute/word/create`, async (req, res) => {
+    fastify.post(`/api/v1/mute/words/update`, async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            await model.v1.mute.user.create(fastify.mongo.db, {
-                "requested_by": session.user_id,
-                "target_user_id": user.id
+            const { words } = req.body
+            if (is_string(words) === false) {
+                throw new Error("ミュートする単語を指定してください")
+            }
+            await model.v1.mute.words.update(fastify.mongo.db, {
+                "user_id": session.user_id,
+                "word_array": words.split(",")
             })
             res.send({ "success": true })
         } catch (error) {

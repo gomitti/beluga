@@ -392,6 +392,8 @@ class ServerSideTimelineStore {
                     return
                 }
             }
+            // サーバーサイドではstatusがグローバルスコープなのでコピーしてから編集する
+            status = assign(status)
             status.likes = {
                 "count": status.likes_count
             }
@@ -407,7 +409,7 @@ class ServerSideTimelineStore {
                 "count": status.comments_count,
                 "commenters": status.commenters
             }
-            filtered_statuses.push(assign(status))
+            filtered_statuses.push(status)
         })
 
         this.filtered_statuses = filtered_statuses

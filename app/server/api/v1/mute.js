@@ -1,3 +1,4 @@
 import user from "./mute/user"
 import users from "./mute/users"
-export default { user, users }
+import words from "./mute/words"
+export default { user, users, words }

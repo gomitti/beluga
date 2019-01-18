@@ -1,4 +1,4 @@
-import { observable, action, computed } from "mobx"
+import { observable, action } from "../../common/mobx"
 import ws from "../../../../../websocket"
 import assign from "../../../../../libs/assign"
 import { request } from "../../../../../api"

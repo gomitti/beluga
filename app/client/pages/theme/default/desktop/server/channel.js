@@ -117,51 +117,17 @@ export default class App extends Component {
         super(props)
         const { server } = props
         assert(is_object(server), "$server must be of type object")
-
-        this.state = {
-            "app_inline_flex": false
-        }
-        if (typeof window !== "undefined") {
-            window.addEventListener("resize", event => {
-                if (this.resize_time_id) {
-                    clearTimeout(this.resize_time_id)
-                }
-                this.resize_time_id = setTimeout(() => {
-                    this.updateJustifyContent()
-                }, 50);
-            });
-        }
-    }
-    componentDidMount = () => {
-        this.updateJustifyContent()
-    }
-    updateJustifyContent = () => {
-        const columns = document.getElementsByClassName("column")
-        let width = 0
-        Array.prototype.forEach.call(columns, dom => {
-            width += dom.clientWidth + 10
-        })
-        if (window.innerWidth < width) {
-            this.setState({
-                "app_inline_flex": true
-            })
-        } else {
-            this.setState({
-                "app_inline_flex": false
-            })
-        }
     }
     render() {
         const { channel, server, logged_in_user, platform, pinned_emoji_shortnames, custom_emoji_shortnames } = this.props
         const desktop_settings = get_desktop_settings()
         return (
             <div id="app" className={classnames("timeline channel", {
-                "inline-flex": this.state.app_inline_flex,
                 "multiple-columns": desktop_settings.multiple_columns_enabled
             })}>
                 <Head title={`${channel.name} / ${server.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
                 <NavigationBarView server={server} logged_in_user={logged_in_user} active="channels" />
-                <div id="content" className={classnames("timeline channel tooltip-offset-base", { "logged_in_user": !!logged_in_user })}>
+                <div id="content" className={classnames("timeline channel tooltip-offset-base emoji-picker-offset-base", { "logged_in_user": !!logged_in_user })}>
                     <MultipleColumnsContainer {...this.props} />
                 </div>
                 <EmojiPicker

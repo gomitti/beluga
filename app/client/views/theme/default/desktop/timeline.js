@@ -6,6 +6,7 @@ import assert, { is_function, is_number } from "../../../../assert";
 import { get as get_desktop_settings } from "../../../../settings/desktop";
 import { TimelineOptions } from "../../../../stores/theme/default/desktop/timeline"
 import { StatusOptions } from "../../../../stores/theme/default/common/status"
+import { objectid_equals } from "../../../../libs/functions"
 
 @observer
 export default class TimelineView extends Component {
@@ -106,7 +107,7 @@ export default class TimelineView extends Component {
                 return
             }
             let trim_comments = false
-            if (in_reply_to_status && status.id === in_reply_to_status.id) {
+            if (in_reply_to_status && objectid_equals(status.id, in_reply_to_status.id)) {
                 trim_comments = true
             }
             statusViewList.push(

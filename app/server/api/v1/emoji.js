@@ -1,3 +1,5 @@
 import add from "./emoji/add"
+import remove from "./emoji/remove"
 import list from "./emoji/list"
-export default { add, list }
+import show from "./emoji/show"
+export default { add, remove, list, show }

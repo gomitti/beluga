@@ -55,7 +55,7 @@ export default {
         "max_display_name_length": 32,
         "max_status_text_length": 32,
         "name_regexp": "[a-zA-Z0-9_]+",
-        "reserved_names": ["admin", "beluga", "me", "here", "channel"],
+        "reserved_names": ["admin", "beluga", "me", "here", "channel", "everyone"],
         "profile": {
             "background_image": {
                 "max_size": 10000,
@@ -84,7 +84,6 @@ export default {
         "channels": {
             "min_statuses_count_to_display": 10	// チャンネル一覧に表示される最低限の投稿数
         },
-        "first_channel_name": "ラウンジ",   // サーバー作成時に自動的に作られるチャンネルの名前
         "reserved_names": ["create"],
     },
     "auth": {

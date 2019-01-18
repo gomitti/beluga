@@ -359,6 +359,14 @@
     }
 }
 
+.settings-component.word-mute {
+    > .form-component {
+        > .submit {
+            margin-top: 4px;
+        }
+    }
+}
+
 .settings-component.profile {
     > .item.status {
         > .editor {

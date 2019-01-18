@@ -1,5 +1,4 @@
 import { Component } from "react"
-import { observer } from "mobx-react"
 import { split_emoji_unicode, parse_emoji_unicode } from "./parser"
 import classnames from "classnames"
 import ws from "../../../../websocket"

@@ -1,14 +1,15 @@
 import { configure } from "mobx"
 import classnames from "classnames"
-import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
-import ServerDetailView from "../../../../../views/theme/default/desktop/column/server"
-import Head from "../../../../../views/theme/default/desktop/head"
-import config from "../../../../../beluga.config"
-import { request } from "../../../../../api"
-import assert from "../../../../../assert";
-import { get_image_url_by_shortname_or_null, add_custom_shortnames } from "../../../../../stores/theme/default/common/emoji";
-import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
-import Component from "../../../../../views/app"
+import NavigationbarView from "../../../../../../views/theme/default/desktop/navigationbar"
+import ServerDetailView from "../../../../../../views/theme/default/desktop/column/server"
+import Head from "../../../../../../views/theme/default/desktop/head"
+import config from "../../../../../../beluga.config"
+import { request } from "../../../../../../api"
+import assert from "../../../../../../assert";
+import { get_image_url_by_shortname_or_null, add_custom_shortnames } from "../../../../../../stores/theme/default/common/emoji";
+import Snackbar from "../../../../../../views/theme/default/desktop/snackbar"
+import Component from "../../../../../../views/app"
+import { objectid_equals } from "../../../../../../libs/functions";
 
 // mobxの状態をaction内でのみ変更可能にする
 configure({ "enforceActions": true })
@@ -26,11 +27,6 @@ export default class App extends Component {
         })
         add_custom_shortnames(shortnames)
     }
-
-    onFileChange = event => {
-
-    }
-
     add = event => {
         event.preventDefault()
         const { files } = this.refs.image_input
@@ -96,12 +92,27 @@ export default class App extends Component {
         }
         reader.readAsArrayBuffer(file)
     }
-
+    onRemove = emoji_id => {
+        request
+            .post("/emoji/remove", { emoji_id })
+            .then(res => {
+                const data = res.data
+                const { error } = data
+                if (error) {
+                    alert(error)
+                    return
+                }
+                Snackbar.show("削除しました", false)
+            })
+            .catch(error => {
+                alert(error)
+            })
+    }
     render() {
         const { server, logged_in_user, platform, device, custom_emoji_list } = this.props
         const emojiListView = []
         custom_emoji_list.forEach(emoji => {
-            const { shortname, user } = emoji
+            const { shortname, user, id } = emoji
             const src = get_image_url_by_shortname_or_null(shortname, server.id)
             if (src === null) {
                 return
@@ -112,11 +123,15 @@ export default class App extends Component {
                         <img className="image" src={src} />
                     </div>
                     <div className="shortname-area">
-                        <span className="shortname">{shortname}</span>
+                        <span className="shortname">:{shortname}:</span>
                     </div>
-                    <div className="user-area">
-                        <img className="avatar" src={user.avatar_url} />
-                        <a className="name" href={`/server/${server.name}/@${user.name}`}>@{user.name}</a>
+                    <div className="actions-area">
+                        {objectid_equals(logged_in_user.id, user.id) ?
+                            <a className="remove-link" href="#" onClick={event => {
+                                event.preventDefault()
+                                this.onRemove(id)
+                            }}>削除</a>
+                            : null}
                     </div>
                 </li>
             )
@@ -128,9 +143,9 @@ export default class App extends Component {
                 <div id="content" className={classnames("timeline channels", { "logged_in_user": !!logged_in_user })}>
                     <div className="inside column-container">
                         <div className="column customize-emoji">
-                            <div className="inside server-container round">
+                            <div className="inside column-component round form">
                                 <div className="content">
-                                    <div className="settings-component form">
+                                    <div className="settings-component form customize-emoji">
                                         <div className="head">
                                             <h1 className="title">絵文字の追加</h1>
                                         </div>
@@ -163,9 +178,9 @@ export default class App extends Component {
                                 </div>
                             </div>
 
-                            <div className="inside server-container round">
+                            <div className="inside column-component round custom-emoji-list">
                                 <div className="content">
-                                    <div className="section custome-emoji-list">
+                                    <div className="custom-emoji-list-area">
                                         <ul>
                                             {emojiListView}
                                         </ul>

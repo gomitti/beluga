@@ -1,4 +1,4 @@
-import { observable, action } from "mobx"
+import { observable, action } from "../common/mobx"
 import assert, { is_object, is_string } from "../../../../assert"
 import { request } from "../../../../api"
 import assign from "../../../../libs/assign";

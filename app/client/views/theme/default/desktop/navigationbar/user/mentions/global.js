@@ -1,5 +1,5 @@
 import { Component } from "react"
-import { observer } from "mobx-react"
+import { observer } from "../../../../../../../stores/theme/default/common/mobx"
 import { request } from "../../../../../../../api"
 import Store from "../../../../../../../stores/theme/default/desktop/navigationbar/mentions"
 import StatusView from "../../../status"

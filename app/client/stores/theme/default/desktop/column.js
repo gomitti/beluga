@@ -1,4 +1,4 @@
-import { observable, action } from "mobx"
+import { observable, action } from "../common/mobx"
 import { sync as uid } from "uid-safe"
 import assert, { is_object, is_array, is_string } from "../../../../assert"
 import enums from "../../../../enums"
@@ -166,7 +166,7 @@ class ServerSideColumnStore {
         if (muted_users) {
             muted_users.forEach(user => {
                 assert(is_object(user), "$user must be of type object")
-                this.muted_users.push(assign(user))
+                this.muted_users.push(assign(user)) // サーバーサイドではuserはグローバルスコープなのでコピー
             })
         }
         this.muted_words = muted_words ? muted_words : []

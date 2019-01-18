@@ -185,7 +185,7 @@ class UserMuteComponent extends Component {
         const { users } = this.props
         const { match, muted_users } = this.state
         return (
-            <div className="settings-component mute">
+            <div className="settings-component mute user-mute">
                 <div className="head">
                     <h1>ユーザー</h1>
                 </div>
@@ -214,16 +214,60 @@ class UserMuteComponent extends Component {
 class WordMuteComponent extends Component {
     constructor(props) {
         super(props)
+        this.state = {
+            "pending": false
+        }
+    }
+    update = async event => {
+        event.preventDefault()
+        if (this.state.pending) {
+            return
+        }
+        this.setState({ "pending": true })
+        const words_str = this.refs.textarea.value
+        const tmp_word_array = words_str.split(/\r?\n/)
+        let joined_words_str = ""
+        tmp_word_array.forEach(str => {
+            if (str.length === 0) {
+                return
+            }
+            joined_words_str += str + ","
+        })
+
+        try {
+            const res = await request.post("/mute/words/update", {
+                "words": joined_words_str
+            })
+            const { data } = res
+            if (data.success == false) {
+                throw new Error(data.error)
+            }
+            Snackbar.show("保存しました", false)
+        } catch (error) {
+            alert(error)
+        }
+        this.setState({ "pending": false })
     }
     render() {
+        const { muted_words } = this.props
+        let text = ""
+        muted_words.forEach(str => {
+            text += str + "\n"
+        })
         return (
-            <div className="settings-component mute">
+            <div className="settings-component mute word-mute">
                 <div className="head">
                     <h1>ワード</h1>
                 </div>
                 <div className="form-component">
                     <p className="description">表示したくない単語を改行で区切って入力してください</p>
-                    <textarea className="words form-input user-defined-border-color-focus" ref="textarea"></textarea>
+                    <textarea className="words form-input user-defined-border-color-focus" ref="textarea">{text}</textarea>
+                    <div className="submit">
+                        <button className={classnames("button user-defined-bg-color", {
+                            "in-progress": this.state.pending
+                        })}
+                            onClick={this.update}>保存する</button>
+                    </div>
                 </div>
             </div>
         )
@@ -232,7 +276,7 @@ class WordMuteComponent extends Component {
 
 export default class App extends AppComponent {
     render() {
-        const { platform, logged_in_user, users, muted_users } = this.props
+        const { platform, logged_in_user, users, muted_users, muted_words } = this.props
         return (
             <div id="app" className="settings">
                 <Head title={`ミュート / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
@@ -245,7 +289,7 @@ export default class App extends AppComponent {
                                 logged_in_user={logged_in_user}
                                 users={users}
                                 muted_users={muted_users} />
-                            <WordMuteComponent />
+                            <WordMuteComponent muted_words={muted_words} />
                         </div>
                     </div>
                 </div>

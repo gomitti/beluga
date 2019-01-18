@@ -188,7 +188,6 @@ module.exports = (fastify, options, next) => {
         .register(require("./client/channel"))
         .register(require("./client/user"))
         .register(require("./client/settings"))
-        .register(require("./client/customize"))
 
     fastify.next("/", async (app, req, res) => {
         try {

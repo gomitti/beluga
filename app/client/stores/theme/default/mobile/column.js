@@ -1,4 +1,3 @@
-import { observable, action } from "mobx"
 import { sync as uid } from "uid-safe"
 import assert, { is_object, is_array } from "../../../../assert"
 import enums from "../../../../enums"

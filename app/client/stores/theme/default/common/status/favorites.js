@@ -1,4 +1,4 @@
-import { observable, action } from "mobx"
+import { observable, action } from "../../common/mobx"
 import { request } from "../../../../../api"
 import { is_array } from "../../../../../assert";
 import ws from "../../../../../websocket"

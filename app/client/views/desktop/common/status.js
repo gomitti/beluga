@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { inject, observer } from "mobx-react"
+import { observer } from "mobx-react"
 import config from "../../../beluga.config"
 
 class ImageView extends Component {

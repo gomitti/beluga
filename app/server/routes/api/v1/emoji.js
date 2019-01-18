@@ -8,6 +8,19 @@ module.exports = (fastify, options, next) => {
             "fileSize": config.emoji.max_filesize,
         }
     })
+    fastify.post(`/api/v1/emoji/remove`, async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            const params = Object.assign({}, req.body, { "user_id": session.user_id })
+            await model.v1.emoji.remove(fastify.mongo.db, params)
+            res.send({ "success": true })
+        } catch (error) {
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
     fastify.post(`/api/v1/emoji/add`, async (req, res) => {
         try {
             let buffer = null
@@ -52,7 +65,7 @@ module.exports = (fastify, options, next) => {
                 if (buffer === null) {
                     throw new Error("画像を指定してください")
                 }
-                
+
                 try {
                     await model.v1.emoji.add(fastify.mongo.db, {
                         "data": buffer,

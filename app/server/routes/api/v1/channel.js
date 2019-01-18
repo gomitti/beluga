@@ -75,6 +75,24 @@ module.exports = (fastify, options, next) => {
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
+            const channel = await memcached.v1.channel.show(fastify.mongo.db, { "id": req.body.channel_id })
+            if (channel === null) {
+                throw new Error("チャンネルが存在しません")
+            }
+            const already_in_server = await memcached.v1.server.joined(fastify.mongo.db, {
+                "user_id": session.user_id,
+                "server_id": channel.server_id
+            })
+            if (already_in_server === false) {
+                try {
+                    await model.v1.server.join(fastify.mongo.db, {
+                        "user_id": session.user_id,
+                        "server_id": channel.server_id
+                    })
+                } catch (error) {
+                    throw new Error("問題が発生したためリクエストを続行できません")
+                }
+            }
             const params = assign(req.body, { "user_id": session.user_id })
             await model.v1.channel.join(fastify.mongo.db, params)
             res.send({ "success": true })

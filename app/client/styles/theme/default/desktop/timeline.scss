@@ -15,8 +15,9 @@
 
     > .column.timeline {
         height: 100%;
-        flex: 0 1 540px;
-        min-width: 350px;
+        flex: 0 0 auto;
+        // flex: 0 1 540px;
+        // min-width: 350px;
     }
 
     > .column.channels {

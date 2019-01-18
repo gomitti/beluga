@@ -8,6 +8,7 @@ export default async (db, params) => {
     const emojis = []
     rows.forEach(row => {
         emojis.push({
+            "id": row._id,
             "shortname": row.shortname,
             "added_by": row.added_by,
             "added_at": row.added_at,

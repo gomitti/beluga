@@ -1,8 +1,35 @@
-.column.customize-emoji {
-    flex: 0 1 600px;
+.column-component {
+    background-color: white;
+    margin-bottom: 10px;
+
+    > .content {
+        padding: 20px;
+        border-top: 1px solid rgb(238, 238, 238);
+
+        > .title {
+            font-size: 15px;
+            font-weight: bold;
+            color: rgb(20, 20, 20);
+            padding: 0;
+            margin: 0;
+            margin-bottom: 10px;
+        }
+    }
 }
 
-.settings-component {
+.column-component.custom-emoji-list {
+    > .content {
+        padding: 10px 20px;
+    }
+}
+
+.column.customize-emoji {
+    flex: 0 1 400px;
+}
+
+.settings-component.customize-emoji {
+    width: 100%;
+
     > .item {
         .image-input {
             margin-top: 10px;
@@ -10,7 +37,7 @@
     }
 }
 
-.custome-emoji-list {
+.custom-emoji-list-area {
     > ul {
         > .item {
             display: flex;
@@ -40,23 +67,15 @@
                 font-size: 15px;
             }
 
-            > .user-area {
+            > .actions-area {
                 flex: 0 1 auto;
                 display: flex;
                 flex-direction: row;
                 align-items: center;
 
-                .avatar {
+                > .remove-link {
                     flex: 0 1 auto;
-                    width: 24px;
-                    height: 24px;
-                    border-radius: 30px;
-                    margin-right: 5px;
-                }
-
-                .name {
-                    flex: 0 1 auto;
-                    font-size: 15px;
+                    font-size: 14px;
                 }
             }
         }

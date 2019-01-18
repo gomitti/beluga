@@ -145,9 +145,10 @@ module.exports = (fastify, options, next) => {
         }
         const users = await memcached.v1.users.list(fastify.mongo.db, {})
         const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in_user.id })
+        const muted_words = await model.v1.mute.words.list(fastify.mongo.db, { "user_id": logged_in_user.id })
         const device = fastify.device(req)
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/settings/mute`, {
-            csrf_token, logged_in_user, device, users, muted_users,
+            csrf_token, logged_in_user, device, users, muted_users, muted_words,
             "platform": fastify.platform(req),
         })
     })

@@ -15,12 +15,5 @@ export default async (db, params) => {
         }
     }
 
-    // コメントタイムラインに自分自身を出すためにハックしているので
-    // ここで無効化しておく
-    // 詳細はmodel/v1/status/update.jsを参照
-    if (status.id.equals(status.in_reply_to_status_id)) {
-        status.in_reply_to_status_id = null
-    }
-
     return status
 }

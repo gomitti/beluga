@@ -1,6 +1,7 @@
 import { Component } from "react"
-import { observable, action } from "mobx"
-import { observer } from "mobx-react"
+// import { observable, action } from "mobx"
+// import { observer } from "mobx-react"
+import { observable, observer, action } from "../../../../stores/theme/default/common/mobx"
 import classnames from "classnames"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
@@ -24,6 +25,44 @@ import { TimelineOptions } from "../../../../stores/theme/default/desktop/timeli
 
 @observer
 export class MultipleColumnsContainerView extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            "column_width": 540
+        }
+        if (typeof window !== "undefined") {
+            window.addEventListener("resize", event => {
+                if (this.resize_time_id) {
+                    clearTimeout(this.resize_time_id)
+                }
+                this.resize_time_id = setTimeout(() => {
+                    this.adjustColumnWidth()
+                }, 50);
+            });
+        }
+    }
+    componentDidMount = () => {
+        this.adjustColumnWidth()
+    }
+    adjustColumnWidth = () => {
+        if (typeof document === "undefined") {
+            return
+        }
+        const content = document.getElementById("content")
+        const columns = document.getElementsByClassName("column")
+        const content_width = content.clientWidth
+        const padding = 10
+        let rest_width = 0
+        for (let j = 0; j < columns.length; j++) {
+            const dom = columns[j]
+            if (dom.className.indexOf("timeline") !== -1) {
+                continue
+            }
+            rest_width += dom.clientWidth + padding
+        }
+        const column_width = ((content_width - rest_width - padding) / this.columns.length) - padding
+        this.setState({ "column_width": Math.max(300, Math.min(540, column_width)) })
+    }
     @observable.shallow columns = []
     equals = (a, b) => {
         assert(is_object(a), "$a must be of type object")
@@ -97,7 +136,7 @@ export class MultipleColumnsContainerView extends Component {
     // @param {array} muted_users
     // @param {array} muted_words
     @action.bound
-    insert(type, params, column_options, column_settings, initial_statuses, target, insert_position, muted_users, muted_words) {
+    insert = (type, params, column_options, column_settings, initial_statuses, target, insert_position, muted_users, muted_words) => {
         assert(is_object(params), "$params must be of type object")
         assert(column_options instanceof ColumnOptions, "$column_options must be an instance of ColumnOptions")
         assert(column_settings instanceof ColumnSettings, "$column_settings must be an instance of ColumnSettings")
@@ -112,6 +151,7 @@ export class MultipleColumnsContainerView extends Component {
         } else {
             this.columns.splice(insert_position, 0, column)
         }
+        this.adjustColumnWidth()
         return column
     }
     // ユーザー操作で追加
@@ -206,6 +246,7 @@ export class MultipleColumnsContainerView extends Component {
             return column
         })()
         this.serialize()
+        this.adjustColumnWidth()
         return column
     }
     @action.bound
@@ -227,6 +268,7 @@ export class MultipleColumnsContainerView extends Component {
         })()
         if (is_closed) {
             this.serialize()
+            this.adjustColumnWidth()
         }
     }
     componentDidUpdate = () => {
@@ -433,6 +475,7 @@ export class MultipleColumnsContainerView extends Component {
                     key={column.identifier}
                     column={column}
                     server={server}
+                    width={this.state.column_width}
                     logged_in_user={logged_in_user}
                     pinned_media={pinned_media}
                     recent_uploads={recent_uploads}
@@ -500,7 +543,7 @@ class ColumnView extends Component {
         timeline.more()
     }
     render() {
-        const { column, server, logged_in_user, request_query, pinned_media, recent_uploads } = this.props
+        const { column, server, logged_in_user, request_query, pinned_media, recent_uploads, width } = this.props
 
         const props = {
             "handle_click_channel": this.onClickChannel,
@@ -508,7 +551,7 @@ class ColumnView extends Component {
             "handle_click_thread": this.onClickThread,
             "handle_close": this.onClose,
             "handle_back": this.onBack,
-            column, server, logged_in_user, request_query, pinned_media, recent_uploads
+            column, server, logged_in_user, request_query, pinned_media, recent_uploads, width
         }
 
         if (column.type === enums.column.type.home) {
@@ -546,14 +589,14 @@ class ThreadColumnView extends Component {
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
     }
     render() {
-        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { in_reply_to_status } = column.params
         const uploader = new UploadManager()
         const postbox = new PostboxStore(postbox_destinations.thread, column.params)
 
         return (
-            <div className="column timeline">
+            <div className="column timeline" style={{ "width": `${width}px` }}>
                 <div className="inside timeline-container round">
                     <ThreadTimelineHeaderView
                         column={column}
@@ -596,13 +639,13 @@ class HomeColumnView extends Component {
         assert(column.type === enums.column.type.home, "$column.type must be 'home'")
     }
     render() {
-        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { user } = column.params
         const uploader = new UploadManager()
         const postbox = new PostboxStore(postbox_destinations.home, column.params)
         return (
-            <div className="column timeline">
+            <div className="column timeline" style={{ "width": `${width}px` }}>
                 <div className="inside timeline-container round">
                     <HomeTimelineHeaderView
                         column={column}
@@ -649,11 +692,11 @@ class ServerColumnView extends Component {
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
     }
     render() {
-        const { column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        const { column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { server } = column.params
         return (
-            <div className="column timeline">
+            <div className="column timeline" style={{ "width": `${width}px` }}>
                 <div className="inside timeline-container round">
                     <ServerTimelineHeaderView
                         column={column}
@@ -721,13 +764,13 @@ class ChannelColumnView extends Component {
         })
     }
     render() {
-        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { channel } = column.params
         const uploader = new UploadManager()
         const postbox = new PostboxStore(postbox_destinations.channel, column.params)
         return (
-            <div className="column timeline">
+            <div className="column timeline" style={{ "width": `${width}px` }}>
                 <div className="inside timeline-container round">
                     <HashtagTimelineHeaderView
                         column={column}
@@ -801,11 +844,11 @@ class NotificationColumnView extends Component {
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
     }
     render() {
-        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const uploader = new UploadManager()
         return (
-            <div className="column timeline">
+            <div className="column timeline" style={{ "width": `${width}px` }}>
                 <div className="inside timeline-container round">
                     <div className="content">
                         <div className="vertical-line"></div>
