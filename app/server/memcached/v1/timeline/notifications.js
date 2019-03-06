@@ -3,22 +3,22 @@ import { Memcached } from "../../../memcached/v1/memcached"
 import assert, { is_string, is_number } from "../../../assert"
 import { try_convert_to_hex_string, convert_to_hex_string_or_null } from "../../../lib/object_id"
 
-const fetch = api.v1.timeline.notifications
+const fetch_func = api.v1.timeline.notifications
 
 // since_id指定時と分ける
-const memcached_diff = new Memcached(fetch)
-const memcached_whole = new Memcached(fetch)
+const memcached_diff = new Memcached(fetch_func)
+const memcached_all = new Memcached(fetch_func)
 
 const register_flush_func = target => {
     target.flush = user_id => {
         user_id = try_convert_to_hex_string(user_id, "$user_idが不正です")
         memcached_diff.delete(user_id)
-        memcached_whole.delete(user_id)
+        memcached_all.delete(user_id)
     }
     return target
 }
 
-const fetch_all_server = async (db, params) => {
+const fetch_all = async (db, params) => {
     const user_id = try_convert_to_hex_string(params.user_id, "$user_idを指定してください")
     const { count, type } = params
     assert(is_number(count), "$count must be of type number")
@@ -30,9 +30,9 @@ const fetch_all_server = async (db, params) => {
     const max_id = convert_to_hex_string_or_null(params.max_id)
     if (since_id === null && max_id === null) {
         if (type) {
-            return await memcached_whole.fetch([user_id, type, count], db, params)
+            return await memcached_all.fetch([user_id, type, count], db, params)
         }
-        return await memcached_whole.fetch([user_id, count], db, params)
+        return await memcached_all.fetch([user_id, count], db, params)
     }
 
     if (max_id) {
@@ -45,9 +45,9 @@ const fetch_all_server = async (db, params) => {
     return await memcached_diff.fetch([user_id, since_id, count], db, params)
 }
 
-const fetch_specified_server = async (db, params) => {
+const fetch_specified_community = async (db, params) => {
     const user_id = try_convert_to_hex_string(params.user_id, "$recipient_idを指定してください")
-    const server_id = try_convert_to_hex_string(params.server_id, "$server_idを指定してください")
+    const community_id = try_convert_to_hex_string(params.community_id, "$community_idを指定してください")
     const { count, type } = params
     assert(is_number(count), "$count must be of type number")
     if (type) {
@@ -58,25 +58,25 @@ const fetch_specified_server = async (db, params) => {
     const max_id = convert_to_hex_string_or_null(params.max_id)
     if (since_id === null && max_id === null) {
         if (type) {
-            return await memcached_whole.fetch([user_id, server_id, type, count], db, params)
+            return await memcached_all.fetch([user_id, community_id, type, count], db, params)
         }
-        return await memcached_whole.fetch([user_id, server_id, count], db, params)
+        return await memcached_all.fetch([user_id, community_id, count], db, params)
     }
 
     if (max_id) {
         // キャッシュする必要はない
-        return await fetch(db, params)
+        return await fetch_func(db, params)
     }
     if (type) {
-        return await memcached_diff.fetch([user_id, server_id, type, since_id, count], db, params)
+        return await memcached_diff.fetch([user_id, community_id, type, since_id, count], db, params)
     }
-    return await memcached_diff.fetch([user_id, server_id, since_id, count], db, params)
+    return await memcached_diff.fetch([user_id, community_id, since_id, count], db, params)
 }
 
 export default register_flush_func(async (db, params) => {
-    if (params.server_id) {
-        return await fetch_specified_server(db, params)
+    if (params.community_id) {
+        return await fetch_specified_community(db, params)
     } else {
-        return await fetch_all_server(db, params)
+        return await fetch_all(db, params)
     }
 })

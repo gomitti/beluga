@@ -14,7 +14,7 @@ const get_original_url_of_item = item => {
     return `${item.uri}/${item.directory}/${item.prefix}.${item.extension}`
 }
 
-export default class MediaView extends Component {
+export default class MediaComponent extends Component {
     render() {
         const { media, is_hidden, append, title } = this.props
         if (is_hidden) {

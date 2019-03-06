@@ -1,0 +1,43 @@
+.column-component {
+    > .inside {
+        z-index: 0;
+        position: relative;
+
+        > .contents {
+            z-index: 1;
+            position: relative;
+        }
+    }
+}
+
+.multiple-columns-component {
+    margin: 0 auto;
+    justify-content: center;
+    display: flex;
+    z-index: auto;
+
+    > .column-component {
+        flex: 0 0 auto;
+        min-width: 0px;
+    }
+
+    > .column-component.left {
+        height: 100%;
+        flex: 0 1 220px;
+    }
+
+    > .column-component.timeline {
+        height: 100%;
+        flex: 0 0 auto;
+    }
+
+    > .column-component.channels {
+        flex: 0 1 250px;
+        min-width: 200px;
+    }
+
+    > .column-component.community-overview {
+        flex: 0 1 250px;
+        min-width: 250px;
+    }
+}

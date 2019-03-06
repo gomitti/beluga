@@ -3,7 +3,7 @@ import { observer } from "mobx-react"
 import { convert_bytes_to_optimal_unit } from "../../../../../libs/functions";
 
 @observer
-export default class ProgressView extends Component {
+export default class ProgressComponent extends Component {
     render() {
         const { metadatas } = this.props
         if (metadatas.length === 0) {

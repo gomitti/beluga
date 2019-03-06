@@ -1,0 +1,10 @@
+import create from "./community/create"
+import destroy from "./community/destroy"
+import show from "./community/show"
+import avatar from "./community/avatar"
+import channels from "./community/channels"
+import profile from "./community/profile"
+import joined from "./community/joined"
+import join from "./community/join"
+import members from "./community/members"
+export default { create, show, destroy, avatar, channels, profile, joined, join, members }

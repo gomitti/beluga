@@ -80,19 +80,12 @@ const gather_inline_markdown_inner_nodes = components => {
 }
 
 export const parse_inline_markdown = (substr, subviews) => {
-    const tmp = substr.split(markdown_inline_split_regex)
     // undefinedが含まれるので除外する
-    const components = []
-    tmp.forEach(substr => {
-        if (is_string(substr) && substr.length > 0) {
-            components.push(substr)
-        }
-    })
-    if (components.length === 1) {
-        subviews.push(components[0])
-        return true
+    const splits = substr.split(markdown_inline_split_regex).filter(substr => (is_string(substr) && substr.length > 0))
+    if (splits.length === 1) {
+        return false
     }
-    const nodes = gather_inline_markdown_inner_nodes(components)
+    const nodes = gather_inline_markdown_inner_nodes(splits)
     if (is_string(nodes)) {
         subviews.push(nodes)
         return true

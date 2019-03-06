@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { request } from "../../../api"
 
-export default class PostboxView extends Component {
+export default class PostboxComponent extends Component {
     post() {
         if (this.pending === true) {
             return
@@ -20,9 +20,9 @@ export default class PostboxView extends Component {
             query.channel_id = this.props.channel.id
         }
         // ユーザーのホームへの投稿
-        if (this.props.user && this.props.server) {
+        if (this.props.user && this.props.community) {
             query.recipient_id = this.props.user.id
-            query.server_id = this.props.server.id
+            query.community_id = this.props.community.id
         }
         request
             .post("/status/update", query)

@@ -23,7 +23,17 @@ const has_toHexString = x => {
     return typeof x.toHexString === "function"
 }
 
+export const to_hex_string = object_id => {
+    return has_toHexString(object_id) ? object_id.toHexString() : object_id
+}
+
 export const objectid_equals = (a, b) => {
+    if (typeof a === "undefined") {
+        return false
+    }
+    if (typeof b === "undefined") {
+        return false
+    }
     const a_str = has_toHexString(a) ? a.toHexString() : a
     const b_str = has_toHexString(b) ? b.toHexString() : b
     return a_str === b_str

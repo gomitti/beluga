@@ -88,15 +88,15 @@ export default class UploadManager {
                 }
                 const data = xhr.response
                 if (data.error) {
-                    if (this.error_callback) {
-                        this.error_callback(data.error)
+                    if (this.callback_error) {
+                        this.callback_error(data.error)
                     }
                     this.reject(file, metadata)
                     return
                 }
                 const url = data.urls.original
-                if (this.uploaded_callback) {
-                    this.uploaded_callback(url)
+                if (this.callback_upload) {
+                    this.callback_upload(url)
                 }
                 this.didUploadFile(file, metadata)
             }

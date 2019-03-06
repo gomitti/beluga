@@ -1,3 +1,9 @@
+.emoji-sizer {
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
 .emoji-picker-window-component {
     position: fixed;
     top: 0;
@@ -52,76 +58,83 @@
         }
     }
 
-    > .menu {
+    > .menu-area {
         flex: 0 0 auto;
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        height: 34px;
         box-sizing: border-box;
-        padding-top: 6px;
-        justify-content: center;
         background-color: rgb(248, 248, 248);
         border-bottom: 1px solid rgba(0, 0, 0, 0.2);
         border-radius: 0;
         position: relative;
         z-index: 1;
+        overflow-x: scroll;
+        -webkit-overflow-scrolling: touch;
 
-        > .item {
-            flex: 0 0 auto;
-            display: block;
-            background-color: transparent;
-            padding: 0 2px;
-            margin: 0 2px;
-            font-size: 30px;
-            color: rgb(140, 140, 140);
-            width: 28px;
-            border-bottom: 3px solid transparent;
-            font-family: "Beluga";
-        }
+        > .inside {
+            height: 40px;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            justify-content: center;
+            align-items: center;
 
-        > .item.pinned::before {
-            content: "\2428";
-        }
+            > .item {
+                flex: 0 0 auto;
+                display: block;
+                background-color: transparent;
+                padding: 0 2px;
+                margin: 0 2px;
+                font-size: 18px;
+                color: rgb(140, 140, 140);
+                width: 30px;
+                height: 100%;
+                border-bottom: 3px solid transparent;
+                font-family: Beluga;
+                float: left;
+            }
 
-        > .item.history::before {
-            content: "\2434";
-        }
+            > .item.pinned::before {
+                content: "\2428";
+            }
 
-        > .item.people::before {
-            content: "\2453";
-        }
+            > .item.history::before {
+                content: "\2434";
+            }
 
-        > .item.nature::before {
-            content: "\2454";
-        }
+            > .item.people::before {
+                content: "\2453";
+            }
 
-        > .item.food::before {
-            content: "\2455";
-        }
+            > .item.nature::before {
+                content: "\2454";
+            }
 
-        > .item.activity::before {
-            content: "\2456";
-        }
+            > .item.food::before {
+                content: "\2455";
+            }
 
-        > .item.travel::before {
-            content: "\2457";
-        }
+            > .item.activity::before {
+                content: "\2456";
+            }
 
-        > .item.objects::before {
-            content: "\2458";
-        }
+            > .item.travel::before {
+                content: "\2457";
+            }
 
-        > .item.symbols::before {
-            content: "\2459";
-        }
+            > .item.objects::before {
+                content: "\2458";
+            }
 
-        > .item.flags::before {
-            content: "\2E50";
-        }
+            > .item.symbols::before {
+                content: "\2459";
+            }
 
-        > .item.regional::before {
-            content: "\2E51";
+            > .item.flags::before {
+                content: "\2E50";
+            }
+
+            > .item.custom::before {
+                content: "\2E64";
+            }
         }
     }
 }
@@ -131,18 +144,18 @@
     position: relative;
 
     > .header {
-        font-size: 13px;
+        font-size: 15px;
         margin: 4px 0;
         font-weight: bold;
         color: rgb(100, 100, 100);
     }
 
-    > .buttons {
+    > .button-grid {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
 
-        > button {
+        > .item {
             border-radius: 3px;
             margin: 0 0 2px 2px;
             padding: 0;
@@ -151,10 +164,6 @@
             box-sizing: padding-box;
             height: 32px;
             width: 32px;
-
-            &:hover {
-                background-color: rgb(236, 236, 236);
-            }
         }
     }
 

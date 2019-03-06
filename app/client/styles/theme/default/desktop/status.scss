@@ -4,6 +4,7 @@
 
     > .inside {
         min-height: 65px;
+
         // padding: 6px 16px 4px 16px;
         padding: 0 16px;
         padding-left: 6px;
@@ -87,9 +88,10 @@
                 padding: 0;
                 margin-left: 5px;
 
-                > .emoji-image {
+                > .emoji {
                     width: 100%;
                     height: 100%;
+                    display: inline-block;
                 }
             }
 
@@ -126,16 +128,16 @@
 
     > .body {
         font-size: 15px;
-        word-break: break-all;
         word-wrap: break-word;
         position: relative;
 
         > .sentence {
-            line-height: 18px;
-            min-height: 16px;
+            line-height: 20px;
+            min-height: 20px;
 
             a {
                 font-weight: bold;
+                word-break: break-all;
 
                 &:hover {
                     text-decoration: underline;
@@ -175,14 +177,12 @@
 }
 
 .status-body-emoji {
-    padding: 0;
-
-    > .image {
-        width: 20px;
-        height: 20px;
-        margin-bottom: -3px;
-        display: inline-block;
-    }
+    overflow: hidden;
+    width: 22px;
+    height: 22px;
+    display: inline-block;
+    text-indent: -9999px;
+    margin-bottom: -5px;
 }
 
 .status-body-commenters {
@@ -214,13 +214,13 @@
         flex: 1 1 auto;
         display: flex;
         flex-direction: row;
-        font-size: 13px;
+        align-items: center;
+        font-size: 12px;
         text-decoration: none;
         margin-left: 5px;
         min-width: 0;
 
         > .latest-comment {
-            font-size: 14px;
             flex: 1 1 auto;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -229,17 +229,23 @@
             font-weight: normal;
         }
 
-        > .comments-count {
+        > .count {
             flex: 0 0 auto;
         }
 
-        > .comments-label {
+        > .label {
             flex: 0 0 auto;
+        }
 
-            &::after {
-                font-family: Beluga;
-                content: "\200E";
-                margin-left: 2px;
+        > .arrow {
+            flex: 0 0 auto;
+            font-family: Beluga;
+            font-size: 12px;
+            margin-left: 4px;
+            height: 12px;
+
+            &::before {
+                content: "\2E63";
             }
         }
     }
@@ -253,17 +259,16 @@
 
 .bigger-emoji {
     .status-body-emoji {
-        > .image {
-            width: 30px;
-            height: 30px;
-        }
+        width: 30px;
+        height: 30px;
     }
 }
 
 .status-body-channel,
 .status-body-mention {
+    margin: 0 1px;
     text-decoration: none;
-    font-family: NotoSansJP,appleLogo,sans-serif;
+    font-family: NotoSansJP, appleLogo, sans-serif;
 }
 
 .status-body-channel::before {
@@ -275,7 +280,7 @@
 }
 
 .status-body-tweet {
-    width: 100%;
+    min-width: 0;
 }
 
 .status-favofites {
@@ -343,7 +348,7 @@
         display: flex;
         border-radius: 4px;
         margin: 0 4px 2px 0;
-        padding: 4px 4px 4px 3px;
+        padding: 4px;
         cursor: pointer;
         background-color: white;
         box-sizing: border-box;
@@ -374,7 +379,7 @@
 
 .status-bars {
     > .bar:last-child.status-body-commenters {
-        margin-bottom: 10px;
+        margin-bottom: 14px;
     }
 }
 
@@ -409,6 +414,7 @@
 .status-body-website {
     display: flex;
     flex-direction: row;
+    min-width: 0;
     padding: 12px;
     border-radius: 5px;
     border: 1px solid rgb(220, 220, 220);
@@ -428,6 +434,9 @@
     }
 
     > .content {
+        flex: 1 1 auto;
+        min-width: 0;
+
         > .title {
             font-size: 15px;
             line-height: 18px;
@@ -438,6 +447,7 @@
             margin-top: 4px;
             font-size: 13px;
             line-height: 16px;
+            word-break: break-all;
         }
 
         > .domain {
@@ -454,7 +464,7 @@
     }
 }
 
-@media (max-width: 1024px) {
+.column.narrow {
     .status-body-website {
         > .image {
             display: none;
@@ -473,15 +483,23 @@
     margin: 6px 0 8px 0;
     display: flex;
 
-    > .source {
+    > .source-link {
         font-weight: normal;
-        font-size: 13px;
+        font-size: 12px;
         color: rgb(200, 200, 200);
         margin-right: 10px;
         max-width: 200px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+
+        > .icon {
+            font-family: Beluga;
+
+            &::before {
+                content: "\2006";
+            }
+        }
     }
 
     > .time {
@@ -517,12 +535,12 @@
 
     > .inside {
         > .action-button {
-            width: 34px;
+            width: 40px;
             height: 20px;
             background: transparent;
             margin-right: 2px;
             font-family: Beluga;
-            font-size: 26px;
+            font-size: 15px;
             color: rgb(100, 100, 100);
             text-decoration: none;
             display: inline-block;
@@ -639,6 +657,19 @@
                     height: 18px;
                 }
             }
+        }
+    }
+}
+
+.status-group {
+    > .footer {
+        margin: 0 14px 10px 0;
+        text-align: right;
+
+        > .link {
+            color: rgb(100, 100, 100);
+            font-weight: normal;
+            font-size: 13px;
         }
     }
 }

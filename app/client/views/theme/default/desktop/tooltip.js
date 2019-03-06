@@ -23,8 +23,8 @@ const dispatch_event = (eventName, opts) => {
 }
 
 const register_methods = target => {
-    target.show = (dom, content, padding) => {
-        dispatch_event(event_types.show, { dom, content, padding })
+    target.show = (dom, message, padding) => {
+        dispatch_event(event_types.show, { dom, message, padding })
     }
     target.hide = () => {
         dispatch_event(event_types.hide, {})
@@ -37,7 +37,7 @@ class Tooltip extends Component {
         super(props)
         this.state = {
             "is_hidden": true,
-            "content": null,
+            "message": null,
             "bottom": 0,
             "left": 0
         }
@@ -55,7 +55,7 @@ class Tooltip extends Component {
             return
         }
         const { detail } = payload
-        const { dom, content } = detail
+        const { dom, message } = detail
         let { padding } = detail
         const rect = dom.getBoundingClientRect()
         if (is_number(padding) === false) {
@@ -69,10 +69,10 @@ class Tooltip extends Component {
             offset_left += offset.left
             offset_top += offset.top
         }
-        const page_height = document.getElementById("app").clientHeight
+        const page_height = document.getElementsByClassName("app")[0].clientHeight
         this.setState({
             "is_hidden": false,
-            "content": content,
+            "message": message,
             "left": rect.left + rect.width / 2 - 100 - offset_left,
             "bottom": page_height - rect.top + padding + offset_top
         })
@@ -83,7 +83,7 @@ class Tooltip extends Component {
         }
         this.setState({
             "is_hidden": true,
-            "content": null,
+            "message": null,
             "left": 0,
             "bottom": 0
         })
@@ -98,7 +98,7 @@ class Tooltip extends Component {
                     "bottom": this.state.bottom,
                     "left": this.state.left
                 }}>
-                <span className="content">{this.state.content}</span>
+                <span className="message">{this.state.message}</span>
             </div>
         )
     }

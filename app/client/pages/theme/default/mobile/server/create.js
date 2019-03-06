@@ -12,7 +12,7 @@ export default class App extends Component {
 		const name = this.refs.name.value
 		const display_name = this.refs.displayName.value
 		if (name.length == 0) {
-			alert("サーバー名を入力してください")
+			alert("コミュニティ名を入力してください")
 			this.pending = false
 			return
 		}
@@ -22,7 +22,7 @@ export default class App extends Component {
 			return
 		}
 		request
-			.post("/server/create", {
+			.post("/create", {
 				name,
 				display_name,
 			})
@@ -33,7 +33,7 @@ export default class App extends Component {
 					this.pending = false
 					return
 				}
-				location.href = `/server/${data.server.name}/general`
+				location.href = `/${data.community.name}/general`
 			})
 			.catch(error => {
 				alert(error)
@@ -43,10 +43,10 @@ export default class App extends Component {
 	render() {
 		return (
 			<div>
-				<Head title="サーバーの作成"></Head>
+				<Head title="コミュニティの作成"></Head>
 				<div>
-					<p>サーバー名</p>
-					<p>{config.domain}/server/<input type="text" ref="name" /></p>
+					<p>コミュニティ名</p>
+					<p>{config.domain}/<input type="text" ref="name" /></p>
 					<p>半角英数字と_のみ使用できます</p>
 				</div>
 				<div>

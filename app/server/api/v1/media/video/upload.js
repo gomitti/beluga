@@ -208,7 +208,7 @@ export default async (db, params) => {
     let original_data = params.data
     const { storage } = params
     assert(original_data instanceof Buffer, "不正なデータです")
-    assert(typeof storage === "object", "不正なサーバーです")
+    assert(typeof storage === "object", "不正なコミュニティです")
 
     if (original_data.length === 0) {
         throw new Error("ファイルサイズが不正です")

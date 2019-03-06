@@ -2,7 +2,7 @@ import { Component } from "react"
 import Head from "next/head"
 import version from "../../../version"
 
-export default class HeadView extends Component {
+export default class HeadComponent extends Component {
     render() {
         return (
             <Head>

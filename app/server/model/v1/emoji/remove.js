@@ -14,6 +14,8 @@ export default async (db, params) => {
 
     await api.v1.emoji.remove(db, params)
 
-    memcached.v1.emoji.list.flush(emoji.server_id)
-    return true
+    memcached.v1.emoji.list.flush(emoji.community_id)
+    memcached.v1.emoji.version.flush(emoji.community_id)
+
+    return emoji
 }

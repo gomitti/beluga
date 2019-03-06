@@ -3,7 +3,7 @@ import collection from "../../../collection"
 import assign from "../../../lib/assign";
 
 module.exports = (fastify, options, next) => {
-    fastify.post(`/api/v1/channels/joined`, async (req, res) => {
+    fastify.post("/api/v1/channels/joined", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {

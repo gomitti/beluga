@@ -2,7 +2,7 @@ import classnames from "classnames"
 import Head from "../../../../../views/theme/default/desktop/head"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
-import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
+import NavigationbarComponent from "../../../../../views/theme/default/desktop/navigationbar"
 import assert, { is_string } from "../../../../../assert"
 import Component from "../../../../../views/app"
 
@@ -76,7 +76,7 @@ export default class App extends Component {
         return (
             <div id="app" className="account">
                 <Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} />
-                <NavigationBarView />
+                <NavigationbarComponent />
                 <div className="account-container">
                     <h1 className="title">アカウントの作成</h1>
                     <div className="content">

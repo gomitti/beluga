@@ -2,12 +2,11 @@ import { Component } from "react"
 import { configure } from "mobx"
 import classnames from "classnames"
 import Head from "../../../../../../views/theme/default/desktop/head"
-import NavigationBarView from "../../../../../../views/theme/default/desktop/navigationbar"
-import SettingsMenuView from "../../../../../../views/theme/default/desktop/settings/channel/menu"
+import NavigationbarComponent from "../../../../../../views/theme/default/desktop/navigationbar"
+import SettingsMenuComponent from "../../../../../../views/theme/default/desktop/settings/channel/menu"
 import config from "../../../../../../beluga.config"
 import { request } from "../../../../../../api"
 import AppComponent from "../../../../../../views/app"
-import Snackbar from "../../../../../../views/theme/default/desktop/snackbar"
 import assert, { is_array } from "../../../../../../assert"
 
 // mobxの状態をaction内でのみ変更可能にする
@@ -62,7 +61,6 @@ class AccessControlComponent extends Component {
                     alert(data.error)
                     return
                 }
-                Snackbar.show("保存しました")
                 dispatch_event(event_types.type_updated, { attributes })
             })
             .catch(error => {
@@ -70,7 +68,7 @@ class AccessControlComponent extends Component {
             })
     }
     render() {
-        const { server } = this.props
+        const { community } = this.props
         return (
             <div className="settings-component form channel-access-control meiryo">
                 <div className="head">
@@ -85,7 +83,7 @@ class AccessControlComponent extends Component {
                             onChange={this.onTypeChange}
                             checked={this.state.type === 0} />
                         <p className="name">公開</p>
-                        <p className="description">すべてのユーザーが参加できるチャンネルです。投稿は<a href={`/server/${server.name}/statuses`}>パブリックタイムライン</a>に表示されます。</p>
+                        <p className="description">すべてのユーザーが参加できるチャンネルです。投稿は<a href={`/${community.name}/statuses`}>パブリックタイムライン</a>に表示されます。</p>
                     </label>
                     <label className="choice">
                         <input name="access_control"
@@ -95,7 +93,7 @@ class AccessControlComponent extends Component {
                             onChange={this.onTypeChange}
                             checked={this.state.type === 1} />
                         <p className="name">承認制</p>
-                        <p className="description">チャンネル管理者が承認したユーザーのみ投稿することができます。投稿は<a href={`/server/${server.name}/statuses`}>パブリックタイムライン</a>に表示されません。</p>
+                        <p className="description">チャンネル管理者が承認したユーザーのみ投稿することができます。投稿は<a href={`/${community.name}/statuses`}>パブリックタイムライン</a>に表示されません。</p>
                     </label>
                 </div>
             </div>
@@ -167,9 +165,9 @@ class ParticipantsComponent extends Component {
 class InvitationComponent extends Component {
     constructor(props) {
         super(props)
-        const { members_in_channel, members_in_server } = props
+        const { members_in_channel, members_in_community } = props
         assert(is_array(members_in_channel), "$members_in_channel must be of type array")
-        assert(is_array(members_in_server), "$members_in_server must be of type array")
+        assert(is_array(members_in_community), "$members_in_community must be of type array")
 
         this.state = {
             "name": "@",
@@ -204,7 +202,7 @@ class InvitationComponent extends Component {
         this.setState({ "name": "@" + name })
     }
     search = () => {
-        const { members_in_server } = this.props
+        const { members_in_community } = this.props
         const query = this.state.name.replace("@", "")
         if (query === "") {
             this.setState({ "match": [], "complete_enabled": false })
@@ -212,7 +210,7 @@ class InvitationComponent extends Component {
         }
         const regexp = new RegExp(query, "i")
         const match = []
-        members_in_server.forEach(user => {
+        members_in_community.forEach(user => {
             if (regexp.test(user.name)) {
                 match.push(user)
             }
@@ -249,7 +247,6 @@ class InvitationComponent extends Component {
                 const { members } = data
                 this.setState({ "name": "@", "match": [], "members": members })
             }
-            Snackbar.show("招待しました", false)
         } catch (error) {
             alert(error)
         }
@@ -283,7 +280,6 @@ class InvitationComponent extends Component {
                 const { members } = data
                 this.setState({ "name": "@", "match": [], "members": members })
             }
-            Snackbar.show("キックしました", false)
         } catch (error) {
             alert(error)
         }
@@ -337,24 +333,24 @@ export default class App extends AppComponent {
         this.setState({ invitation_needed })
     }
     render() {
-        const { platform, logged_in_user, server, channel, members_in_channel, members_in_server } = this.props
+        const { platform, logged_in_user, community, channel, members_in_channel, members_in_community } = this.props
         return (
             <div id="app" className="channel-settings settings">
-                <Head title={`情報を編集 / 設定 / ${server.name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
-                <NavigationBarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <Head title={`情報を編集 / 設定 / ${community.name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
+                <NavigationbarComponent logged_in_user={logged_in_user} is_bottom_hidden={true} />
                 <div className="settings-container">
                     <div className="inside">
-                        <SettingsMenuView active="access_control" server={server} channel={channel} />
+                        <SettingsMenuComponent active="access_control" community={community} channel={channel} />
                         <div className="settings-container-main">
                             <AccessControlComponent
                                 channel={channel}
-                                server={server} />
+                                community={community} />
                             {this.state.invitation_needed ?
                                 <InvitationComponent
                                     members_in_channel={members_in_channel}
-                                    members_in_server={members_in_server}
+                                    members_in_community={members_in_community}
                                     channel={channel}
-                                    server={server} />
+                                    community={community} />
                                 : null}
                         </div>
                     </div>

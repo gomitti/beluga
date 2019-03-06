@@ -35,7 +35,7 @@ const register_methods = target => {
     }
 }
 
-const map_server_members = {}
+const map_community_members = {}
 
 @register_methods
 class MemberComplete extends Component {
@@ -61,12 +61,12 @@ class MemberComplete extends Component {
     show = payload => {
         const { detail } = payload
         const { kwargs, position } = detail
-        const { server_id, users } = kwargs
+        const { community_id, users } = kwargs
         if (users) {
 
         }
-        this.server_id = server_id
-        const members = map_server_members[server_id]
+        this.community_id = community_id
+        const members = map_community_members[community_id]
         if (members) {
             this.members = members
             this.setState({
@@ -80,13 +80,13 @@ class MemberComplete extends Component {
             "is_hidden": false, position
         })
         request
-            .get("/server/members", { "id": server_id })
+            .get("/community/members", { "id": community_id })
             .then(res => {
                 const data = res.data
                 if (data.success == false) {
                     return
                 }
-                if (this.server_id !== server_id) {
+                if (this.community_id !== community_id) {
                     return
                 }
                 const { members } = data

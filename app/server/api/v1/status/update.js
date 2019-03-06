@@ -3,40 +3,6 @@ import config from "../../../config/beluga"
 import assert, { is_string } from "../../../assert"
 import { try_convert_to_object_id } from "../../../lib/object_id"
 
-const verify_destination = params => {
-    let { channel_id, recipient_id, server_id, in_reply_to_status_id } = params
-
-    if (channel_id) {
-        channel_id = try_convert_to_object_id(channel_id, "$channel_idが不正です")
-    }
-    if (recipient_id) {
-        recipient_id = try_convert_to_object_id(recipient_id, "$recipient_idが不正です")
-    }
-    if (in_reply_to_status_id) {
-        in_reply_to_status_id = try_convert_to_object_id(in_reply_to_status_id, "$in_reply_to_status_idが不正です")
-    }
-    
-    server_id = try_convert_to_object_id(server_id, "$server_idが不正です")
-    // if (!!server_id === false) {
-    //     throw new Error("@server_idを指定してください")
-    // }
-
-    if (recipient_id && channel_id) {
-        throw new Error("投稿先が重複しています（@recipient_id && @channel_id）")
-    }
-    if (recipient_id && in_reply_to_status_id) {
-        throw new Error("投稿先が重複しています（@recipient_id && @in_reply_to_status_id")
-    }
-    if (channel_id && in_reply_to_status_id) {
-        throw new Error("投稿先が重複しています（@channel_id && @in_reply_to_status_id")
-    }
-    if (!!recipient_id === false && !!channel_id === false && !!in_reply_to_status_id === false) {
-        throw new Error("投稿先を指定してください")
-    }
-
-    return { channel_id, recipient_id, server_id, in_reply_to_status_id }
-}
-
 export default async (db, params) => {
     params = Object.assign({
         "from_mobile": false,
@@ -83,22 +49,19 @@ export default async (db, params) => {
         "_ip_address": ip_address
     }
 
-    const { channel_id, recipient_id, server_id, in_reply_to_status_id } = verify_destination(params)
-
-    // チャンネルへの投稿
+    const { channel_id, recipient_id, community_id, in_reply_to_status_id } = params
     if (channel_id) {
-        query.channel_id = channel_id
+        query.channel_id = try_convert_to_object_id(channel_id, "$channel_idが不正です")
     }
-    // ユーザーのホームへの投稿
-    else if (recipient_id) {
-        query.recipient_id = recipient_id
+    if (recipient_id) {
+        query.recipient_id = try_convert_to_object_id(recipient_id, "$recipient_idが不正です")
     }
-    // コメント
-    else if (in_reply_to_status_id) {
-        query.in_reply_to_status_id = in_reply_to_status_id
+    if (community_id) {
+        query.community_id = try_convert_to_object_id(community_id, "$community_idが不正です")
     }
-    // サーバーの全投稿を表示するTLのためにサーバーIDも記録する
-    query.server_id = server_id
+    if (in_reply_to_status_id) {
+        query.in_reply_to_status_id = try_convert_to_object_id(in_reply_to_status_id, "$in_reply_to_status_idが不正です")
+    }
 
     if (typeof params.entities === "object" && Object.keys(params.entities).length > 0) {
         const json_str = JSON.stringify(params.entities)
@@ -114,14 +77,14 @@ export default async (db, params) => {
     const collection = db.collection("statuses")
 
     // 最初の投稿は本人以外にできないようにする
-    if (recipient_id) {
-        const status = await collection.findOne({ recipient_id, server_id })
-        if (status === null) {
-            if (user_id.equals(recipient_id) === false) {
-                throw new Error("最初の投稿は本人以外にはできません")
-            }
-        }
-    }
+    // if (recipient_id) {
+    //     const status = await collection.findOne({ recipient_id })
+    //     if (status === null) {
+    //         if (user_id.equals(recipient_id) === false) {
+    //             throw new Error("最初の投稿は本人以外にはできません")
+    //         }
+    //     }
+    // }
 
     const result = await collection.insertOne(query)
     const status = result.ops[0]

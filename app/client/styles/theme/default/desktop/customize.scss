@@ -1,21 +1,21 @@
-.column-component {
-    background-color: white;
-    margin-bottom: 10px;
+// .column-component {
+//     background-color: white;
+//     margin-bottom: 10px;
 
-    > .content {
-        padding: 20px;
-        border-top: 1px solid rgb(238, 238, 238);
+//     > .content {
+//         padding: 20px;
+//         border-top: 1px solid rgb(238, 238, 238);
 
-        > .title {
-            font-size: 15px;
-            font-weight: bold;
-            color: rgb(20, 20, 20);
-            padding: 0;
-            margin: 0;
-            margin-bottom: 10px;
-        }
-    }
-}
+//         > .title {
+//             font-size: 15px;
+//             font-weight: bold;
+//             color: rgb(20, 20, 20);
+//             padding: 0;
+//             margin: 0;
+//             margin-bottom: 10px;
+//         }
+//     }
+// }
 
 .column-component.custom-emoji-list {
     > .content {
@@ -24,7 +24,8 @@
 }
 
 .column.customize-emoji {
-    flex: 0 1 400px;
+    flex: 0 1 360px;
+    width: 360px;
 }
 
 .settings-component.customize-emoji {
@@ -62,7 +63,7 @@
 
             > .shortname-area {
                 flex: 1 1 auto;
-                word-break: break-all;
+                word-wrap: break-word;
                 margin-right: 5px;
                 font-size: 15px;
             }

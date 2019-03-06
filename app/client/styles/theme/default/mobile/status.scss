@@ -3,7 +3,7 @@
     z-index: 0;
 
     > .inside {
-        padding: 6px 16px 0 16px;
+        padding: 6px 16px 4px 16px;
         padding-left: 6px;
         display: flex;
         flex-direction: row;
@@ -88,9 +88,10 @@
                 padding: 0;
                 margin-left: 5px;
 
-                > .emoji-image {
+                > .emoji {
                     width: 100%;
                     height: 100%;
+                    display: inline-block;
                 }
             }
 
@@ -116,16 +117,16 @@
 
     > .body {
         font-size: 17px;
-        word-break: break-all;
         word-wrap: break-word;
         position: relative;
 
         > .sentence {
-            line-height: 18px;
-            min-height: 16px;
+            line-height: 22px;
+            min-height: 22px;
 
             a {
                 font-weight: bold;
+                word-break: break-all;
             }
         }
     }
@@ -161,28 +162,26 @@
 }
 
 .status-body-emoji {
-    padding: 0;
-
-    > .image {
-        width: 20px;
-        height: 20px;
-        margin-bottom: -3px;
-        display: inline-block;
-    }
+    overflow: hidden;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    text-indent: -9999px;
+    margin-bottom: -3px;
 }
 
 .bigger-emoji {
     .status-body-emoji {
-        > .image {
-            width: 30px;
-            height: 30px;
-        }
+        width: 30px;
+        height: 30px;
     }
 }
 
 .status-body-channel,
 .status-body-mention {
     text-decoration: none;
+    line-height: normal;
+    margin: 0 1px;
 }
 
 .status-body-channel::before {
@@ -196,7 +195,7 @@
 }
 
 .status-body-tweet {
-    width: 100%;
+    min-width: 0;
 }
 
 .status-favofites {
@@ -296,7 +295,7 @@
     flex-direction: row;
     align-items: center;
     border-radius: 5px;
-    padding: 6px;
+    padding: 8px;
     margin: 6px 0;
     border: 1px solid rgb(200, 200, 200);
     text-decoration: none;
@@ -320,7 +319,7 @@
         flex: 1 1 auto;
         display: flex;
         flex-direction: row;
-        font-size: 13px;
+        font-size: 14px;
         text-decoration: none;
         margin-left: 5px;
         min-width: 0;
@@ -334,17 +333,22 @@
             font-weight: normal;
         }
 
-        > .comments-count {
+        > .count {
             flex: 0 0 auto;
         }
 
-        > .comments-label {
+        > .label {
             flex: 0 0 auto;
+        }
 
-            &::after {
-                font-family: Beluga;
-                content: "\200E";
-                margin-left: 2px;
+        > .arrow {
+            flex: 0 0 auto;
+            font-family: Beluga;
+            margin-left: 4px;
+            height: 12px;
+
+            &::before {
+                content: "\2E63";
             }
         }
     }
@@ -387,6 +391,7 @@
 .status-body-website {
     display: flex;
     flex-direction: row;
+    min-width: 0;
     padding: 12px;
     border-radius: 5px;
     border: 1px solid rgb(220, 220, 220);
@@ -407,6 +412,9 @@
     }
 
     > .content {
+        flex: 1 1 auto;
+        min-width: 0;
+
         > .title {
             font-size: 17px;
             line-height: 18px;
@@ -417,6 +425,7 @@
             margin-top: 4px;
             font-size: 13px;
             line-height: 16px;
+            word-break: break-all;
         }
 
         > .domain {
@@ -455,16 +464,24 @@
         > .left {
             flex: 0 1 auto;
 
-            > .source {
+            > .source-link {
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 font-size: 14px;
                 font-weight: normal;
-                line-height: 26px;
+                line-height: 28px;
                 color: rgb(100, 100, 100);
                 margin-right: 10px;
                 max-width: 200px;
                 overflow: hidden;
+
+                > .icon {
+                    font-family: Beluga;
+
+                    &::before {
+                        content: "\2006";
+                    }
+                }
             }
         }
 
@@ -484,30 +501,30 @@
                 font-family: Beluga;
                 font-size: 0;
                 color: rgb(100, 100, 100);
-            }
 
-            > button::before {
-                font-size: 30px;
-            }
+                &::before {
+                    font-size: 16px;
+                }
 
-            > .like::before {
-                content: "\2428";
-            }
+                &.like::before {
+                    content: "\2428";
+                }
 
-            > .favorite::before {
-                content: "\2429";
-            }
+                &.favorite::before {
+                    content: "\2429";
+                }
 
-            > .emoji::before {
-                content: "\2430";
-            }
+                &.emoji::before {
+                    content: "\2430";
+                }
 
-            > .thread::before {
-                content: "\2431";
-            }
+                &.thread::before {
+                    content: "\2431";
+                }
 
-            > .destroy::before {
-                content: "\2432";
+                &.destroy::before {
+                    content: "\2432";
+                }
             }
         }
     }

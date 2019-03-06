@@ -1,69 +1,86 @@
-#navigationbar {
-    height: 44px;
-    background-clip: padding-box;
-    background-color: white;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
-    border-radius: 6px;
-    overflow: hidden;
-    margin-top: 2px;
-}
-
-.navigationbar-menu {
+.navigationbar-component {
+    z-index: 4;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    height: 50px;
+    background-color: rgb(30, 30, 30);
+    padding: 0 10px;
+    box-sizing: border-box;
+    font-size: 10px;
+    box-shadow: rgba(23, 23, 23, 0.15) 0px 4px 8px;
     display: flex;
-    justify-content: space-around;
-    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
 
-    > li {
-        flex: 1 0 auto;
-        height: 44px;
+    > .tab-menu {
+        flex: 1 1 auto;
         display: flex;
-        flex-wrap: nowrap;
-        justify-content: space-around;
-        box-sizing: border-box;
-        padding: 0 5px;
+        flex-direction: row;
+        height: 100%;
+        justify-content: space-between;
+        overflow-x: scroll;
 
-        > a {
+        > .item {
             flex: 0 0 auto;
-            display: block;
-            text-align: center;
-            text-decoration: none;
-            color: rgb(100, 100, 100);
-            font-weight: bold;
-            height: 44px;
-            width: 100%;
-            line-height: 49px;
-            overflow: hidden;
-            border: solid transparent;
-            border-width: 0 0 3px 0;
-            box-sizing: border-box;
+            min-width: 60px;
+            height: 100%;
+            color: rgb(180, 180, 180);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
 
             > .icon {
-                width: 18px;
-                height: 100%;
-                font-size: 34px;
+                flex: 0 0 auto;
+                width: 32px;
+                height: 32px;
+                font-size: 24px;
                 font-family: Beluga;
-                display: inline-block;
-                box-sizing: border-box;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-weight: normal;
+                line-height: 0;
+
+                &.message::before {
+                    content: "\2E58";
+                }
+
+                &.notifications::before {
+                    content: "\2E56";
+                }
+
+                &.explore::before {
+                    content: "\2007";
+                }
+
+                &.settings::before {
+                    content: "\2E53";
+                }
+
+                &.search::before {
+                    content: "\2E52";
+                }
+
+                &.profile::before {
+                    content: "\2E54";
+                }
+
+                &.more::before {
+                    content: "\2E55";
+                }
             }
 
-            > .home::before {
-                content: "\2001";
+            > .label {
+                font-weight: normal;
+                flex: 0 0 auto;
+                font-size: 10px;
             }
 
-            > .notifications::before {
-                content: "\2005";
-            }
-
-            > .channels::before {
-                content: "\2006";
-            }
-
-            > .world::before {
-                content: "\2007";
-            }
-
-            > .settings::before {
-                content: "\2427";
+            &.active {
+                color: white;
+                text-decoration: none;
             }
         }
     }

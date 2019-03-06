@@ -20,12 +20,12 @@ export default async (db, params) => {
         }
         status.recipient = recipient
     }
-    if (status.server_id && params.trim_server === false) {
-        const server = await model.v1.server.show(db, { "id": status.server_id })
-        if (server === null) {
+    if (status.community_id && params.trim_community === false) {
+        const community = await model.v1.community.show(db, { "id": status.community_id })
+        if (community === null) {
             return null
         }
-        status.server = server
+        status.community = community
     }
     if (status.channel_id && params.trim_channel === false) {
         const channel = await model.v1.channel.show(db, { "id": status.channel_id })

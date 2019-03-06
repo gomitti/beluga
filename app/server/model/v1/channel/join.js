@@ -19,21 +19,28 @@ export default async (db, params) => {
         throw new Error("このチャンネルは承認制のため参加できません")
     }
 
-    const already_in_server = await memcached.v1.server.joined(db, {
+    const already_in_community = await memcached.v1.community.joined(db, {
         "user_id": user.id,
-        "server_id": channel.server_id
+        "community_id": channel.community_id
     })
-    assert(already_in_server === true, "サーバーに参加していないため、このサーバー上のチャンネルには参加できません")
+    assert(already_in_community === true, "コミュニティに参加していないため、このコミュニティ上のチャンネルには参加できません")
 
     await api.v1.channel.join(db, {
         "user_id": user.id,
-        "server_id": channel.server_id,
+        "community_id": channel.community_id,
         "channel_id": channel.id,
+    })
+
+    const members_count = await db.collection("channel_members").find({
+        "community_id": channel.community_id
+    }).count()
+    await db.collection("channels").updateOne({ "_id": channel.id }, {
+        "$set": { members_count }
     })
 
     // キャッシュの消去
     memcached.v1.channel.joined.flush(channel.id, user.id)
-    memcached.v1.channels.joined.flush(channel.server_id, user.id)
+    memcached.v1.channels.joined.flush(channel.community_id, user.id)
     memcached.v1.channel.members.flush(channel.id)
 
     return true

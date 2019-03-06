@@ -4,7 +4,7 @@ import users from "./users"
 import account from "./account"
 import channel from "./channel"
 import channels from "./channels"
-import server from "./server"
+import community from "./community"
 import reaction from "./reaction"
 import favorite from "./favorite"
 import media from "./media"
@@ -13,8 +13,9 @@ import access_token from "./access_token"
 import kvs from "./kvs"
 import emoji from "./emoji"
 import mute from "./mute"
+import statuses from "./statuses"
 
 export default {
-    status, user, users, account, channel, channels, server, reaction, favorite, media,
-    timeline, access_token, kvs, emoji, mute
+    status, user, users, account, channel, channels, community, reaction, favorite, media,
+    timeline, access_token, kvs, emoji, mute, statuses
 }

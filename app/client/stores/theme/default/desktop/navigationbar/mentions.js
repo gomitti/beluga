@@ -35,7 +35,7 @@ export default class MentionsStore {
         const params = assign({
             "recipient_id": this.recipient_id,
             "trim_user": false,
-            "trim_server": false,
+            "trim_community": false,
             "trim_channel": false,
             "trim_recipient": false,
         }, this.params)

@@ -2,110 +2,128 @@ import { Component } from "react"
 import classnames from "classnames"
 import { SliderPicker, CirclePicker } from 'react-color'
 import Head from "../../../../../views/theme/default/desktop/head"
-import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
-import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
+import NavigationbarComponent from "../../../../../views/theme/default/desktop/navigationbar"
+import SettingsMenuComponent from "../../../../../views/theme/default/desktop/settings/account/menu"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import { is_object } from "../../../../../assert"
-import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
 import AppComponent from "../../../../../views/app"
+import Toast from "../../../../../views/theme/default/desktop/toast"
+import { LoadingButton } from "../../../../../views/theme/default/desktop/button"
+
+const LoadingButtonOrNull = ({ is_hidden, handle_click, is_loading, label, is_neutral_color }) => {
+    if (is_hidden) {
+        return null
+    }
+    return (
+        <LoadingButton
+            handle_click={handle_click}
+            is_loading={is_loading}
+            is_neutral_color={is_neutral_color}
+            label={label} />
+    )
+}
 
 class ThemeComponent extends Component {
     constructor(props) {
         super(props)
         const { logged_in_user } = props
+        const color = logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color
+        logged_in_user.profile.theme_color = color
         this.state = {
-            "color": logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color,
-            "pending_change": false,
-            "pending_reset": false,
+            "color": color,
+            "change_in_progress": false,
+            "reset_in_progress": false,
         }
+        this.colors = [
+            "#f78da7", "#f47373", "#f44336", "#e91e63", "#ba68c8", "#9c27b0", "#673ab7",
+            "#3f51b5", "#2196f3", "#0693e3", "#03a9f4", "#00bcd4", "#8bceef", "#009688",
+            "#4caf50", "#8bc34a", "#cddc39", "#00d084", "#7bdcb5", "#ffeb3b", "#ffc107",
+            "#ff9800", "#ff5722", "#ff8a65", "#795548", "#607d8b", "#abb8c3"
+        ]
     }
     onColorChangeComplete = (color, event) => {
         this.setState({
             "color": color.hex
         })
-        this.props.onUpdate(color.hex)
+        const { callback_update } = this.props
+        callback_update(color.hex)
     }
     onInputChange = (event) => {
         const { hex } = this.refs
+        const { callback_update } = this.props
         this.setState({
             "color": hex.value
         })
-        this.props.onUpdate(hex.value)
+        callback_update(hex.value)
     }
     onUpdate = event => {
-        if (this.state.pending_change === true) {
+        if (this.state.change_in_progress === true) {
             return
         }
-        this.setState({
-            "pending_change": true
-        })
-        request
-            .post("/account/profile/update", {
-                "theme_color": this.state.color
-            })
-            .then(res => {
-                const { data } = res
-                if (data.success == false) {
-                    alert(data.error)
-                    return
-                }
-                Snackbar.show("保存しました", false)
-            })
-            .catch(error => {
-                alert(error)
-            })
-            .then(_ => {
-                this.setState({
-                    "pending_change": false
+        this.setState({ "change_in_progress": true })
+        setTimeout(() => {
+            request
+                .post("/account/profile/update", {
+                    "theme_color": this.state.color
                 })
-            })
+                .then(res => {
+                    const { data } = res
+                    const { success, error } = data
+                    if (success == false) {
+                        Toast.push(error, false)
+                    } else {
+                        Toast.push("テーマカラーを保存しました", true)
+                    }
+                })
+                .catch(error => {
+                    Toast.push(error.toString(), false)
+                })
+                .then(_ => {
+                    this.setState({ "change_in_progress": false })
+                })
+        }, 250)
     }
     onReset = event => {
-        if (this.state.pending_reset === true) {
+        if (this.state.reset_in_progress === true) {
             return
         }
-        this.setState({
-            "pending_reset": true
-        })
-        request
-            .post("/account/profile/update", {
-                "theme_color": config.default_theme_color
-            })
-            .then(res => {
-                const { data } = res
-                if (data.success == false) {
-                    alert(data.error)
-                } else {
-                    this.setState({
-                        "color": config.default_theme_color
-                    })
-                    this.props.onUpdate(config.default_theme_color)
-                    Snackbar.show("デフォルトのテーマカラーに戻しました", false)
-                }
-            })
-            .catch(error => {
-                alert(error)
-            })
-            .then(_ => {
-                this.setState({
-                    "pending_reset": false
+        this.setState({ "reset_in_progress": true })
+        setTimeout(() => {
+            request
+                .post("/account/profile/update", {
+                    "theme_color": config.default_theme_color
                 })
-            })
+                .then(res => {
+                    const { data } = res
+                    const { success, error } = data
+                    if (success == false) {
+                        Toast.push(error, false)
+                    } else {
+                        this.setState({
+                            "color": config.default_theme_color
+                        })
+                        const { callback_update } = this.props
+                        callback_update(config.default_theme_color)
+                        Toast.push("デフォルトのテーマカラーに戻しました", true)
+                    }
+                })
+                .catch(error => {
+                    Toast.push(error.toString(), false)
+                })
+                .then(_ => {
+                    this.setState({ "reset_in_progress": false })
+                })
+        }, 250)
     }
     render() {
         return (
-            <div className="settings-component color-pickers">
+            <div className="settings-content-component color-pickers">
                 <div className="head">
                     <h1>テーマカラー</h1>
                 </div>
                 <div className="picker">
-                    <CirclePicker width="380px" colors={[
-                        "#f78da7", "#f47373", "#f44336", "#e91e63", "#ba68c8", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3",
-                        "#0693e3", "#03a9f4", "#00bcd4", "#8bceef", "#009688", "#4caf50", "#8bc34a",
-                        "#cddc39", "#00d084", "#7bdcb5", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#ff8a65", "#795548",
-                        "#607d8b", "#abb8c3"
-                    ]} color={this.state.color} onChangeComplete={this.onColorChangeComplete} />
+                    <CirclePicker width="380px" colors={this.colors} color={this.state.color} onChangeComplete={this.onColorChangeComplete} />
                 </div>
                 <div className="picker input">
                     <input className="input" value={this.state.color} style={{
@@ -113,22 +131,32 @@ class ThemeComponent extends Component {
                     }} onChange={this.onInputChange} ref="hex" />
                 </div>
                 <div className="submit">
-                    <button
-                        className={classnames("button user-defined-bg-color", { "in-progress": this.state.pending_change })}
-                        onClick={this.onUpdate}>
-                        <span className="progress-text">保存しています</span>
-                        <span className="display-text">テーマカラーを保存</span>
-                    </button>
-                    <button
-                        className={classnames("button neutral user-defined-bg-color", { "in-progress": this.state.pending_reset })}
-                        onClick={this.onReset}>
-                        <span className="progress-text">保存しています</span>
-                        <span className="display-text">デフォルトに戻す</span>
-                    </button>
+                    <LoadingButtonOrNull
+                        handle_click={this.onUpdate}
+                        is_loading={this.state.change_in_progress}
+                        label="保存する" />
+                    <LoadingButtonOrNull
+                        handle_click={this.onReset}
+                        is_loading={this.state.reset_in_progress}
+                        is_neutral_color={true}
+                        label="デフォルトに戻す" />
                 </div>
             </div>
         )
     }
+}
+
+const BackgroundImageAreaOrNull = ({ is_hidden, background_image }) => {
+    if (is_hidden) {
+        return null
+    }
+    return (
+        <div className="background-image-area">
+            <a className="link" href={background_image} target="_blank">
+                <img className="image" src={background_image} />
+            </a>
+        </div>
+    )
 }
 
 class BackgroundComponent extends Component {
@@ -139,8 +167,8 @@ class BackgroundComponent extends Component {
         this.state = {
             "file_selected": false,
             "background_image": null,
-            "pending_change": false,
-            "pending_reset": false,
+            "change_in_progress": false,
+            "reset_in_progress": false,
             background_image
         }
     }
@@ -155,13 +183,13 @@ class BackgroundComponent extends Component {
             const base64 = reader.result
             const component = base64.split(";")
             if (component.length !== 2) {
-                alert("問題が発生しました。ブラウザを変えると解消する可能性があります。")
+                Toast.push("問題が発生しました。ブラウザを変えると解消する可能性があります。", false)
                 return
             }
             const extension = component[0].replace("data:", "")
             const allowed_extensions = ["image/jpeg", "image/png"]
             if (!(allowed_extensions.includes(extension))) {
-                alert("この拡張子には対応していません")
+                Toast.push("この拡張子には対応していません", false)
                 return
             }
             this.setState({
@@ -173,101 +201,79 @@ class BackgroundComponent extends Component {
     }
     onSave = event => {
         if (!!this.state.background_image === false) {
-            alert("ファイルを選択してください")
+            Toast.push("ファイルを選択してください", false)
         }
-        if (this.state.pending_change === true) {
+        if (this.state.change_in_progress === true) {
             return
         }
-        this.setState({
-            "pending_change": true
-        })
+        this.setState({ "change_in_progress": true })
         request
             .post("/account/profile/background_image/update", {
                 "data": this.state.background_image
             })
             .then(res => {
-                const { data } = res
-                if (data.success == false) {
-                    alert(data.error)
-                    return
+                const { success, error } = res.data
+                if (success == false) {
+                    Toast.push(error, false)
+                } else {
+                    Toast.push("背景画像を保存しました", true)
                 }
-                Snackbar.show("保存しました", false)
             })
             .catch(error => {
-                alert(error)
+                Toast.push(error.toString(), false)
             })
             .then(_ => {
-                this.setState({
-                    "pending_change": false
-                })
+                this.setState({ "change_in_progress": false })
             })
     }
     onReset = event => {
-        if (this.state.pending_reset === true) {
+        if (this.state.reset_in_progress === true) {
             return
         }
-        this.setState({
-            "pending_reset": true
-        })
-        request
-            .post("/account/profile/background_image/reset", {})
-            .then(res => {
-                const { data } = res
-                if (data.success == false) {
-                    alert(data.error)
-                    return
-                }
-                this.setState({
-                    "background_image": null
+        this.setState({ "reset_in_progress": true })
+        setTimeout(() => {
+            request
+                .post("/account/profile/background_image/reset", {})
+                .then(res => {
+                    const { success, error } = res.data
+                    if (success == false) {
+                        Toast.push(error, false)
+                    } else {
+                        Toast.push("背景画像をデフォルトに戻しました", true)
+                        this.setState({
+                            "background_image": null
+                        })
+                    }
                 })
-                Snackbar.show("デフォルトの背景画像に戻しました", false)
-            })
-            .catch(error => {
-                alert(error)
-            }).then(_ => {
-                this.setState({
-                    "pending_reset": false
+                .catch(error => {
+                    Toast.push(error.toString(), false)
+                }).then(_ => {
+                    this.setState({ "reset_in_progress": false })
                 })
-            })
+        }, 250)
     }
     render() {
+        const { background_image } = this.state
         return (
-            <div className="settings-component background-image">
+            <div className="settings-content-component background-image">
                 <div className="head">
                     <h1>背景画像</h1>
                 </div>
-                {(() => {
-                    const { background_image } = this.state
-                    if (background_image) {
-                        return (
-                            <div className="background-image-wrapper">
-                                <a href={background_image} target="_blank">
-                                    <img src={background_image} />
-                                </a>
-                            </div>
-                        )
-                    }
-                })()}
+                <BackgroundImageAreaOrNull
+                    is_hidden={background_image === null}
+                    background_image={background_image} />
                 <input type="file" ref="file" accept="image/*" onChange={this.onFileChange} />
                 <div className="submit">
-                    {(() => {
-                        if (this.state.file_selected) {
-                            return (
-                                <button
-                                    className={classnames("button user-defined-bg-color", { "in-progress": this.state.pending_change })}
-                                    onClick={this.onSave}>
-                                    <span className="progress-text">保存しています</span>
-                                    <span className="display-text">背景画像を保存</span>
-                                </button>
-                            )
-                        }
-                    })()}
-                    <button
-                        className={classnames("button neutral", { "in-progress": this.state.pending_reset })}
-                        onClick={this.onReset}>
-                        <span className="progress-text">保存しています</span>
-                        <span className="display-text">デフォルトに戻す</span>
-                    </button>
+                    <LoadingButtonOrNull
+                        is_hidden={!this.state.file_selected}
+                        handle_click={this.onSave}
+                        is_loading={this.state.change_in_progress}
+                        label="保存する" />
+                    <LoadingButtonOrNull
+                        handle_click={this.onReset}
+                        is_loading={this.state.reset_in_progress}
+                        is_neutral_color={true}
+                        label="デフォルトに戻す" />
                 </div>
             </div>
         )
@@ -275,28 +281,25 @@ class BackgroundComponent extends Component {
 }
 
 export default class App extends AppComponent {
-    constructor(props) {
-        super(props)
-        const { logged_in_user } = props
-        this.state = {
-            "color": logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color,
-        }
-    }
     onUpdateThemeColor = color => {
-        this.setState({ color })
+        const { logged_in_user } = this.props
+        logged_in_user.profile.theme_color = color
+        this.forceUpdate()
     }
     render() {
         const { platform, logged_in_user } = this.props
-        logged_in_user.profile.theme_color = this.state.color
         return (
-            <div id="app" className="settings">
+            <div className="app settings">
                 <Head title={`デザイン / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
-                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
-                <div className="settings-container">
+                <NavigationbarComponent logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <Toast />
+                <div className="client">
                     <div className="inside">
-                        <SettingsMenuView active="design" />
-                        <div className="settings-container-main">
-                            <ThemeComponent logged_in_user={logged_in_user} onUpdate={this.onUpdateThemeColor} />
+                        <div className="settings-menu-area">
+                            <SettingsMenuComponent active_page="design" />
+                        </div>
+                        <div className="settings-contents-area">
+                            <ThemeComponent logged_in_user={logged_in_user} callback_update={this.onUpdateThemeColor} />
                             <BackgroundComponent logged_in_user={logged_in_user} />
                         </div>
                     </div>

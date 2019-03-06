@@ -1,7 +1,7 @@
 import { Component } from "react"
 import classnames from "classnames"
 import { observer } from "mobx-react"
-import { EmojiPickerView } from "../desktop/emoji"
+import { EmojiPickerComponent } from "../desktop/emoji"
 import { get_shared_picker_store } from "../../../../stores/theme/default/common/emoji"
 
 const event_types = {
@@ -69,17 +69,16 @@ class EmojiPickerWindowComponent extends Component {
         picker.hide()
     }
     render() {
-        const { picker, pinned_shortnames, custom_shortnames, server } = this.props
+        const { picker, pinned_shortnames, community } = this.props
         if (picker === null) {
             return null
         }
         return (
             <div className={classnames("emoji-picker-window-component", { "hidden": !picker.is_active })} ref="component">
-                <EmojiPickerView
+                <EmojiPickerComponent
                     picker={picker}
-                    server={server}
-                    pinned_shortnames={pinned_shortnames}
-                    custom_shortnames={custom_shortnames} />
+                    community={community}
+                    pinned_shortnames={pinned_shortnames} />
             </div>
         )
     }
@@ -91,19 +90,18 @@ class EmojiPicker extends Component {
         super(props)
         this.picker = null
         if (typeof window !== "undefined") {
-            const { server } = props
-            this.picker = get_shared_picker_store(server)
+            const { community } = props
+            this.picker = get_shared_picker_store(community)
         }
     }
     render() {
-        const { pinned_shortnames, custom_shortnames, server } = this.props
+        const { pinned_shortnames, community } = this.props
         return (
             <div>
                 <EmojiPickerWindowComponent
                     pinned_shortnames={pinned_shortnames}
-                    custom_shortnames={custom_shortnames}
                     picker={this.picker}
-                    server={server} />
+                    community={community} />
             </div>
 
         )

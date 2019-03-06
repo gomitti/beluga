@@ -37,7 +37,7 @@ export default async (db, params) => {
 
     // キャッシュの消去
     memcached.v1.channel.joined.flush(channel.id, user_to_kick.id)
-    memcached.v1.channels.joined.flush(channel.server_id, user_to_kick.id)
+    memcached.v1.channels.joined.flush(channel.community_id, user_to_kick.id)
     memcached.v1.channel.members.flush(channel.id)
 
     return true

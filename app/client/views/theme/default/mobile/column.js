@@ -1,24 +1,23 @@
 import { Component } from "react"
-import { observer } from "mobx-react"
 import classnames from "classnames"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
 import assert, { is_object, is_array, is_string, is_function } from "../../../../assert"
-import StatusView from "./status"
-import PostboxView from "./postbox"
-import TimelineView from "./timeline"
-import HomeTimelineHeaderView from "./timeline/header/home"
-import ThreadTimelineHeaderView from "./timeline/header/thread"
-import HashtagTimelineHeaderView from "./timeline/header/channel"
-import ServerTimelineHeaderView from "./timeline/header/server"
+import StatusComponent from "./status"
+import PostboxComponent from "./postbox"
+import { TimelineComponent, StatusGroupTimelineComponent } from "./timeline"
+import DirectMessageTimelineHeaderComponent from "./header/timeline/message"
+import ThreadTimelineHeaderComponent from "./header/timeline/thread"
+import ChannelTimelineHeaderComponent from "./header/timeline/channel"
+import CommunityTimelineHeaderComponent from "./header/timeline/community"
+import NotificationsTimelineHeaderComponent from "./header/timeline/notifications"
 import { request } from "../../../../api"
 import UploadManager from "../../../../stores/theme/default/common/uploader"
 import StatusStore from "../../../../stores/theme/default/common/status"
-import { get_shared_picker_store } from "../../../../stores/theme/default/common/emoji"
-import PostboxStore, { destinations as postbox_destinations } from "../../../../stores/theme/default/common/postbox"
+import PostboxStore from "../../../../stores/theme/default/common/postbox"
 
 
-class ColumnView extends Component {
+class ColumnComponent extends Component {
     loadMoreStatuses = () => {
         const { column } = this.props
         const { timeline } = column
@@ -26,14 +25,55 @@ class ColumnView extends Component {
     }
 }
 
-export class HashtagColumnView extends ColumnView {
+const PostboxComponentOrNull = ({ is_hidden, postbox, timeline, picker, logged_in_user, uploader, pinned_media, recent_uploads }) => {
+    if (is_hidden) {
+        return null
+    }
+    return (
+        <PostboxComponent
+            postbox={postbox}
+            timeline={timeline}
+            picker={picker}
+            logged_in_user={logged_in_user}
+            uploader={uploader}
+            pinned_media={pinned_media}
+            recent_uploads={recent_uploads} />
+    )
+}
+
+const JoinChannelComponent = ({ handle_join, is_hidden }) => {
+    if (is_hidden) {
+        return null
+    }
+    return (
+        <div className="timeline-join">
+            <p className="hint">このチャンネルに参加すると投稿することができます</p>
+            <div className="submit">
+                <button className="button meiryo ready user-defined-bg-color" onClick={handle_join}>
+                    <span className="progress-text">参加する</span>
+                    <span className="display-text">参加する</span>
+                </button>
+                <button className="button meiryo neutral user-defined-bg-color" onClick={() => {
+                    location.href = `/${channel.name}`
+                }}>
+                    <span className="display-text">詳細を見る</span>
+                </button>
+            </div>
+        </div>
+    )
+}
+
+export class ChannelColumnComponent extends ColumnComponent {
     constructor(props) {
         super(props)
-        const { column } = props
+        const { column, community } = props
         const { channel } = column.params
         assert(column.type === enums.column.type.channel, "$column.type must be 'channel'")
+        this.uploader = new UploadManager()
+        this.postbox = new PostboxStore({
+            "channel_id": channel.id
+        })
         this.state = {
-            "is_join_pending": false,
             "joined": channel.joined
         }
     }
@@ -41,9 +81,6 @@ export class HashtagColumnView extends ColumnView {
         event.preventDefault()
         const { column } = this.props
         const { channel } = column.params
-        this.setState({
-            "is_join_pending": true
-        })
         request
             .post("/channel/join", { "channel_id": channel.id })
             .then(res => {
@@ -59,116 +96,28 @@ export class HashtagColumnView extends ColumnView {
             .catch(error => {
                 alert(error)
             })
-            .then(_ => {
-                this.setState({
-                    "is_join_pending": false
-                })
-            })
     }
     render() {
-        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        const { community, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         const { channel } = column.params
-        const uploader = new UploadManager()
-        const picker = get_shared_picker_store(server)
-        const postbox = new PostboxStore(postbox_destinations.channel, column.params)
         return (
-            <div className="column timeline">
-                <div className="inside timeline-container round">
-                    <HashtagTimelineHeaderView column={column} channel={channel} />
-                    {this.state.joined ? null :
-                        <div className="timeline-join">
-                            <p className="hint">このチャンネルに参加すると投稿することができます</p>
-                            <div className="submit">
-                                <button
-                                    className={classnames("button meiryo ready user-defined-bg-color", { "in-progress": this.state.is_join_pending })}
-                                    onClick={this.onJoin}>
-                                    <span className="progress-text">参加する</span>
-                                    <span className="display-text">参加する</span>
-                                </button>
-                                <button className="button meiryo neutral user-defined-bg-color" onClick={() => {
-                                    location.href = `/server/${channel.name}/about`
-                                }}>
-                                    <span className="display-text">詳細を見る</span>
-                                </button>
-                            </div>
-                        </div>
-                    }
-                    <div className="content">
+            <div className="column-component rounded-corner timeline">
+                <div className="inside">
+                    <ChannelTimelineHeaderComponent column={column} channel={channel} />
+                    <JoinChannelComponent is_hidden={this.state.joined} handle_join={this.onJoin} />
+                    <div className="contents">
                         <div className="vertical-line"></div>
-                        {this.state.joined === false ? null :
-                            <PostboxView
-                                postbox={postbox}
-                                timeline={column.timeline}
-                                picker={picker}
-                                logged_in_user={logged_in_user}
-                                uploader={uploader}
-                                pinned_media={pinned_media}
-                                recent_uploads={recent_uploads} />
-                        }
-                        <TimelineView
-                            server={server}
-                            timeline={column.timeline}
+                        <PostboxComponentOrNull
+                            is_hidden={!this.state.joined}
                             logged_in_user={logged_in_user}
-                            request_query={request_query}
-                            timeline_options={column.options.timeline}
-                            status_options={column.options.status}
-                            load_more_statuses={this.loadMoreStatuses} />
-                    </div>
-                </div>
-            </div>
-        )
-    }
-}
-
-export class ServerColumnView extends ColumnView {
-    render() {
-        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
-        assert(column.type === enums.column.type.server, "$column.type must be 'server'")
-        return (
-            <div className="column timeline">
-                <div className="inside timeline-container round">
-                    <ServerTimelineHeaderView column={column} server={server} />
-                    <div className="content">
-                        <div className="vertical-line"></div>
-                        <TimelineView
-                            server={server}
                             timeline={column.timeline}
-                            logged_in_user={logged_in_user}
-                            request_query={request_query}
-                            timeline_options={column.options.timeline}
-                            status_options={column.options.status}
-                            load_more_statuses={this.loadMoreStatuses} />
-                    </div>
-                </div>
-            </div>
-        )
-    }
-}
-
-export class HomeColumnView extends ColumnView {
-    render() {
-        const { server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
-        assert(column.type === enums.column.type.home, "$column.type must be 'home'")
-        const { user } = column.params
-        const uploader = new UploadManager()
-        const picker = get_shared_picker_store(server)
-        const postbox = new PostboxStore(postbox_destinations.home, column.params)
-        return (
-            <div className="column timeline">
-                <div className="inside timeline-container round">
-                    <HomeTimelineHeaderView column={column} user={user} />
-                    <div className="content">
-                        <div className="vertical-line"></div>
-                        <PostboxView
-                            postbox={postbox}
-                            timeline={column.timeline}
-                            picker={picker}
-                            logged_in_user={logged_in_user}
-                            uploader={uploader}
+                            postbox={this.postbox}
+                            picker={this.picker}
+                            uploader={this.uploader}
                             pinned_media={pinned_media}
                             recent_uploads={recent_uploads} />
-                        <TimelineView
-                            server={server}
+                        <TimelineComponent
+                            community={community}
                             timeline={column.timeline}
                             logged_in_user={logged_in_user}
                             request_query={request_query}
@@ -182,37 +131,64 @@ export class HomeColumnView extends ColumnView {
     }
 }
 
-export class ThreadColumnView extends ColumnView {
+export class CommunityColumnComponent extends ColumnComponent {
+    render() {
+        const { community, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        assert(column.type === enums.column.type.community, "$column.type must be 'community'")
+        return (
+            <div className="column-component rounded-corner timeline">
+                <div className="inside">
+                    <CommunityTimelineHeaderComponent />
+                    <div className="contents">
+                        <div className="vertical-line"></div>
+                        <StatusGroupTimelineComponent
+                            community={community}
+                            timeline={column.timeline}
+                            logged_in_user={logged_in_user}
+                            request_query={request_query}
+                            timeline_options={column.options.timeline}
+                            status_options={column.options.status}
+                            load_more_statuses={this.loadMoreStatuses} />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
+export class ThreadColumnComponent extends ColumnComponent {
     constructor(props) {
         super(props)
-        const { in_reply_to_status } = props
+        const { column, community } = props
+        const { in_reply_to_status } = column.params
         this.placeholder_status = new StatusStore(in_reply_to_status)
+        this.uploader = new UploadManager()
+        assert(is_object(in_reply_to_status), "$in_reply_to_status must be of type object")
+        this.postbox = new PostboxStore({
+            "in_reply_to_status_id": in_reply_to_status.id
+        })
     }
     render() {
-        const { in_reply_to_status, server, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
+        const { community, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         assert(column.type === enums.column.type.thread, "$column.type must be 'thread'")
-        const { user } = column.params
-        const uploader = new UploadManager()
-        const picker = get_shared_picker_store(server)
-        const postbox = new PostboxStore(postbox_destinations.thread, column.params)
+        const { user, in_reply_to_status } = column.params
         return (
-            <div className="column timeline">
-                <div className="inside timeline-container round">
-                    <ThreadTimelineHeaderView column={column} in_reply_to_status={in_reply_to_status} />
-                    <div className="content">
+            <div className="column-component rounded-corner timeline">
+                <div className="inside">
+                    <ThreadTimelineHeaderComponent in_reply_to_status={in_reply_to_status} />
+                    <div className="contents">
                         <div className="vertical-line"></div>
-                        <PostboxView
-                            postbox={postbox}
+                        <PostboxComponent
+                            postbox={this.postbox}
                             timeline={column.timeline}
-                            picker={picker}
                             logged_in_user={logged_in_user}
-                            uploader={uploader}
+                            uploader={this.uploader}
                             pinned_media={pinned_media}
                             recent_uploads={recent_uploads} />
-                        <TimelineView
+                        <TimelineComponent
                             total_num_statuses={in_reply_to_status.comments_count}
                             in_reply_to_status={in_reply_to_status}
-                            server={server}
+                            community={community}
                             logged_in_user={logged_in_user}
                             timeline={column.timeline}
                             request_query={request_query}

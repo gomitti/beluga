@@ -1,34 +1,59 @@
-import { Component } from "react"
+import React from "react"
 import classnames from "classnames"
 
-export default class SettingsMenuView extends Component {
-    render() {
-        const { active } = this.props
-        return (
-            <div className="settings-menu-module clearfix">
-                <div className="settings-menu-container clearfix">
-                    <div className="inside">
-                        <h2 className="title settings">設定</h2>
-                        <ul className="settings-menu">
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "profile" })} href="/settings/profile">プロフィール</a></li>
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "design" })} href="/settings/design">デザイン</a></li>
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "account" })} href="/settings/account">アカウント</a></li>
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "pins" })} href="/settings/pins">固定</a></li>
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "uploads" })} href="/settings/uploads">アップロード</a></li>
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "mute" })} href="/settings/mute">ミュート</a></li>
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "desktop" })} href="/settings/desktop">デスクトップ</a></li>
-                        </ul>
-                    </div>
-                </div>
-                <div className="settings-menu-container clearfix">
-                    <div className="inside">
-                        <h2 className="title developers">開発者</h2>
-                        <ul className="settings-menu">
-                            <li><a className={classnames("user-defined-color-hover user-defined-color-active item user-defined-border-color-active", { "active": active === "access_token" })} href="/settings/access_token">APIキー</a></li>
-                        </ul>
-                    </div>
-                </div>
+export const AccountSettingsMenuComponent = ({ active_page }) => {
+    return (
+        <div className="settings-menu-component">
+            <div className="inside">
+                <h2 className="title settings">設定</h2>
+                <ul className="menu">
+                    <a className="item" href="/settings/profile">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "profile" })}>プロフィール</span>
+                    </a>
+                    <a className="item" href="/settings/design">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "design" })}>デザイン</span>
+                    </a>
+                    <a className="item" href="/settings/account">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "account" })}>アカウント</span>
+                    </a>
+                    <a className="item" href="/settings/pins">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "pins" })}>固定</span>
+                    </a>
+                    <a className="item" href="/settings/uploads">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "uploads" })}>アップロード</span>
+                    </a>
+                    <a className="item" href="/settings/mute">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "mute" })}>ミュート</span>
+                    </a>
+                    <a className="item" href="/settings/desktop">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "desktop" })}>デスクトップ</span>
+                    </a>
+                </ul>
             </div>
-        )
-    }
+        </div>
+    )
+}
+
+export const DevelopperSettingsMenuComponent = ({ active_page }) => {
+    return (
+        <div className="settings-menu-component">
+            <div className="inside">
+                <h2 className="title developers">開発者</h2>
+                <ul className="menu">
+                    <a className="item" href="/settings/access_token">
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "access_token" })}>アクセストークン</span>
+                    </a>
+                </ul>
+            </div>
+        </div>
+    )
+}
+
+export default ({ active_page }) => {
+    return (
+        <React.Fragment>
+            <AccountSettingsMenuComponent active_page={active_page} />
+            <DevelopperSettingsMenuComponent active_page={active_page} />
+        </React.Fragment>
+    )
 }

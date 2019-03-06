@@ -14,11 +14,11 @@ export default async (db, params) => {
         assert(status.user_id.equals(user.id) === false, "自分の投稿にリアクションを追加することはできません")
     }
 
-    await api.v1.reaction.add(db, params)
+    const reaction = await api.v1.reaction.add(db, params)
 
     // キャッシュの消去
     memcached.v1.status.show.flush(status.id)
     memcached.v1.reaction.show.flush(status.id)
 
-    return true
+    return reaction
 }

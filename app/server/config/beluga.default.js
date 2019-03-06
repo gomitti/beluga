@@ -5,7 +5,7 @@ export default {
         "websocket": 8080,
         "app": 3000
     },
-    "ip_address": "localhost", // サーバーのIPアドレス
+    "ip_address": "localhost", // コミュニティのIPアドレス
     "status": {
         "max_text_length": 5000,
         "minimum_interval": 1000,   // 最小の投稿間隔をミリ秒で指定
@@ -16,7 +16,7 @@ export default {
         "embedding": {
             "web": {
                 "limit": 3,				// 1つの投稿にURLの埋め込みを何個まで許可するか
-                // サーバー側でHTTPリクエストが発生するため大量の埋め込みを行うと負荷がかかる
+                // コミュニティ側でHTTPリクエストが発生するため大量の埋め込みを行うと負荷がかかる
                 "timeout": 10,			// 秒
                 "max_description_length": 200
             }
@@ -29,13 +29,13 @@ export default {
         "#AD8FCF", "#8684DE", "#79CBD2", "#A9C8A2", "#C784C8", "#F8C785", "#B4BEBD", "#E3D4DA",
         "#E6AECD", "#EA9895", "#A6CAE5", "#45A8C1", "#F4DA94", "#77A6F6"],
     "gradients": [
-        ["#fad0c4", "#ff9a9e"], ["#fbc2eb", "#a18cd1"], ["#fee140", "#fa709a"], ["#89f7fe", "#66a6ff"],
-        ["#56ccf2", "#2f80ed"], ["#f8ffae", "#43c6ac"], ["#ffe259", "#ffa751"]
+        ["#88CAFD", "#1986F1"], ["#A276FF", "#662BFF"], ["#F983ED", "#F813D8"],
+        ["#FEBC94", "#FC772F"], ["#769BFC", "#395BFA"], ["#7FFF7D", "#2CDC4D"]
     ],
     "emoji": {
         "max_shortname_length": 32,
-        "max_filesize": 1024 * 64,
-        "min_size": 64,
+        "max_filesize": 1024 * 256,
+        "min_size": 32,
         "max_size": 128,
         "path": "/path/to/file",
         "regex": /^[0-9a-zA-Z_\-]+$/
@@ -55,11 +55,14 @@ export default {
         "max_display_name_length": 32,
         "max_status_text_length": 32,
         "name_regexp": "[a-zA-Z0-9_]+",
-        "reserved_names": ["admin", "beluga", "me", "here", "channel", "everyone"],
+        "reserved_names": [
+            "admin", "beluga", "me", "here", "channel", "everyone", "api", "stats",
+            "guest", "moderator", "user"
+        ],
         "profile": {
             "background_image": {
                 "max_size": 10000,
-                "max_filesize": 1024 * 1024 * 2
+                "max_filesize": 1024 * 1024 * 5
             },
             "image_size": 300,
             "max_description_length": 1000,
@@ -69,22 +72,31 @@ export default {
             "default_theme_color": "#477da7"
         },
     },
+    "role": {
+        "number": {
+            "admin": 3,
+            "moderator": 2,
+            "member": 1,
+            "guest": 0
+        }
+    },
     "channel": {
         "reserved_names": ["create_new_channel"],
         "max_name_length": 100			// UTF16基準なので注意。サロゲートペアは2文字扱いになる
     },
-    "server": {
+    "community": {
         "name_regexp": "[a-zA-Z0-9_]+",
         "max_name_length": 32,				// UTF16基準なので注意
         "max_display_name_length": 100,		// UTF16基準なので注意
         "max_description_length": 1000, 	// UTF16基準なので注意
+        "max_num_communities_user_can_create": 2,   // 一人当たりのコミュニティ作成の上限
         "profile": {
             "image_size": 300,
         },
-        "channels": {
+        "channel": {
             "min_statuses_count_to_display": 10	// チャンネル一覧に表示される最低限の投稿数
         },
-        "reserved_names": ["create"],
+        "reserved_names": ["create_new_community", "user", "support", "explore", "search", "api", "singup", "login"],
     },
     "auth": {
         "salt": "salt",		// ここを運用開始後に変えるとログインができなくなるので注意

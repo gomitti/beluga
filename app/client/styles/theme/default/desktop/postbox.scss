@@ -121,19 +121,18 @@
                 border-width: 1px 0 1px 1px;
                 position: relative;
                 font-family: Beluga;
-                font-size: 28px;
-                line-height: 32px;
+                font-size: 15px;
                 padding: 0;
                 color: rgb(120, 120, 120);
 
                 &:first-child {
-                    border-top-left-radius: 3px;
-                    border-bottom-left-radius: 3px;
+                    border-top-left-radius: 6px;
+                    border-bottom-left-radius: 6px;
                 }
 
                 &:last-child {
-                    border-top-right-radius: 3px;
-                    border-bottom-right-radius: 3px;
+                    border-top-right-radius: 6px;
+                    border-bottom-right-radius: 6px;
                     border-width: 1px;
                 }
 
@@ -154,11 +153,11 @@
                 }
 
                 &.media-pinned::before {
-                    content: "\2428";
+                    content: "\2E5F";
                 }
 
                 &.emoji::before {
-                    content: "\2430";
+                    content: "\2E60";
                 }
 
                 &.preview::before {
@@ -209,6 +208,7 @@
 
         > .button {
             height: 30px;
+            padding: 0 14px;
         }
     }
 }

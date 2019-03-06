@@ -11,7 +11,7 @@ module.exports = (fastify, options, next) => {
             "fileSize": config.media.video.max_filesize,
         }
     })
-    fastify.post(`/api/v1/media/destroy`, async (req, res) => {
+    fastify.post("/api/v1/media/destroy", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -32,7 +32,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/media/image/upload`, async (req, res) => {
+    fastify.post("/api/v1/media/image/upload", async (req, res) => {
         try {
             let buffer = null
             const fields = {}
@@ -100,7 +100,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/media/video/upload`, async (req, res) => {
+    fastify.post("/api/v1/media/video/upload", async (req, res) => {
         try {
             let buffer = null
             const fields = {}

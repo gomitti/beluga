@@ -1,52 +1,288 @@
-.timeline-container {
-    position: relative;
-    padding-bottom: 10px;
-    margin-top: 7px;
+.column-component {
+    .inside {
+        position: relative;
 
-    > .header {
-        padding: 0 16px;
-        margin-bottom: 6px;
-
-        > .inside {
-            padding: 16px 0;
-            border-bottom: 2px solid #f4f4f4;
+        > .contents {
             position: relative;
+            z-index: 1;
 
-            > .header-title {
-                font-size: 18px;
-                line-height: 18px;
-                font-weight: bold;
-                position: relative;
+            > .vertical-line {
+                z-index: 0;
+                position: absolute;
+                top: 32px;
+                bottom: 64px;
+                left: 31px;
+                border-left: 0.15em solid #dcdcdc;
             }
         }
     }
 
-    > .content {
-        position: relative;
-        z-index: auto;
+    &.timeline {
+        padding-bottom: 10px;
+    }
+}
 
-        > .vertical-line {
-            z-index: 0;
-            position: absolute;
-            top: 32px;
-            bottom: 64px;
-            left: 31px;
-            border-left: 0.15em solid #dcdcdc;
+.timeline-header-component {
+    z-index: 2;
+    position: relative;
+
+    > .inside {
+        height: 50px;
+        display: flex;
+        flex-direction: row;
+        border-bottom: 1px solid rgb(238, 238, 238);
+        box-sizing: border-box;
+        padding: 0 12px;
+
+        > .label-area {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            overflow: hidden;
+
+            > .avatar {
+                flex: 0 0 auto;
+                width: 24px;
+                height: 24px;
+                border-radius: 24px;
+                margin-right: 6px;
+                display: flex;
+                justify-content: end;
+                align-items: center;
+                cursor: pointer;
+            }
+
+            > .icon {
+                flex: 0 0 auto;
+                width: 24px;
+                height: 32px;
+                font-family: Beluga;
+                display: flex;
+                justify-content: end;
+                align-items: center;
+                color: black;
+                cursor: pointer;
+
+                &.channel {
+                    width: 16px;
+
+                    &::before {
+                        content: "\2006";
+                    }
+                }
+
+                &.home {
+                    &::before {
+                        content: "\2001";
+                    }
+                }
+
+                &.thread {
+                    margin-bottom: -5px;
+
+                    &::before {
+                        content: "\2E5A";
+                    }
+                }
+
+                &.community {
+                    margin-bottom: -3px;
+
+                    &::before {
+                        content: "\2007";
+                    }
+                }
+            }
+
+            > .label {
+                flex: 1 1 auto;
+                font-weight: bold;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+
+            &.thread {
+                > .label {
+                    flex: 0 1 auto;
+                }
+            }
+
+            > .divider {
+                flex: 0 0 auto;
+                font-family: Beluga;
+                margin: 0 8px;
+
+                &::before {
+                    content: "\2E65";
+                }
+            }
+
+            > .link {
+                flex: 1 1 auto;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                font-weight: normal;
+                font-size: 16px;
+                color: rgb(120, 120, 120);
+
+                > .icon {
+                    flex: 0 0 auto;
+                    width: 14px;
+                    font-family: Beluga;
+                    display: flex;
+                    justify-content: end;
+                    align-items: center;
+
+                    &.channel {
+                        &::before {
+                            content: "\2006";
+                        }
+                    }
+                }
+
+                > .label {
+                    flex: 1 1 auto;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
+                }
+            }
+        }
+
+        > .menu {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: row;
+            height: 100%;
+
+            > .item {
+                position: relative;
+                flex: 0 0 auto;
+                height: 100%;
+                width: 50px;
+                color: rgb(80, 80, 80);
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                word-break: break-all;
+
+                > .icon {
+                    flex: 0 0 auto;
+                    width: 32px;
+                    height: 32px;
+                    font-size: 18px;
+                    font-family: Beluga;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    cursor: pointer;
+
+                    &.notification::before {
+                        content: "\2E57";
+                    }
+
+                    &.notification.active::before {
+                        content: "\2E56";
+                    }
+
+                    &.search::before {
+                        content: "\2E52";
+                    }
+
+                    &.settings::before {
+                        content: "\2E53";
+                    }
+
+                    &.more::before {
+                        content: "\2E55";
+                    }
+                }
+            }
         }
     }
 }
 
-.column {
-    margin-left: 10px;
-
-    > .inside.round {
-        border-radius: 6px;
-        background-color: white;
-        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+.timeline-header-dropdown-menu {
+    &.toggle-by-hover:hover {
+        > .timeline-header-dropdown-component {
+            display: block;
+        }
     }
 
-    &:first-child {
-        margin-left: 0;
+    &.active {
+        > .timeline-header-dropdown-component {
+            display: block;
+        }
+
+        > .tooltip-message {
+            display: none !important;
+        }
+    }
+}
+
+.timeline-header-dropdown-component {
+    position: absolute;
+    top: 100%;
+    right: 0px;
+    display: none;
+
+    > .inside {
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 12px 0 rgba(0, 0, 0, 0.12);
+        border-radius: 6px;
+        overflow: hidden;
+        background-color: rgb(255, 255, 255);
+
+        > .menu {
+            padding: 12px 0;
+
+            > .item {
+                padding: 6px 22px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: left;
+                color: black;
+                font-size: 14px;
+                font-weight: normal;
+                cursor: pointer;
+
+                &:hover {
+                    text-decoration: none;
+                    color: white;
+                }
+            }
+
+            > .divider {
+                border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+                margin: 8px 0 7px 0;
+                display: inline-block;
+                width: 100%;
+            }
+        }
+    }
+
+    &.more {
+        width: 220px;
+    }
+
+    &.settings {
+        width: 130px;
+
+        > .inside {
+            padding: 20px;
+        }
+    }
+
+    &.search {
+        width: 130px;
+
+        > .inside {
+            padding: 20px;
+        }
     }
 }
 

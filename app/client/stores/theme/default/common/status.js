@@ -9,6 +9,7 @@ import CommentsStore from "./status/comments"
 export class StatusOptions {
     constructor() {
         this.show_source_link = false
+        this.trim_comments = false
     }
 }
 

@@ -4,8 +4,8 @@ const target = {
     "blank": "blank",
 }
 const type = {
-    "server": "server",
-    "home": "home",
+    "community": "community",
+    "message": "message",
     "thread": "thread",
     "channel": "channel",
     "notifications": "notifications",

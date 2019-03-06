@@ -1,7 +1,7 @@
 import model from "../../../model"
 
 module.exports = (fastify, options, next) => {
-    fastify.post(`/api/v1/like/create`, async (req, res) => {
+    fastify.post("/api/v1/like/create", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {

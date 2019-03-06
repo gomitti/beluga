@@ -1,6 +1,6 @@
 import config from "../../../../../beluga.config"
-import ImageView from "../status/image"
-import GifView from "../status/gif"
+import ImageComponent from "../status/image"
+import GifComponent from "../status/gif"
 
 export default sentence => {
     const url = sentence
@@ -22,7 +22,7 @@ export default sentence => {
             if (ext === "gif") {
                 const coalesce_src = `${prefix}/${width}-${height}.coalesce.png`
                 const original_src = url
-                return <GifView original_src={original_src} coalesce_src={coalesce_src} width={dom_width} height={dom_height} />
+                return <GifComponent original_src={original_src} coalesce_src={coalesce_src} width={dom_width} height={dom_height} />
             } else {
                 const src = `${prefix}/${width}-${height}.small.${ext}`
                 return <a href={href} target="_blank" style={{
@@ -69,7 +69,7 @@ export default sentence => {
                 "maxHeight": dom_height,
             }}><img src={src} /></a>
         }
-        return <ImageView src={url} />
+        return <ImageComponent src={url} />
     }
     return null
 }

@@ -15,8 +15,8 @@ export default async (db, params) => {
     const { deletedCount } = result
     assert(deletedCount === 1, "サーバーで問題が発生しました")
 
-    const { shortname, server_id } = emoji
-    const directory = `${config.emoji.path}/${server_id}`
+    const { shortname, community_id } = emoji
+    const directory = `${config.emoji.path}/${community_id}`
     const filename = `${directory}/${shortname}`
     try {
         fs.unlinkSync(filename)

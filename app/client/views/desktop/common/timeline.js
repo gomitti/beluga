@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import { inject, observer } from "mobx-react"
-import StatusView from "./status"
+import StatusComponent from "./status"
 import StatusStore from "../../../stores/theme/default/common/status"
 import { request } from "../../../api"
 import ws from "../../../websocket"
@@ -8,7 +8,7 @@ import * as notification from "../../../notification"
 import { setInterval } from "timers"
 
 @observer
-export default class TimelineView extends Component {
+export default class TimelineComponent extends Component {
     componentDidMount() {
         ws.addEventListener("message", event => {
             const data = JSON.parse(event.data)
@@ -44,7 +44,7 @@ export default class TimelineView extends Component {
                     if (status.deleted) {
                         return null
                     }
-                    return <StatusView status={status} key={status.id} />
+                    return <StatusComponent status={status} key={status.id} />
                 })}
             </div>
         )

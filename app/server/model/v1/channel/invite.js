@@ -26,21 +26,21 @@ export default async (db, params) => {
     })
     assert(already_in_channel === false, "このユーザーはすでに参加しています")
 
-    const already_in_server = await memcached.v1.server.joined(db, {
+    const already_in_community = await memcached.v1.community.joined(db, {
         "user_id": user_to_invite.id,
-        "server_id": channel.server_id
+        "community_id": channel.community_id
     })
-    assert(already_in_server === true, "このユーザーはチャンネルが所属するサーバーに参加していないため招待できません")
+    assert(already_in_community === true, "このユーザーはチャンネルが所属するコミュニティに参加していないため招待できません")
 
     await api.v1.channel.join(db, {
         "user_id": user_to_invite.id,
-        "server_id": channel.server_id,
+        "community_id": channel.community_id,
         "channel_id": channel.id,
     })
 
     // キャッシュの消去
     memcached.v1.channel.joined.flush(channel.id, user_to_invite.id)
-    memcached.v1.channels.joined.flush(channel.server_id, user_to_invite.id)
+    memcached.v1.channels.joined.flush(channel.community_id, user_to_invite.id)
     memcached.v1.channel.members.flush(channel.id)
 
     return true

@@ -21,5 +21,5 @@ export default async (db, params) => {
     }
 
     const result = await collection.deleteOne({ user_id, status_id, shortname })
-    return 0
+    return true
 }

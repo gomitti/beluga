@@ -1,6 +1,16 @@
-.channels-container {
+.channel-list-component {
     > .content {
         padding: 16px;
+
+        .hint-area {
+            margin-top: 20px;
+            font-size: 15px;
+
+            > p {
+                line-height: 18px;
+                margin-bottom: 4px;
+            }
+        }
 
         > .title {
             position: relative;
@@ -11,11 +21,11 @@
                 color: rgb(20, 20, 20);
             }
 
-            > .create {
+            > .create-link {
                 position: absolute;
                 right: 0;
-                top: 3px;
-                font-size: 12px;
+                top: 1px;
+                font-size: 14px;
                 font-weight: bold;
                 text-decoration: none;
 
@@ -24,62 +34,51 @@
                 }
             }
         }
-    }
-}
 
-.channels-list {
-    margin-top: 14px;
-    overflow: hidden;
+        .channel-list {
+            margin-top: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
 
-    > li {
-        display: block;
-        margin-bottom: 2px;
-
-        > .name {
-            height: 20px;
-            display: grid;
-
-            > a {
+            > .item {
+                font-size: 14px;
+                flex: 0 0 auto;
+                color: rgb(180, 180, 180);
+                display: flex;
+                flex-direction: row;
+                align-items: center;
                 text-decoration: none;
-                font-weight: bold;
-                font-size: 15px;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                overflow: hidden;
-                display: block;
-                font-family: NotoSansJP,appleLogo,sans-serif;
+                padding: 4px 0;
 
-                &::before {
-                    content: "#";
-                    padding-right: 1px;
+                > .icon {
+                    flex: 0 0 auto;
+                    width: 14px;
+                    height: 14px;
+                    font-family: Beluga;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-weight: normal;
+
+                    &::before {
+                        content: "\2006";
+                    }
                 }
 
-                > .name-str {
-                    &:hover {
+                > .label {
+                    font-weight: bold;
+                    flex: 0 0 auto;
+                    margin-left: 1px;
+                }
+
+                &:hover {
+                    > .label {
                         text-decoration: underline;
                     }
                 }
             }
         }
-
-        > .count {
-            margin: 1px 0 0 2px;
-            font-size: 12px;
-            color: rgb(119, 119, 119);
-        }
-
-        &:last-child {
-            margin-bottom: 0;
-        }
-    }
-}
-
-.channels-hint {
-    margin-top: 20px;
-    font-size: 15px;
-
-    > p {
-        line-height: 18px;
-        margin-bottom: 4px;
     }
 }

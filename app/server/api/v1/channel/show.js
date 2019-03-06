@@ -9,7 +9,7 @@ const build_query_by_id = params => {
 }
 
 const build_query_by_name = params => {
-    const server_id = try_convert_to_object_id(params.server_id, "$server_idが不正です")
+    const community_id = try_convert_to_object_id(params.community_id, "$community_idが不正です")
 
     const { name } = params
     if (is_string(name) === false) {
@@ -22,7 +22,7 @@ const build_query_by_name = params => {
         throw new Error(`$nameは${config.channel.max_name_length}文字を超えてはいけません`)
     }
 
-    return { name, server_id }
+    return { name, community_id }
 }
 
 const build_query = params => {

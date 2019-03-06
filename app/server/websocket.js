@@ -19,36 +19,42 @@ if (config.https) {
     websocket = require("fastify")()
 }
 
-const get_server_name = url => {
-    const components = url.split("/")
-    const location = components[1]
-    if (location === "server") {
-        return components[2]
+const get_community_name = url => {
+    const splits = url.split("/")
+    if (splits.length < 2) {
+        return null
     }
-    return null
+    const location = splits[1]
+    if (location === "user") {
+        return null
+    }
+    if (location.indexOf("@") === 0) {
+        return null
+    }
+    return splits[1]
 }
 
 class OnlineManager {
     constructor() {
         this.users = new Set()
-        this.users_on_server = {}
+        this.users_on_community = {}
     }
     total() {
         return this.users.size
     }
     clear() {
         this.users.clear()
-        this.users_on_server = {}
+        this.users_on_community = {}
     }
     remove(url, user_id) {
-        const server_name = get_server_name(url)
-        if (!!server_name == false) {
+        const community_name = get_community_name(url)
+        if (!!community_name == false) {
             return false
         }
-        if (!!(server_name in this.users_on_server) === false) {
+        if (!!(community_name in this.users_on_community) === false) {
             return false
         }
-        const users = this.users_on_server[server_name]
+        const users = this.users_on_community[community_name]
         if (!!(user_id in users) === false) {
             return false
         }
@@ -63,14 +69,14 @@ class OnlineManager {
         if (this.users.has(user_id) == false) {
             this.users.add(user_id)
         }
-        const server_name = get_server_name(url)
-        if (!!server_name === false) {
+        const community_name = get_community_name(url)
+        if (!!community_name === false) {
             return
         }
-        if (!!(server_name in this.users_on_server) === false) {
-            this.users_on_server[server_name] = {}
+        if (!!(community_name in this.users_on_community) === false) {
+            this.users_on_community[community_name] = {}
         }
-        const users = this.users_on_server[server_name]
+        const users = this.users_on_community[community_name]
         if (!!(user_id in users) === false) {
             users[user_id] = 0
         }
@@ -79,18 +85,18 @@ class OnlineManager {
 }
 
 class WebsocketBridge {
-    get_users_by_server(server) {
-        if (!!server === false) {
+    get_users_by_community(community) {
+        if (!!community === false) {
             return []
         }
-        if (!!server.name === false) {
+        if (!!community.name === false) {
             return []
         }
-        if (!!(server.name in online.users_on_server) === false) {
+        if (!!(community.name in online.users_on_community) === false) {
             return []
         }
         const user_ids = []
-        for (const user_id in online.users_on_server[server.name]) {	// 辞書なのでキーだけ取り出す
+        for (const user_id in online.users_on_community[community.name]) {	// 辞書なのでキーだけ取り出す
             user_ids.push(user_id)
         }
         return user_ids
@@ -193,7 +199,7 @@ websocket
                 //     this.is_alive = true
                 // })
                 client.on("close", function () {
-                    const did_disappear = online.remove(this.url, this.user_id)	// サーバーとユーザーの関連付け
+                    const did_disappear = online.remove(this.url, this.user_id)	// コミュニティとユーザーの関連付け
                     if (did_disappear) {
                         update_online_members()
                     }
@@ -214,7 +220,7 @@ websocket
         }, 30000)
     })
 
-// 各サーバーのオンライン中のユーザーの管理を行う
+// 各コミュニティのオンライン中のユーザーの管理を行う
 const bridge = (fastify, options, next) => {
     fastify.decorate("websocket_bridge", new WebsocketBridge())
     fastify.decorate("websocket_broadcast", broadcast)

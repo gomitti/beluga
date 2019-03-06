@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 
-export default class WebsiteView extends Component {
+export default class WebsiteComponent extends Component {
     render() {
         let { domain, image, title, description, url, original_url } = this.props
         let imageView = null

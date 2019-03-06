@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import config from "../../../../../beluga.config"
 
-export default class ImageView extends Component {
+export default class ImageComponent extends Component {
     constructor(props) {
         super(props)
         this.state = {}

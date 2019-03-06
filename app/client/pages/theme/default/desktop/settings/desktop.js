@@ -3,15 +3,16 @@ import Toggle from "react-toggle"
 import { SliderPicker, CirclePicker } from 'react-color'
 import enums from "../../../../../enums"
 import Head from "../../../../../views/theme/default/desktop/head"
-import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
-import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
+import NavigationbarComponent from "../../../../../views/theme/default/desktop/navigationbar"
+import SettingsMenuComponent from "../../../../../views/theme/default/desktop/settings/account/menu"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import assign from "../../../../../libs/assign"
 import { get as get_desktop_settings } from "../../../../../settings/desktop"
 import { is_object } from "../../../../../assert"
-import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
 import Component from "../../../../../views/app"
+import Toast from "../../../../../views/theme/default/desktop/toast"
+import { LoadingButton } from "../../../../../views/theme/default/desktop/button"
 
 export default class App extends Component {
     constructor(props) {
@@ -21,40 +22,54 @@ export default class App extends Component {
         this.state = {
             "color": logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color,
             "new_column_target": desktop_settings.new_column_target,
-            "multiple_columns_enabled": desktop_settings.multiple_columns_enabled
+            "multiple_columns_enabled": desktop_settings.multiple_columns_enabled,
+            "in_progress": false
         }
     }
     onUpdate = event => {
         event.preventDefault()
-        const settings = assign(get_desktop_settings, {
-            "new_column_target": this.state.new_column_target,
-            "multiple_columns_enabled": this.state.multiple_columns_enabled,
-        })
-        request
-            .post("/kvs/store", { "key": "desktop_settings", "value": settings })
-            .then(res => {
-                const data = res.data
-                if (data.success == false) {
-                    alert(data.error)
-                }
-                Snackbar.show("保存しました", false)
+        if (this.state.in_progress) {
+            return
+        }
+        this.setState({ "in_progress": true })
+        setTimeout(() => {
+            const settings = assign(get_desktop_settings(), {
+                "new_column_target": this.state.new_column_target,
+                "multiple_columns_enabled": this.state.multiple_columns_enabled,
             })
-            .catch(error => {
-                alert(error)
-            })
+            request
+                .post("/kvs/store", { "key": "desktop_settings", "value": settings })
+                .then(res => {
+                    const { success, error } = res.data
+                    if (success == false) {
+                        Toast.push(error, false)
+                    } else {
+                        Toast.push("設定を保存しました", true)
+                    }
+                })
+                .catch(error => {
+                    Toast.push(error.toString(), false)
+                })
+                .then(_ => {
+                    this.setState({ "in_progress": false })
+                })
+        }, 250)
     }
     render() {
         const { platform, logged_in_user } = this.props
         logged_in_user.profile.theme_color = this.state.color
         return (
-            <div id="app" className="settings">
+            <div className="app settings">
                 <Head title={`デスクトップ / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
-                <NavigationBarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
-                <div className="settings-container">
+                <NavigationbarComponent logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <Toast />
+                <div className="client">
                     <div className="inside">
-                        <SettingsMenuView active="desktop" />
-                        <div className="settings-container-main">
-                            <div className="settings-component form desktop">
+                        <div className="settings-menu-area">
+                            <SettingsMenuComponent active_page="desktop" />
+                        </div>
+                        <div className="settings-contents-area">
+                            <div className="settings-content-component form desktop">
                                 <div className="head">
                                     <h1>デスクトップ</h1>
                                 </div>
@@ -93,12 +108,10 @@ export default class App extends Component {
                                     : null
                                 }
                                 <div className="submit">
-                                    <button
-                                        className={classnames("button user-defined-bg-color", { "in-progress": this.state.pending_change })}
-                                        onClick={this.onUpdate}>
-                                        <span className="progress-text">保存しています</span>
-                                        <span className="display-text">設定を保存</span>
-                                    </button>
+                                    <LoadingButton
+                                        handle_click={this.onUpdate}
+                                        is_loading={this.state.in_progress}
+                                        label="保存する" />
                                 </div>
                             </div>
                         </div>

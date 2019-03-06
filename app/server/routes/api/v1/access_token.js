@@ -4,7 +4,7 @@ import storage from "../../../config/storage"
 import assert from "../../../assert"
 
 module.exports = (fastify, options, next) => {
-    fastify.post(`/api/v1/access_token/generate`, async (req, res) => {
+    fastify.post("/api/v1/access_token/generate", async (req, res) => {
         try {
             const session = await fastify.authenticate_cookie(req, res)
             if (session.user_id === null) {

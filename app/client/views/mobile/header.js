@@ -3,7 +3,7 @@ import { observer, observable, action } from "../../stores/theme/default/common/
 import ws from "../../websocket"
 
 @observer
-export default class HeaderView extends Component {
+export default class HeaderComponent extends Component {
 	@observable online = 0
 
 	@action.bound
@@ -22,9 +22,9 @@ export default class HeaderView extends Component {
 		return (
 			<div>
 				<p><a href="/">トップ</a> / <a href="/signup">新規登録</a> / <a href="/login">ログイン</a></p>
-				<p><a href="/server/create">サーバーの作成</a> / {(() => {
-					if (this.props.server) {
-						return <a href={`/channel/${this.props.server.name}/create`}>チャンネルの作成</a>
+				<p><a href="/create">コミュニティの作成</a> / {(() => {
+					if (this.props.community) {
+						return <a href={`/channel/${this.props.community.name}/create`}>チャンネルの作成</a>
 					}
 				})()}</p>
 				{(() => {

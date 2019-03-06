@@ -18,7 +18,7 @@ export default class App extends Component {
         request
             .post("/channel/create", {
                 name,
-                "server_id": this.props.server.id,
+                "community_id": this.props.community.id,
             })
             .then(res => {
                 const data = res.data
@@ -27,7 +27,7 @@ export default class App extends Component {
                     this.pending = false
                     return
                 }
-                location.href = `/server/${this.props.server.name}/${name}`
+                location.href = `/${this.props.community.name}/${name}`
             })
             .catch(error => {
                 alert(error)
@@ -39,11 +39,11 @@ export default class App extends Component {
             <div>
                 <Head title="チャンネルの作成"></Head>
                 <div>
-                    <p>{this.props.server.display_name}(${this.props.server.name})</p>
+                    <p>{this.props.community.display_name}(${this.props.community.name})</p>
                 </div>
                 <div>
                     <p>チャンネル名</p>
-                    <p>{config.domain}/server/{this.props.server.name}/<input type="text" ref="name" /></p>
+                    <p>{config.domain}/{this.props.community.name}/<input type="text" ref="name" /></p>
                 </div>
                 <div><button className="button" onClick={this.create}>作成</button></div>
             </div>

@@ -4,31 +4,30 @@ import classnames from "classnames"
 import assert from "../../../../assert"
 import assign from "../../../../libs/assign"
 import { request } from "../../../../api"
-import MediaView from "./postbox/media"
-import PreviewView from "./postbox/preview"
-import ProgressView from "./postbox/upload"
+import MediaComponent from "./postbox/media"
+import PreviewComponent from "./postbox/preview"
+import ProgressComponent from "./postbox/upload"
 import { convert_bytes_to_optimal_unit } from "../../../../libs/functions"
 import config from "../../../../beluga.config"
 import Tooltip from "./tooltip"
 import EmojiPicker from "./emoji"
 import PostboxStore from "../../../../stores/theme/default/common/postbox"
 import TimelineStore from "../../../../stores/theme/default/desktop/timeline"
+import Toast from "./toast"
+import { LoadingButton } from "./button"
 
 class TooltipButton extends Component {
     render() {
         const { type, handle_click, is_active, description } = this.props
         return (
-            <button className={classnames(`tooltip-button action-button ${type} emoji-picker-ignore-click user-defined-color-active`, {
+            <button className={classnames(`tooltip action-button ${type} emoji-picker-ignore-click user-defined-color-active`, {
                 "active": !!is_active
             })}
                 onClick={event => {
                     Tooltip.hide()
                     handle_click(event)
-                }}
-                ref={dom => this.dom = dom}
-                onMouseEnter={() => Tooltip.show(this.dom, description, 6)}
-                onMouseOver={() => Tooltip.show(this.dom, description, 6)}
-                onMouseOut={() => Tooltip.hide()}>
+                }}>
+                <span className="tooltip-message top">{description}</span>
             </button>
         )
     }
@@ -62,12 +61,25 @@ export const wrap_with_tag = (text, start, end, tag, insert_linebreak) => {
 }
 
 @observer
-export default class PostboxView extends Component {
+export default class PostboxComponent extends Component {
     constructor(props) {
         super(props)
-        const { postbox, timeline } = props
+        const { postbox, timeline, uploader } = props
         assert(postbox instanceof PostboxStore, "$postbox must be an instance of PostboxStore")
         assert(timeline instanceof TimelineStore, "$timeline must be an instance of TimelineStore")
+
+        uploader.callback_error = error => {
+            Toast.show(error, false)
+        }
+        uploader.callback_upload = url => {
+            const { textarea } = this.refs
+            if (textarea.value.length == 0) {
+                this.setText(url)
+            } else {
+                this.setText(textarea.value + "\n" + url)
+            }
+        }
+
         this.state = {
             "is_post_button_active": false,
             "show_pinned_media": false,
@@ -84,24 +96,6 @@ export default class PostboxView extends Component {
         if (textarea) {
             textarea.focus()
         }
-        const { uploader } = this.props
-        uploader.error_callback = () => {
-
-        }
-        uploader.uploaded_callback = url => {
-            const { textarea } = this.refs
-            if (textarea.value.length == 0) {
-                this.setText(url)
-            } else {
-                this.setText(textarea.value + "\n" + url)
-            }
-        }
-    }
-    toggleMediaView = event => {
-        event.preventDefault()
-        this.setState({
-            "show_pinned_media": !this.state.show_pinned_media
-        })
     }
     appendMediaLink = (event, item) => {
         event.preventDefault()
@@ -117,7 +111,7 @@ export default class PostboxView extends Component {
             event.preventDefault()
         }
         const { postbox } = this.props
-        if (postbox.is_pending === true) {
+        if (postbox.in_progress === true) {
             return
         }
         const { textarea } = this.refs
@@ -302,6 +296,7 @@ export default class PostboxView extends Component {
         }
         event.preventDefault()
         const { uploader } = this.props
+        console.log("uploader", uploader)
         for (let j = 0; j < files.length; j++) {
             const file = files.item(j)
             uploader.add(file)
@@ -418,13 +413,13 @@ export default class PostboxView extends Component {
             )
         }
 
-        const { uploader, postbox, server } = this.props
+        const { uploader, postbox, community } = this.props
         const { uploading_file_metadatas } = uploader
 
         const preview_status = {
             "text": this.state.preview_text,
             "user": logged_in_user,
-            "server": server
+            "community": community
         }
         return (
             <div className="postbox-component" onDragOver={this.onDragOver} onDragEnd={this.onDragEnd} onDragLeave={this.onDragEnd} onDrop={this.onDrop}>
@@ -447,7 +442,7 @@ export default class PostboxView extends Component {
                                         onKeyDown={this.onKeyDown} />
                                 </div>
                             </div>
-                            <ProgressView metadatas={uploading_file_metadatas} />
+                            <ProgressComponent metadatas={uploading_file_metadatas} />
                             <div className="postbox-footer">
                                 <input className="hidden" type="file" ref="file" accept="image/*, video/*" onChange={this.onFileChange} multiple />
                                 <div className="action-area">
@@ -474,24 +469,22 @@ export default class PostboxView extends Component {
                                     }
                                 </div>
                                 <div className="submit-area">
-                                    <button className={classnames("button meiryo", {
-                                        "ready user-defined-bg-color": !postbox.is_pending && this.state.is_post_button_active,
-                                        "neutral": !postbox.is_pending && !this.state.is_post_button_active,
-                                        "in-progress": postbox.is_pending,
-                                    })} onClick={this.post}>
-                                        <span className="progress-text">投稿する</span>
-                                        <span className="display-text">投稿する</span>
-                                    </button>
+                                    <LoadingButton
+                                        is_loading={postbox.in_progress}
+                                        handle_click={this.post}
+                                        label="投稿する"
+                                        is_neutral_color={(!postbox.in_progress && !this.state.is_post_button_active)}
+                                    />
                                 </div>
                             </div>
                         </div>
                         <div className="postbox-media-area">
-                            <MediaView
+                            <MediaComponent
                                 is_hidden={!this.state.show_pinned_media}
                                 media={pinned_media}
                                 title="よく使う画像"
                                 append={this.appendMediaLink} />
-                            <MediaView
+                            <MediaComponent
                                 is_hidden={!this.state.show_recent_uploads}
                                 media={recent_uploads}
                                 title="アップロード履歴"
@@ -500,7 +493,7 @@ export default class PostboxView extends Component {
                     </div>
                 </div>
                 <div className="preview postbox-preview-bg-color">
-                    <PreviewView is_hidden={!this.state.show_preview} status={preview_status} />
+                    <PreviewComponent is_hidden={!this.state.show_preview} status={preview_status} />
                 </div>
             </div>
         )

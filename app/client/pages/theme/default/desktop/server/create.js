@@ -2,7 +2,7 @@ import classnames from "classnames"
 import Head from "../../../../../views/theme/default/desktop/head"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
-import NavigationBarView from "../../../../../views/theme/default/desktop/navigationbar"
+import NavigationbarComponent from "../../../../../views/theme/default/desktop/navigationbar"
 import Component from "../../../../../views/app"
 
 export default class App extends Component {
@@ -14,7 +14,7 @@ export default class App extends Component {
     }
     verify = (name, display_name) => {
         if (name.length == 0) {
-            throw new Error("サーバー名を入力してください")
+            throw new Error("コミュニティ名を入力してください")
         }
         if (display_name.length == 0) {
             throw new Error("表示名を入力してください")
@@ -42,7 +42,7 @@ export default class App extends Component {
         }
 
         request
-            .post("/server/create", {
+            .post("/create", {
                 name,
                 display_name,
             })
@@ -52,7 +52,7 @@ export default class App extends Component {
                     alert(data.error)
                     return
                 }
-                location.href = `/server/${data.server.name}/general`
+                location.href = `/${data.community.name}/general`
             })
             .catch(error => {
                 alert(error)
@@ -66,17 +66,17 @@ export default class App extends Component {
     render() {
         const { platform } = this.props
         return (
-            <div id="app" className="create-server">
-                <Head title={`サーバーの作成 / ${config.site.name}`} platform={platform} />
-                <NavigationBarView />
-                <div className="create-server-container">
-                    <h1 className="title">サーバーの作成</h1>
+            <div className="app create-community">
+                <Head title={`コミュニティの作成 / ${config.site.name}`} platform={platform} />
+                <NavigationbarComponent />
+                <div className="create-community-container">
+                    <h1 className="title">コミュニティの作成</h1>
                     <div className="content">
-                        <div className="inside create-server-form">
+                        <div className="inside create-community-form">
                             <div className="item">
-                                <h3 className="title">サーバー名</h3>
+                                <h3 className="title">コミュニティ名</h3>
                                 <p className="input-container name">
-                                    <span className="prefix">{config.domain}/server/</span>
+                                    <span className="prefix">{config.domain}/</span>
                                     <input type="text" ref="name" className="form-input user-defined-border-color-focus" />
                                 </p>
                             </div>
@@ -93,9 +93,9 @@ export default class App extends Component {
                     </div>
                     <div className="content">
                         <div className="inside">
-                            <p className="create-server-callout">
-                                <span>他のサーバーを探しますか？</span>
-                                <a href="/servers">一覧を見る</a>
+                            <p className="create-community-callout">
+                                <span>他のコミュニティを探しますか？</span>
+                                <a href="/explore">一覧を見る</a>
                             </p>
                         </div>
                     </div>

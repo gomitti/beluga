@@ -4,24 +4,22 @@ import assert, { is_object, is_array, is_string } from "../../../../assert"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
 import StatusStore, { StatusOptions } from "../common/status"
-import HomeTimelineStore from "./timeline/home"
+import DirectMessageTimelineStore from "./timeline/message"
 import ChannelTimelineStore from "./timeline/channel"
-import ServerTimelineStore from "./timeline/server"
+import CommunityTimelineStore from "./timeline/community"
 import ThreadTimelineStore from "./timeline/thread"
 import NotificationsTimelineStore from "./timeline/notifications"
 import { TimelineOptions } from "./timeline"
 import { PostboxOptions } from "../common/postbox"
 
 export const get_timeline_store = (type, params, options) => {
-    if (type === enums.column.type.home) {
-        const { user, server } = params
+    if (type === enums.column.type.message) {
+        const { user } = params
         assert(is_object(user), "$user must be of type object")
-        assert(is_object(server), "$server must be of type object")
         const request_query = {
-            "user_id": user.id,
-            "server_id": server.id
+            "recipient_id": user.id,
         }
-        return new HomeTimelineStore(request_query, params, options)
+        return new DirectMessageTimelineStore(request_query, params, options)
     }
     if (type === enums.column.type.channel) {
         const { channel } = params
@@ -31,16 +29,17 @@ export const get_timeline_store = (type, params, options) => {
         }
         return new ChannelTimelineStore(request_query, params, options)
     }
-    if (type === enums.column.type.server) {
-        const { server } = params
-        assert(is_object(server), "$server must be of type object")
+    if (type === enums.column.type.community) {
+        const { community } = params
+        assert(is_object(community), "$community must be of type object")
         const request_query = {
-            "server_id": server.id,
+            "community_id": community.id,
+            "count": 60
         }
-        return new ServerTimelineStore(request_query, params, options)
+        return new CommunityTimelineStore(request_query, params, options)
     }
     if (type === enums.column.type.thread) {
-        const { in_reply_to_status, server } = params
+        const { in_reply_to_status, community } = params
         assert(is_object(in_reply_to_status), "$in_reply_to_status must be of type object")
         const request_query = {
             "in_reply_to_status_id": in_reply_to_status.id,
@@ -122,7 +121,7 @@ class ClientSideColumnStore {
         assert(is_object(params), "$params must be of type object")
         assert(options instanceof ColumnOptions, "$options must be an instance of ColumnOptions")
 
-        this.timeline = get_timeline_store(type, params, options.timeline, this.muted_users, this.muted_words)
+        this.timeline = get_timeline_store(type, params, options.timeline)
         if (Array.isArray(initial_statuses)) {
             this.timeline.setStatuses(initial_statuses)
         }
@@ -166,7 +165,7 @@ class ServerSideColumnStore {
         if (muted_users) {
             muted_users.forEach(user => {
                 assert(is_object(user), "$user must be of type object")
-                this.muted_users.push(assign(user)) // サーバーサイドではuserはグローバルスコープなのでコピー
+                this.muted_users.push(assign(user)) // コミュニティサイドではuserはグローバルスコープなのでコピー
             })
         }
         this.muted_words = muted_words ? muted_words : []
@@ -186,7 +185,7 @@ class ServerSideColumnStore {
         assert(is_object(params), "$params must be of type object")
         assert(options instanceof ColumnOptions, "$options must be an instance of ColumnOptions")
 
-        this.timeline = get_timeline_store(type, params, options.timeline, this.muted_users, this.muted_words)
+        this.timeline = get_timeline_store(type, params, options.timeline)
         if (Array.isArray(initial_statuses)) {
             this.timeline.setStatuses(initial_statuses)
         }

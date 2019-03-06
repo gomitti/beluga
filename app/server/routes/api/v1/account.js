@@ -4,7 +4,7 @@ import storage from "../../../config/storage"
 import assert from "../../../assert"
 
 module.exports = (fastify, options, next) => {
-    fastify.post(`/api/v1/account/signup`, async (req, res) => {
+    fastify.post("/api/v1/account/signup", async (req, res) => {
         try {
             const ip_address = req.headers["x-real-ip"]
             const params = Object.assign({ ip_address }, req.body)
@@ -20,7 +20,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/signin`, async (req, res) => {
+    fastify.post("/api/v1/account/signin", async (req, res) => {
         try {
             const session = await fastify.authenticate_cookie(req, res)
             const user = await model.v1.account.signin(fastify.mongo.db, req.body)
@@ -32,7 +32,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/avatar/reset`, async (req, res) => {
+    fastify.post("/api/v1/account/avatar/reset", async (req, res) => {
         try {
             let session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -49,7 +49,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/avatar/update`, async (req, res) => {
+    fastify.post("/api/v1/account/avatar/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -75,7 +75,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/profile/update`, async (req, res) => {
+    fastify.post("/api/v1/account/profile/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -90,7 +90,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/favorite/media/update`, async (req, res) => {
+    fastify.post("/api/v1/account/favorite/media/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -104,7 +104,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/favorite/emoji/update`, async (req, res) => {
+    fastify.post("/api/v1/account/favorite/emoji/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -118,7 +118,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/profile/background_image/update`, async (req, res) => {
+    fastify.post("/api/v1/account/profile/background_image/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -144,7 +144,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/account/profile/background_image/reset`, async (req, res) => {
+    fastify.post("/api/v1/account/profile/background_image/reset", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {

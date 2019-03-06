@@ -1,0 +1,11 @@
+.column-component {
+    > .inside {
+        z-index: 0;
+        position: relative;
+
+        > .contents {
+            z-index: 1;
+            position: relative;
+        }
+    }
+}

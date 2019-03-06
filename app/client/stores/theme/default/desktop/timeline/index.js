@@ -83,6 +83,11 @@ class ClientSideTimelineStore {
         }
         this.setIntervalIfNeeded()
     }
+    terminate = () => {
+        if (this.timer_id) {
+            clearInterval(this.timer_id)
+        }
+    }
     // 自動更新の設定
     setIntervalIfNeeded = () => {
         if (this.timer_id) {
@@ -146,7 +151,7 @@ class ClientSideTimelineStore {
             // ユーザーミュート
             for (let j = 0; j < this.muted_users.length; j++) {
                 const muted_user = this.muted_users[j]
-                // idはサーバー側ではObjectIdでクライアント側ではstringになっているので注意
+                // idはコミュニティ側ではObjectIdでクライアント側ではstringになっているので注意
                 if (objectid_equals(status_obj.user.id, muted_user.id)) {
                     return
                 }
@@ -188,7 +193,7 @@ class ClientSideTimelineStore {
         this.pending_fetch_latest = true
         const query = {
             "trim_user": false,
-            "trim_server": false,
+            "trim_community": false,
             "trim_channel": false,
             "trim_recipient": false,
             "count": this.statuses_count_to_fetch_latest,
@@ -221,7 +226,7 @@ class ClientSideTimelineStore {
         this.setPendingFetchOlder(true)
         const query = {
             "trim_user": false,
-            "trim_server": false,
+            "trim_community": false,
             "trim_channel": false,
             "trim_recipient": false,
             "max_id": this.getMaxId(),
@@ -270,7 +275,7 @@ class ClientSideTimelineStore {
         this.setPendingFetchNewer(true)
         const query = {
             "trim_user": false,
-            "trim_server": false,
+            "trim_community": false,
             "trim_channel": false,
             "trim_recipient": false,
             "since_id": this.getSinceId(),
@@ -329,7 +334,7 @@ class ServerSideTimelineStore {
         this.timer_id = null
         this.pending_fetch_latest = false
         this.raw_status_objects = []
-        this.filtered_status = []
+        this.filtered_statuses = []
         this.pending_fetch_newer = false
         this.pending_fetch_older = false
 
@@ -380,7 +385,7 @@ class ServerSideTimelineStore {
             // ユーザーミュート
             for (let j = 0; j < this.muted_users.length; j++) {
                 const muted_user = this.muted_users[j]
-                // idはサーバー側ではObjectIdでクライアント側ではstringになっているので注意
+                // idはコミュニティ側ではObjectIdでクライアント側ではstringになっているので注意
                 if (objectid_equals(status.user.id, muted_user.id)) {
                     return
                 }
@@ -392,7 +397,7 @@ class ServerSideTimelineStore {
                     return
                 }
             }
-            // サーバーサイドではstatusがグローバルスコープなのでコピーしてから編集する
+            // コミュニティサイドではstatusがグローバルスコープなのでコピーしてから編集する
             status = assign(status)
             status.likes = {
                 "count": status.likes_count
@@ -401,9 +406,37 @@ class ServerSideTimelineStore {
                 "count": is_array(status.favorited_by) ? status.favorited_by.length : 0,
                 "users": status.favorited_by
             }
-            status.reactions = {
-                "count": is_array(status.reactions) ? status.reactions.length : 0,
-                "list": status.reactions
+            {
+                const { reactions } = status
+                reactions.sort((a, b) => {
+                    if (a.order < b.order) {
+                        return -1
+                    }
+                    if (a.order > b.order) {
+                        return 1
+                    }
+                    return 0
+                })
+                const map_shortname_count = {}
+                reactions.forEach(reaction => {
+                    const { shortname } = reaction
+                    if (shortname in map_shortname_count) {
+                        map_shortname_count[shortname] += 1
+                    } else {
+                        map_shortname_count[shortname] = 1
+                    }
+                })
+                const list = []
+                for (const shortname in map_shortname_count) {
+                    const count = map_shortname_count[shortname]
+                    list.push({
+                        shortname, count
+                    })
+                }
+                const count = list.length
+                status.reactions = {
+                    count, list
+                }
             }
             status.comments = {
                 "count": status.comments_count,

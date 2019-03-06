@@ -1,29 +1,38 @@
 import { Component } from "react"
 import { observable, action } from "mobx"
 import { observer } from "mobx-react"
-import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import classnames from "classnames"
 import Head from "../../../../../views/theme/default/desktop/head"
-import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
-import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
+import NavigationbarComponent from "../../../../../views/theme/default/desktop/navigationbar"
+import SettingsMenuComponent from "../../../../../views/theme/default/desktop/settings/account/menu"
 import { get_category_by_shortname_or_null, EmojiPickerStore } from "../../../../../stores/theme/default/common/emoji"
-import { EmojiPickerView } from "../../../../../views/theme/default/desktop/emoji"
+import { EmojiPickerComponent } from "../../../../../views/theme/default/desktop/emoji"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
-import { is_object } from "../../../../../assert"
-import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
+import assert, { is_object, is_array } from "../../../../../assert"
 import AppComponent from "../../../../../views/app"
+import Toast from "../../../../../views/theme/default/desktop/toast"
+import { LoadingButton } from "../../../../../views/theme/default/desktop/button"
+
+const NumberIndicatorComponentOrNull = ({ is_hidden, index }) => {
+    if (is_hidden) {
+        return null
+    }
+    return (
+        <span className="number user-defined-bg-color verdana">{index}</span>
+    )
+}
 
 @observer
 class MediaComponent extends Component {
     @observable.shallow selected_media = []
     constructor(props) {
         super(props)
-        const { pinned } = props
+        const { pinned, history } = props
+        assert(is_array(pinned), "$pinned must be of type array")
+        assert(is_array(history), "$history must be of type array")
+
         this.selected_media_ids = []
-        if (Array.isArray(pinned) === false) {
-            return
-        }
         pinned.forEach(item => {
             this.selected_media_ids.push(item.id)
             this.selected_media.push(item)
@@ -36,7 +45,8 @@ class MediaComponent extends Component {
             pinned_items.push(item)
         })
         this.state = {
-            pinned_items
+            "in_progress": false,
+            "pinned_items": pinned_items
         }
     }
     onSelectImage = (event, item) => {
@@ -59,28 +69,30 @@ class MediaComponent extends Component {
         })
     }
     onUpdateImage = event => {
-        if (this.pending === true) {
+        if (this.state.in_progress === true) {
             return
         }
-        this.pending = true
-        request
-            .post("/account/favorite/media/update", {
-                "media_ids": this.selected_media_ids
-            })
-            .then(res => {
-                const data = res.data
-                if (data.success == false) {
-                    alert(data.error)
-                } else {
-                    Snackbar.show("保存しました", false)
-                }
-            })
-            .catch(error => {
-                alert(error)
-            })
-            .then(_ => {
-                this.pending = false
-            })
+        this.setState({ "in_progress": true })
+        setTimeout(() => {
+            request
+                .post("/account/favorite/media/update", {
+                    "media_ids": this.selected_media_ids
+                })
+                .then(res => {
+                    const { success, error } = res.data
+                    if (success == false) {
+                        Toast.push(error, false)
+                    } else {
+                        Toast.push("画像を保存しました", true)
+                    }
+                })
+                .catch(error => {
+                    Toast.push(error.toString(), false)
+                })
+                .then(_ => {
+                    this.setState({ "in_progress": false })
+                })
+        }, 250)
     }
     onDragStart = (event, item) => {
         this.dragging_media = item
@@ -162,23 +174,19 @@ class MediaComponent extends Component {
                     <img className="image" src={square_src} />
                     <div className="overlay-bg"></div>
                     <div className={classnames("overlay-fg user-defined-border-color-active", { active })}></div>
-                    {index >= 0 ?
-                        <span className="number user-defined-bg-color verdana">{index + 1}</span>
-                        : null}
+                    <NumberIndicatorComponentOrNull is_hidden={index === -1} index={index + 1} />
                 </a>
             )
         })
         return (
-            <div className="settings-component pins meiryo">
+            <div className="settings-content-component pins meiryo">
                 <div className="head">
                     <h1>画像</h1>
                 </div>
-
                 <div className="description">
                     <p>投稿欄の画像一覧に表示したい画像を選択してください。</p>
                     <p>ドラッグして並べ替えることができます。</p>
                 </div>
-
                 <div className="image-selector scroller-container">
                     <div className="list pins scroller">
                         {selectedImageViews}
@@ -187,9 +195,11 @@ class MediaComponent extends Component {
                         {imageCandidateViews}
                     </div>
                 </div>
-
                 <div className="submit">
-                    <button className="button user-defined-bg-color" onClick={this.onUpdateImage}>画像を保存</button>
+                    <LoadingButton
+                        handle_click={this.onUpdateImage}
+                        is_loading={this.state.in_progress}
+                        label="保存する" />
                 </div>
             </div>
         )
@@ -205,6 +215,9 @@ class EmojiComponent extends Component {
         const picker = new EmojiPickerStore()
         picker.callback_pick = this.pick
         this.picker = picker
+        this.state = {
+            "in_progress": false
+        }
     }
     componentDidMount() {
         const { pinned } = this.props
@@ -228,37 +241,40 @@ class EmojiComponent extends Component {
         }
     }
     onUpdateEmoji = event => {
-        if (this.pending === true) {
+        if (this.state.in_progress === true) {
             return
         }
-        this.pending = true
-        request
-            .post("/account/favorite/emoji/update", {
-                "shortnames": this.selected_shortnames
-            })
-            .then(res => {
-                const data = res.data
-                if (data.success == false) {
-                    alert(data.error)
-                } else {
-                    Snackbar.show("保存しました", false)
-                }
-            })
-            .catch(error => {
-                alert(error)
-            })
-            .then(_ => {
-                this.pending = false
-            })
+        this.setState({ "in_progress": true })
+        setTimeout(() => {
+            request
+                .post("/account/favorite/emoji/update", {
+                    "shortnames": this.selected_shortnames
+                })
+                .then(res => {
+                    const { data } = res
+                    const { success, error } = data
+                    if (success == false) {
+                        Toast.push(error, false)
+                    } else {
+                        Toast.push("絵文字を保存しました", true)
+                    }
+                })
+                .catch(error => {
+                    Toast.push(error.toString(), false)
+                })
+                .then(_ => {
+                    this.setState({ "in_progress": false })
+                })
+        }, 250)
     }
     render() {
         const selectedEmojiView = []
         this.selected_emojis.forEach(emoji => {
-            const { shortname, category } = emoji
-            selectedEmojiView.push(<button onClick={event => this.pick(shortname)} ><i className={`emoji-picker-ignore-click emoji-${category} shortname-${shortname}`}></i></button>)
+            const { shortname } = emoji
+            selectedEmojiView.push(<button onClick={event => this.pick(shortname)} ><i className={`emoji-picker-ignore-click emoji-picker-item-image emojione-4 emojione-4-shortname-${shortname}`}></i></button>)
         })
         return (
-            <div className="settings-component pins meiryo">
+            <div className="settings-content-component pins meiryo">
                 <div className="head">
                     <h1>絵文字</h1>
                 </div>
@@ -272,12 +288,15 @@ class EmojiComponent extends Component {
                         {selectedEmojiView}
                     </div>
                     <div className="list candidates">
-                        <EmojiPickerView picker={this.picker} />
+                        <EmojiPickerComponent picker={this.picker} />
                     </div>
                 </div>
 
                 <div className="submit">
-                    <button className="button user-defined-bg-color" onClick={this.onUpdateEmoji}>絵文字を保存</button>
+                    <LoadingButton
+                        handle_click={this.onUpdateEmoji}
+                        is_loading={this.state.in_progress}
+                        label="絵文字を保存" />
                 </div>
             </div>
         )
@@ -287,23 +306,17 @@ class EmojiComponent extends Component {
 export default class App extends AppComponent {
     render() {
         const { platform, logged_in_user, pinned_media, recent_uploads, pinned_emoji } = this.props
-        if (Array.isArray(pinned_media) === false) {
-            return null
-        }
-        if (Array.isArray(recent_uploads) === false) {
-            return null
-        }
-        if (Array.isArray(pinned_emoji) === false) {
-            return null
-        }
         return (
-            <div id="app" className="settings">
+            <div className="app settings">
                 <Head title={`固定 / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
-                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
-                <div className="settings-container">
+                <NavigationbarComponent logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <Toast />
+                <div className="client">
                     <div className="inside">
-                        <SettingsMenuView active="pins" />
-                        <div className="settings-container-main">
+                        <div className="settings-menu-area">
+                            <SettingsMenuComponent active_page="pins" />
+                        </div>
+                        <div className="settings-contents-area">
                             <MediaComponent pinned={pinned_media} history={recent_uploads} />
                             <EmojiComponent pinned={pinned_emoji} />
                         </div>

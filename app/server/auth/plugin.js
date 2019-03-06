@@ -7,7 +7,6 @@ import model from "../model"
 module.exports = plugin((fastify, options, next) => {
     const authenticate = async (req, res, _csrf_token) => {
         const { access_token, access_token_secret } = (req.body ? req.body : req.query) || {}
-        const { oauth_token, oauth_token_secret } = (req.body ? req.body : req.query) || {}
         if (access_token && access_token_secret) {
             return authenticate_access_token(access_token, access_token_secret)
         }

@@ -3,7 +3,7 @@ import model from "../../../model"
 import memcached from "../../../memcached"
 import collection from "../../../collection"
 import storage from "../../../config/storage"
-import { is_string } from "../../../assert"
+import assert, { is_string } from "../../../assert"
 import { parse_bool_str } from "../../../lib/bool"
 import assign from "../../../lib/assign";
 
@@ -15,8 +15,8 @@ module.exports = (fastify, options, next) => {
         if (params.trim_channel) {
             params.trim_channel = parse_bool_str(params.trim_channel)
         }
-        if (params.trim_server) {
-            params.trim_server = parse_bool_str(params.trim_server)
+        if (params.trim_community) {
+            params.trim_community = parse_bool_str(params.trim_community)
         }
         if (params.trim_recipient) {
             params.trim_recipient = parse_bool_str(params.trim_recipient)
@@ -32,7 +32,58 @@ module.exports = (fastify, options, next) => {
         }
         return params
     }
-    fastify.post(`/api/v1/status/update`, async (req, res) => {
+    const get_community_id = async (db, params) => {
+        const { community_id, channel_id, in_reply_to_status_id, recipient_id } = params
+        if (recipient_id) {
+            return null
+        }
+        if (community_id) {
+            return community_id
+        }
+        if (channel_id) {
+            const channel = await memcached.v1.channel.show(db, { "id": channel_id })
+            assert(channel !== null, "チャンネルが見つかりません")
+            return channel.community_id
+        }
+        if (in_reply_to_status_id) {
+            const in_reply_to_status = await memcached.v1.status.show(db, { "id": in_reply_to_status_id })
+            assert(in_reply_to_status !== null, "コメント先の投稿が見つかりません")
+            const { community_id } = in_reply_to_status
+            if (!!community_id === false) {
+                return null
+            }
+            return community_id
+        }
+        throw new Error("サーバーで問題が発生しました")
+    }
+    const join_community_if_needed = async (db, user_id, community_id) => {
+        const already_in_community = await memcached.v1.community.joined(fastify.mongo.db, {
+            user_id, community_id
+        })
+        if (already_in_community === false) {
+            try {
+                await model.v1.community.join(fastify.mongo.db, {
+                    user_id, community_id
+                })
+            } catch (error) {
+                throw new Error("問題が発生したためリクエストを続行できません")
+            }
+        }
+    }
+    const update = async (db, params) => {
+        const { channel_id, in_reply_to_status_id, recipient_id } = params
+        if (channel_id) {
+            return await model.v1.status.update_channel(fastify.mongo.db, params)
+        }
+        if (in_reply_to_status_id) {
+            return await model.v1.status.update_thread(fastify.mongo.db, params)
+        }
+        if (recipient_id) {
+            return await model.v1.status.update_message(fastify.mongo.db, params)
+        }
+        throw new Error("投稿先を指定してください")
+    }
+    fastify.post("/api/v1/status/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -48,12 +99,18 @@ module.exports = (fastify, options, next) => {
                 params.do_not_notify = parse_bool_str(params.do_not_notify)
             }
 
-            const { status_id, mentions } = await model.v1.status.update(fastify.mongo.db, params)
+            // コミュニティに参加していない場合は自動的に参加させる
+            const community_id = await get_community_id(fastify.mongo.db, params)
+            if (community_id) {
+                await join_community_if_needed(fastify.mongo.db, session.user_id, community_id)
+            }
+
+            const { status_id, mentions } = await update(fastify.mongo.db, params)
             const status = await collection.v1.status.show(fastify.mongo.db, {
                 "id": status_id,
                 "trim_user": false,
                 "trim_recipient": false,
-                "trim_server": false,
+                "trim_community": false,
                 "trim_channel": false
             })
             mentions.forEach(user => {
@@ -80,7 +137,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/status/destroy`, async (req, res) => {
+    fastify.post("/api/v1/status/destroy", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -115,7 +172,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.get(`/api/v1/status/show`, async (req, res) => {
+    fastify.get("/api/v1/status/show", async (req, res) => {
         try {
             const params = parse_params(assign(req.query))
             const session = await fastify.authenticate(req, res)

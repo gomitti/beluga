@@ -1,6 +1,5 @@
 import api from "../../../api"
 import { Memcached } from "../../../memcached/v1/memcached"
-import assert, { is_string } from "../../../assert"
 import { try_convert_to_hex_string } from "../../../lib/object_id"
 
 const memcached = new Memcached(api.v1.status.show)

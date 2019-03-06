@@ -1,16 +1,16 @@
 import { Component } from "react"
 import { build_status_body_views, split_emoji_unicode, parse_emoji_unicode } from "../parser"
 import { is_string } from "../../../../../assert"
-import { StatusHeaderDisplayNameView, StatusHeaderUserStatusView } from "../status/header"
+import { StatusHeaderDisplayNameComponent, StatusHeaderUserStatusComponent } from "../status/header"
 
-export default class PreviewView extends Component {
+export default class PreviewComponent extends Component {
     render() {
         const { status, is_hidden } = this.props
         if (is_hidden) {
             return null
         }
-        const { text, user, server } = status
-        const bodyView = build_status_body_views(text, server, {}, {})
+        const { text, user, community } = status
+        const bodyView = build_status_body_views(text, community, {}, {})
         return (
             <div className="status">
                 <div className="inside">
@@ -23,8 +23,8 @@ export default class PreviewView extends Component {
                         <div className="status-header">
                             <div className="inside">
                                 <a href="/user/" className="link">
-                                    <StatusHeaderDisplayNameView user={user} />
-                                    <StatusHeaderUserStatusView user={user} />
+                                    <StatusHeaderDisplayNameComponent user={user} />
+                                    <StatusHeaderUserStatusComponent user={user} />
                                     <span className="name verdana element">@{user.name}</span>
                                 </a>
                             </div>

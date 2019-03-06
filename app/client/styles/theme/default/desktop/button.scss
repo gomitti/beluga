@@ -22,7 +22,7 @@ button {
     padding: 5px 12px;
     user-select: none;
     border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 6px;
+    border-radius: 8px;
     color: white;
     transition: transform .15s ease;
     position: relative;
@@ -39,6 +39,7 @@ button {
         color: rgb(141, 141, 141);
         background: linear-gradient(to bottom, rgb(252, 251, 247) 0%, rgb(247, 246, 242) 100%);
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: none;
         border-color: rgba(0, 0, 0, 0.2);
     }
 
@@ -67,59 +68,73 @@ button {
    
     }
 
-    &.in-progress,
-    &.in-progress:hover {
-        box-shadow: none;
-        -webkit-animation: progress-bar-stripes 1s linear infinite;
-        -moz-animation: progress-bar-stripes 1s linear infinite;
-        animation: progress-bar-stripes 1s linear infinite;
-        color: #888;
-        background: -webkit-linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), -webkit-linear-gradient(top, #f6f5f0, #e1e0dc);
-        background: -moz-linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), -moz-linear-gradient(top, #f6f5f0, #e1e0dc);
-        background: linear-gradient(-45deg, rgba(255, 255, 255, 0.6) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0.6) 75%, transparent 75%, transparent), linear-gradient(top, #f6f5f0, #e1e0dc);
-        background-repeat: repeat;
-        -webkit-background-size: 50px 50px;
-        -moz-background-size: 50px 50px;
-        background-size: 50px 50px;
+    &.user-defined-gradient-bg-color {
+        border: 1px solid rgba(0, 0, 0, 0);
     }
 }
 
-@-webkit-keyframes progress-bar-stripes {
-    from {
-        background-position: 0 0;
+.loading-button {
+    position: relative;
+    padding: 0 16px;
+    height: 36px;
+
+    > .label {
+        font-size: 14px;
     }
 
-    to {
-        background-position: 50px 0;
+    > .spinner {
+        display: block;
+        opacity: 0;
+        position: absolute;
+        top: calc(50% - 8px);
+        left: calc(50% - 8px);
+        width: 14px;
+        height: 14px;
+
+        &::after {
+            content: "";
+            display: block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            border-color: #fff transparent #fff transparent;
+            animation: animation-dual-ring 1.2s linear infinite;
+        }
+    }
+
+    &.neutral {
+        > .spinner {
+            &::after {
+                content: "";
+                display: block;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                border: 2px solid #8d8d8d;
+                border-color: #8d8d8d transparent #8d8d8d transparent;
+                animation: animation-dual-ring 1.2s linear infinite;
+            }
+        }
+    }
+
+    &.is-loading {
+        > .label {
+            opacity: 0;
+        }
+
+        > .spinner {
+            opacity: 1;
+        }
     }
 }
 
-@-moz-keyframes progress-bar-stripes {
-    from {
-        background-position: 0 0;
+@keyframes animation-dual-ring {
+    0% {
+        transform: rotate(0deg);
     }
 
-    to {
-        background-position: 50px 0;
-    }
-}
-
-@keyframes progress-bar-stripes {
-    from {
-        background-position: 0 0;
-    }
-
-    to {
-        background-position: 50px 0;
-    }
-}
-
-.button.in-progress {
-    > .progress-text {
-        visibility: visible;
-    }
-
-    > .display-text {
-        visibility: hidden;
+    100% {
+        transform: rotate(360deg);
     }
 }

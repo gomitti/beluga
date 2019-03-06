@@ -2,26 +2,27 @@ import { Component } from "react"
 import ws from "../../../../../websocket"
 import { request } from "../../../../../api"
 
-export default class View extends Component {
+export default class ChannelListComponent extends Component {
     componentDidMount() {
         ws.addEventListener("message", (e) => {
-            const { server } = this.props
+            const { community } = this.props
             const data = JSON.parse(e.data)
         })
     }
     render() {
-        const { channels, server, handle_click_channel } = this.props
+        const { channels, community, handle_click_channel } = this.props
         if (channels.length == 0) {
             return (
-                <div className="inside channels-container round">
+                <div className="inside channel-list-component round">
                     <div className="content card">
                         <h2 className="title">
                             <span className="text">チャンネル</span>
-                            <a href={`/server/${server.name}/create_new_channel`} className="create user-defined-color">作成</a>
+                            <a href={`/${community.name}/create_new_channel`}
+                                className="create-link user-defined-color">作成</a>
                         </h2>
-                        <div className="channels-hint">
+                        <div className="hint-area">
                             <p>あなたはまだどのチャンネルにも参加していません</p>
-                            <p><a href={`/server/${server.name}/channels`}>チャンネル一覧</a>から興味のあるチャンネルを探してみましょう</p>
+                            <p><a href={`/${community.name}/channels`}>チャンネル一覧</a>から興味のあるチャンネルを探してみましょう</p>
                         </div>
                     </div>
                 </div>
@@ -30,25 +31,25 @@ export default class View extends Component {
         const listViews = []
         channels.forEach(channel => {
             listViews.push(
-                <li>
-                    <p className="name meiryo">
-                        <a className="user-defined-color"
-                            href={`/server/${server.name}/${channel.name}`}
-                            onClick={handle_click_channel}
-                            data-name={channel.name}>
-                            <span className="name-str" data-name={channel.name}>{channel.name}</span></a>
-                    </p>
-                </li>
+                <a key={channel.id}
+                    className="user-defined-color item"
+                    href={`/${community.name}/${channel.name}`}
+                    onClick={handle_click_channel}
+                    data-name={channel.name}>
+                    <span className="icon"></span>
+                    <span className="label meiryo" data-name={channel.name}>{channel.name}</span>
+                </a>
             )
         })
         return (
-            <div className="inside channels-container round">
+            <div className="inside channel-list-component round">
                 <div className="content card">
                     <h2 className="title">
                         <span className="text">チャンネル</span>
-                        <a href={`/server/${server.name}/create_new_channel`} className="create user-defined-color">作成</a>
+                        <a href={`/${community.name}/create_new_channel`}
+                            className="create-link user-defined-color">作成</a>
                     </h2>
-                    <ul className="channels-list">
+                    <ul className="channel-list">
                         {listViews}
                     </ul>
                 </div>

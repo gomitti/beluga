@@ -12,11 +12,11 @@ export default async (db, params) => {
     }
 
     const user_id = try_convert_to_object_id(params.user_id, "$user_idが不正です")
-    const server_id = try_convert_to_object_id(params.server_id, "$server_idが不正です")
+    const community_id = try_convert_to_object_id(params.community_id, "$community_idが不正です")
 
     const collection = db.collection("channels")
 
-    const existing = await collection.findOne({ name, server_id })
+    const existing = await collection.findOne({ name, community_id })
     if (existing !== null) {
         throw new Error(`#${name}はすでに存在するため、違うチャンネル名に変更してください`)
     }
@@ -39,10 +39,11 @@ export default async (db, params) => {
 
 
     const result = await collection.insertOne(Object.assign({
-        server_id,
+        community_id,
         name,
         "description": "",
         "statuses_count": 0,
+        "members_count": 0,
         "created_at": Date.now(),
         "created_by": params.user_id
     }, attributes))

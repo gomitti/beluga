@@ -1,5 +1,5 @@
 // パスワードは必ず変更する
-// iptablesでメインのサーバーからの接続以外を遮断する
+// iptablesでメインのコミュニティからの接続以外を遮断する
 const domain = "example.com"
 export default {
     "servers": [

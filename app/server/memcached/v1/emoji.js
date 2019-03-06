@@ -1,2 +1,3 @@
 import list from "./emoji/list"
-export default { list }
+import version from "./emoji/version"
+export default { list, version }

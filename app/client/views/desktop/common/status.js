@@ -34,7 +34,7 @@ class ImageView extends Component {
 }
 
 @observer
-export default class StatusView extends Component {
+export default class StatusComponent extends Component {
     render() {
         const status = this.props.status
         const lines = status.text.split("\n")
@@ -115,7 +115,7 @@ export default class StatusView extends Component {
                             subViews.push(<a href={url} target="_blank"></a>)
                             continue
                         }
-                        subViews.push(<a href={url}><ImageView src={url} /></a>)
+                        subViews.push(<a href={url}><ImageComponent src={url} /></a>)
                         continue
                     }
                     subViews.push(<a href={url} target="_blank">{url}</a>)

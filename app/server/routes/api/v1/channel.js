@@ -5,7 +5,7 @@ import assign from "../../../lib/assign"
 import { parse_bool_str } from "../../../lib/bool"
 
 module.exports = (fastify, options, next) => {
-    fastify.post(`/api/v1/channel/create`, async (req, res) => {
+    fastify.post("/api/v1/channel/create", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -24,7 +24,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/channel/profile/update`, async (req, res) => {
+    fastify.post("/api/v1/channel/profile/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -37,7 +37,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/channel/attribute/update`, async (req, res) => {
+    fastify.post("/api/v1/channel/attribute/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -56,7 +56,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.get(`/api/v1/channel/show`, async (req, res) => {
+    fastify.get("/api/v1/channel/show", async (req, res) => {
         try {
             const params = assign(req.query)
             const session = await fastify.authenticate(req, res)
@@ -69,7 +69,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/channel/join`, async (req, res) => {
+    fastify.post("/api/v1/channel/join", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -79,15 +79,15 @@ module.exports = (fastify, options, next) => {
             if (channel === null) {
                 throw new Error("チャンネルが存在しません")
             }
-            const already_in_server = await memcached.v1.server.joined(fastify.mongo.db, {
+            const already_in_community = await memcached.v1.community.joined(fastify.mongo.db, {
                 "user_id": session.user_id,
-                "server_id": channel.server_id
+                "community_id": channel.community_id
             })
-            if (already_in_server === false) {
+            if (already_in_community === false) {
                 try {
-                    await model.v1.server.join(fastify.mongo.db, {
+                    await model.v1.community.join(fastify.mongo.db, {
                         "user_id": session.user_id,
-                        "server_id": channel.server_id
+                        "community_id": channel.community_id
                     })
                 } catch (error) {
                     throw new Error("問題が発生したためリクエストを続行できません")
@@ -100,7 +100,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/channel/invite`, async (req, res) => {
+    fastify.post("/api/v1/channel/invite", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -126,7 +126,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/channel/kick`, async (req, res) => {
+    fastify.post("/api/v1/channel/kick", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -152,7 +152,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.get(`/api/v1/channel/members/list`, async (req, res) => {
+    fastify.get("/api/v1/channel/members/list", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {

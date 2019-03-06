@@ -8,20 +8,22 @@ module.exports = (fastify, options, next) => {
             "fileSize": config.emoji.max_filesize,
         }
     })
-    fastify.post(`/api/v1/emoji/remove`, async (req, res) => {
+    fastify.post("/api/v1/emoji/remove", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
             const params = Object.assign({}, req.body, { "user_id": session.user_id })
-            await model.v1.emoji.remove(fastify.mongo.db, params)
+            const removed_emoji = await model.v1.emoji.remove(fastify.mongo.db, params)
+            const { shortname } = removed_emoji
+            fastify.websocket_broadcast("emoji_removed", { shortname })
             res.send({ "success": true })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/emoji/add`, async (req, res) => {
+    fastify.post("/api/v1/emoji/add", async (req, res) => {
         try {
             let buffer = null
             const fields = {}
@@ -43,34 +45,32 @@ module.exports = (fastify, options, next) => {
                 fields[key] = value
             })
             mp.on("finish", async () => {
-                const { csrf_token } = fields
-                if (!!csrf_token === false) {
-                    throw new Error("ログインしてください")
-                }
-                const { shortname } = fields
-                if (!!shortname === false) {
-                    throw new Error("タグ名を指定してください")
-                }
-
-                const { server_id } = fields
-                if (!!server_id === false) {
-                    throw new Error("サーバーを指定してください")
-                }
-
-                const session = await fastify.authenticate(req, res, csrf_token)
-                if (session.user_id === null) {
-                    throw new Error("ログインしてください")
-                }
-
-                if (buffer === null) {
-                    throw new Error("画像を指定してください")
-                }
-
                 try {
+                    const { shortname } = fields
+                    if (!!shortname === false) {
+                        throw new Error("タグ名を指定してください")
+                    }
+
+                    const { community_id } = fields
+                    if (!!community_id === false) {
+                        throw new Error("コミュニティを指定してください")
+                    }
+
+                    const { access_token, access_token_secret, csrf_token } = fields
+                    req.body = { access_token, access_token_secret }
+
+                    const session = await fastify.authenticate(req, res, csrf_token)
+                    if (session.user_id === null) {
+                        throw new Error("ログインしてください")
+                    }
+
+                    if (buffer === null) {
+                        throw new Error("画像を指定してください")
+                    }
                     await model.v1.emoji.add(fastify.mongo.db, {
                         "data": buffer,
                         "user_id": session.user_id,
-                        "server_id": server_id,
+                        "community_id": community_id,
                         "shortname": shortname
                     })
                     fastify.websocket_broadcast("emoji_added", { shortname })
@@ -78,7 +78,6 @@ module.exports = (fastify, options, next) => {
                 } catch (error) {
                     res.send({ "success": false, "error": error.toString() })
                 }
-
             })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })

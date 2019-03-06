@@ -1,2 +1,3 @@
 import show from "./user/show"
-export default { show }
+import role from "./user/role"
+export default { show, role }

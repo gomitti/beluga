@@ -5,10 +5,6 @@ import { try_convert_to_object_id } from "../../../lib/object_id"
 export default async (db, params) => {
     const user_id = try_convert_to_object_id(params.user_id, "$user_idが不正です")
 
-    if (params.server_id) {
-        params.server_id = try_convert_to_object_id(params.server_id, "$server_idが不正です")
-    }
-
     if (params.since_id) {
         params.since_id = try_convert_to_object_id(params.since_id, "$since_idが不正です")
     }
@@ -36,9 +32,6 @@ export default async (db, params) => {
     }
 
     const query = { user_id }
-    if (params.server_id) {
-        query.server_id = params.server_id
-    }
     if (params.since_id) {
         query.status_id = { "$gt": params.since_id }
     }

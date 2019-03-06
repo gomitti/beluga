@@ -1,0 +1,104 @@
+.notifications-component {
+    width: 100%;
+
+    > .inside {
+        width: 600px;
+        margin: 0 auto;
+        border-radius: 6px;
+        background-color: white;
+        box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
+        position: relative;
+        z-index: 0;
+
+        > .timeline-component {
+            padding: 10px 0;
+        }
+    }
+}
+
+.notifications-header-component {
+    width: 600px;
+
+    > .tab-menu-area {
+        border-bottom: 1px solid rgb(238, 238, 238);
+
+        > .tab-menu {
+            display: flex;
+            flex-direction: row;
+            padding: 0 20px;
+
+            > .item {
+                flex: 0 0 auto;
+                height: 50px;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.05s ease-out 0s;
+                cursor: pointer;
+                color: rgb(120, 120, 120);
+
+                > .icon {
+                    flex: 0 0 auto;
+                    width: 18px;
+                    height: 24px;
+                    font-size: 28px;
+                    font-family: Beluga;
+                    display: flex;
+                    justify-content: end;
+                    align-items: center;
+                    margin-bottom: -3px;
+                    font-weight: normal;
+                    line-height: 0;
+                    display: none;
+
+                    &.about::before {
+                        content: "\2E61";
+                    }
+
+                    &.channels {
+                        width: 14px;
+
+                        &::before {
+                            content: "\2006";
+                        }
+                    }
+
+                    &.members::before {
+                        content: "\2E54";
+                    }
+
+                    &.timeline::before {
+                        content: "\2007";
+                    }
+                }
+
+                > .label {
+                    font-size: 14px;
+                    font-weight: normal;
+                    flex: 0 0 auto;
+                    margin: 0 0 -4px 4px;
+                }
+
+                &:hover {
+                    text-decoration-line: none;
+                    color: black;
+                }
+
+                &.active {
+                    color: black;
+
+                    > .label {
+                        font-weight: bold;
+                    }
+                }
+
+                &.border-bottom {
+                    padding: 0 16px;
+                    border-bottom: 2px solid white;
+                }
+            }
+        }
+    }
+}

@@ -95,7 +95,7 @@ const insert_statuses = async (db, user, channel, server) => {
         console.log(mongo.database.test)
 
         // db.collection("users").deleteMany({})
-        // db.collection("servers").deleteMany({})
+        // db.collection("communities").deleteMany({})
         // db.collection("channels").deleteMany({})
 
         // const user = await signup(db)
@@ -113,7 +113,7 @@ const insert_statuses = async (db, user, channel, server) => {
 
         const user = (await db.collection("users").find({}).toArray())[0]
         const channel = (await db.collection("channels").find({}).toArray())[0]
-        const server = (await db.collection("servers").find({}).toArray())[0]
+        const server = (await db.collection("communities").find({}).toArray())[0]
         user.id = user._id
         channel.id = channel._id
         server.id = server._id

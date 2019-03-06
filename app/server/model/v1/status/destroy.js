@@ -10,36 +10,12 @@ export default async (db, params) => {
     assert(user !== null, "ユーザーが見つかりません")
     assert(status.user_id.equals(user.id), "権限がありません")
 
-    let channel = null
-    if (status.channel_id) {
-        channel = await memcached.v1.channel.show(db, { "id": status.channel_id })
-    }
-    let recipient = null
-    if (status.recipient_id) {
-        recipient = await memcached.v1.user.show(db, { "id": status.recipient_id })
-    }
-    let server = null
-    if (status.server_id) {
-        server = await memcached.v1.server.show(db, { "id": status.server_id })
-    }
-
     await api.v1.status.destroy(db, params)
     await api.v1.notifications.destroy(db, { "status_id": status.id })
 
-    // キャッシュの消去
-    memcached.v1.status.show.flush(status.id)
-    if (channel) {
-        memcached.v1.timeline.channel.flush(channel.id)
-    }
-    if (server) {
-        memcached.v1.timeline.server.flush(server.id)
-    }
-    if (recipient && server) {
-        memcached.v1.timeline.home.flush(recipient.id, server.id)
-    }
     if (status.in_reply_to_status_id) {
-        // コメントを削除
-        await db.collection("threads").deleteOne({ "status_id": status.id })
+        // タイムラインから削除
+        await db.collection("thread_timeline").deleteOne({ "status_id": status.id })
 
         // コメント数を更新
         const collection = db.collection("statuses")
@@ -61,12 +37,43 @@ export default async (db, params) => {
         })
 
         // ダミーのコメントを消しておく
-        if(comments_count === 0){
+        if (comments_count === 0) {
             await db.collection("threads").deleteOne({ "status_id": status.in_reply_to_status_id })
         }
 
         memcached.v1.status.show.flush(status.in_reply_to_status_id)
     }
+    if (status.channel_id) {
+        const channel = await memcached.v1.channel.show(db, { "id": status.channel_id })
+        if (channel) {
+            // タイムラインから削除
+            await db.collection("channel_timeline").deleteOne({ "status_id": status.id })
+
+            // 投稿数を更新
+            const statuses_count = await db.collection("statuses").find({
+                "channel_id": status.channel_id
+            }).count()
+            await db.collection("channels").updateOne({ "_id": channel.id }, {
+                "$set": { statuses_count }
+            })
+
+            memcached.v1.timeline.channel.flush(channel.id)
+            memcached.v1.channel.show.flush(channel.id, status.community_id, channel.name)
+        }
+    }
+    if (status.community_id) {
+        // タイムラインから削除
+        await db.collection("community_timeline").deleteOne({ "status_id": status.id })
+        memcached.v1.timeline.community.flush(status.community_id)
+    }
+    if (status.recipient_id) {
+        // タイムラインから削除
+        await db.collection("message_timeline").deleteOne({ "status_id": status.id })
+        memcached.v1.timeline.message.flush(status.recipient_id)
+    }
+
+    // キャッシュの消去
+    memcached.v1.status.show.flush(status.id)
 
     return true
 }

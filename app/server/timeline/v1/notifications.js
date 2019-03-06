@@ -10,7 +10,7 @@ export default async (db, params) => {
     const timeline_params = assign(api.v1.timeline.default_params, params)
     const status_params = assign(collection.v1.status.default_params, {
         "trim_user": false,
-        "trim_server": false,
+        "trim_community": false,
         "trim_channel": false,
         "trim_recipient": false,
         "trim_favorited_by": false,
@@ -22,7 +22,7 @@ export default async (db, params) => {
     const statuses = []
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
-        status_params.id = row.id
+        status_params.id = row.status_id
         const status = await collection.v1.status.show(db, status_params)
         if (status) {
             statuses.push(status)

@@ -1,5 +1,5 @@
 import account from "./account"
-import server from "./server"
+import community from "./community"
 import channel from "./channel"
 import user from "./user"
 import like from "./like"
@@ -14,7 +14,7 @@ import mute from "./mute"
 
 export default {
     account,
-    server,
+    community,
     channel,
     user,
     like,

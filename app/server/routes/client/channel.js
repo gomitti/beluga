@@ -2,7 +2,7 @@ import memcached from "../../memcached"
 import model from "../../model"
 
 module.exports = (fastify, options, next) => {
-    fastify.next("/server/:server_name/:channel_name/settings/profile", async (app, req, res) => {
+    fastify.next("/:community_name/:channel_name/settings/profile", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
         const logged_in_user = await fastify.logged_in_user(req, res, session)
@@ -10,13 +10,13 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
-        const { server_name, channel_name } = req.params
-        const server = await memcached.v1.server.show(fastify.mongo.db, { "name": server_name })
-        if (server === null) {
+        const { community_name, channel_name } = req.params
+        const community = await memcached.v1.community.show(fastify.mongo.db, { "name": community_name })
+        if (community === null) {
             return fastify.error(app, req, res, 404)
         }
         const channel = await memcached.v1.channel.show(fastify.mongo.db, {
-            "name": channel_name, "server_id": server.id
+            "name": channel_name, "community_id": community.id
         })
         if (channel === null) {
             return fastify.error(app, req, res, 404)
@@ -26,11 +26,11 @@ module.exports = (fastify, options, next) => {
         }
 
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/channel/settings/profile`, {
-            csrf_token, server, channel, logged_in_user,
+            csrf_token, community, channel, logged_in_user,
             "platform": fastify.platform(req),
         })
     })
-    fastify.next("/server/:server_name/:channel_name/settings/access_control", async (app, req, res) => {
+    fastify.next("/:community_name/:channel_name/settings/access_control", async (app, req, res) => {
         const session = await fastify.session.start(req, res)
         const csrf_token = await fastify.csrf_token(req, res, session)
         const logged_in_user = await fastify.logged_in_user(req, res, session)
@@ -38,13 +38,13 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
-        const { server_name, channel_name } = req.params
-        const server = await memcached.v1.server.show(fastify.mongo.db, { "name": server_name })
-        if (server === null) {
+        const { community_name, channel_name } = req.params
+        const community = await memcached.v1.community.show(fastify.mongo.db, { "name": community_name })
+        if (community === null) {
             return fastify.error(app, req, res, 404)
         }
         const channel = await memcached.v1.channel.show(fastify.mongo.db, {
-            "name": channel_name, "server_id": server.id
+            "name": channel_name, "community_id": community.id
         })
         if (channel === null) {
             return fastify.error(app, req, res, 404)
@@ -54,10 +54,10 @@ module.exports = (fastify, options, next) => {
         }
 
         const members_in_channel = await model.v1.channel.members(fastify.mongo.db, { "id": channel.id })
-        const members_in_server = await model.v1.server.members(fastify.mongo.db, { "id": channel.server_id })
+        const members_in_community = await model.v1.community.members(fastify.mongo.db, { "id": channel.community_id })
 
         app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/channel/settings/access_control`, {
-            csrf_token, server, channel, logged_in_user, members_in_channel, members_in_server,
+            csrf_token, community, channel, logged_in_user, members_in_channel, members_in_community,
             "platform": fastify.platform(req),
         })
     })

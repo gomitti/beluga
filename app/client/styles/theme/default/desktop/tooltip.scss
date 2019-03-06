@@ -4,18 +4,18 @@
     z-index: 6;
     width: 200px;
 
-    > .content {
+    > .message {
         background-color: black;
         color: #fff;
-        padding: 6px 10px;
+        padding: 8px 12px;
         border-radius: 6px;
-        font-size: 12px;
+        font-size: 13px;
         display: inline-block;
-        font-family: NotoSansJP,appleLogo,sans-serif;
+        font-family: "Hiragino Kaku Gothic Pro", Meiryo, "MS PGothic", sans-serif;
     }
 
-    > .content::after {
-        content: " ";
+    > .message::after {
+        content: "";
         position: absolute;
         top: 100%;
         left: 50%;
@@ -28,18 +28,80 @@
 
 .tooltip-user-status {
     display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0;
+    padding: 0;
 
-    > .emoji-image {
+    > .emoji {
+        flex: 0 0 auto;
         width: 20px;
         height: 20px;
-        flex: 0 0 auto;
+        display: inline-block;
     }
 
     > .string {
-        font-size: 14px;
-        line-height: 20px;
-        white-space: pre;
         flex: 1 1 auto;
+        font-size: 13px;
+        line-height: 0;
+        white-space: pre;
         margin-left: 5px;
+    }
+}
+
+.tooltip {
+    position: relative;
+
+    > .tooltip-message {
+        display: none;
+        position: absolute;
+        left: 50%;
+        max-width: 250px;
+        color: #fff;
+        font-size: 13px;
+        font-weight: normal;
+        text-align: center;
+        margin: 8px 0;
+        padding: 8px 12px;
+        background: black;
+        white-space: nowrap;
+        border-radius: 6px;
+        transform: translateX(-50%);
+        user-select: none;
+        font-family: "Hiragino Kaku Gothic Pro", Meiryo, "MS PGothic", sans-serif;
+
+        &.top {
+            bottom: 90%;
+
+            &:after {
+                bottom: -6px;
+                border-top-color: black;
+            }
+        }
+
+        &.bottom {
+            top: 90%;
+
+            &:after {
+                top: -6px;
+                border-bottom-color: black;
+            }
+        }
+
+        &:after {
+            position: absolute;
+            left: 50%;
+            content: "";
+            width: 0;
+            height: 0;
+            margin: -6px;
+            border: 7px solid transparent;
+        }
+    }
+
+    &:hover {
+        > .tooltip-message {
+            display: block;
+        }
     }
 }

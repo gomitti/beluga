@@ -2,7 +2,7 @@ import show from "./status/show"
 
 const default_params = {
     "trim_user": true,
-    "trim_server": true,
+    "trim_community": true,
     "trim_channel": true,
     "trim_recipient": true,
     "trim_favorited_by": true,

@@ -25,5 +25,8 @@ export default async (db, params) => {
     if (params.trim_profile === true) {
         delete user.profile
     }
+    if (params.community_id) {
+        user.role = await memcached.v1.user.role.get(db, { "user_id": params.id, "community_id": params.community_id })
+    }
     return user
 }

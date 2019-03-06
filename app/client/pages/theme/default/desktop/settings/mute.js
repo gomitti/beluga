@@ -1,12 +1,17 @@
 import { Component } from "react"
 import classnames from "classnames"
 import Head from "../../../../../views/theme/default/desktop/head"
-import NavigationbarView from "../../../../../views/theme/default/desktop/navigationbar"
-import SettingsMenuView from "../../../../../views/theme/default/desktop/settings/account/menu"
+import NavigationbarComponent from "../../../../../views/theme/default/desktop/navigationbar"
+import SettingsMenuComponent from "../../../../../views/theme/default/desktop/settings/account/menu"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
-import Snackbar from "../../../../../views/theme/default/desktop/snackbar"
 import AppComponent from "../../../../../views/app"
+import Toast from "../../../../../views/theme/default/desktop/toast"
+import { LoadingButton } from "../../../../../views/theme/default/desktop/button"
+
+const timeout = ms => {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 class MutedUserListComponent extends Component {
     render() {
@@ -16,20 +21,21 @@ class MutedUserListComponent extends Component {
         }
         const listViews = []
         users.forEach(user => {
+            const display_name = user.display_name ? user.display_name : user.name
             listViews.push(
                 <li className="user" key={user.id}>
                     <img className="avatar" src={user.avatar_url} />
-                    <span className="name">{user.name}</span>
-                    <span className="display-name">{user.display_name}</span>
+                    <span className="display-name meiryo">{display_name}</span>
+                    <span className="name verdana">{`@${user.name}`}</span>
                     <a href="#" className="destory-button" onClick={(event) => {
                         event.preventDefault()
                         handle_destory(user)
-                    }}>解除</a>
+                    }}>解除する</a>
                 </li>
             )
         })
         return (
-            <div className="list-component">
+            <div className="muted-user-list-component">
                 <p className="description">以下のユーザーの投稿は表示されません</p>
                 <ul className="list">
                     {listViews}
@@ -39,33 +45,30 @@ class MutedUserListComponent extends Component {
     }
 }
 
-class UserCompleteComponent extends Component {
-    render() {
-        const { users, hidden, handle_select } = this.props
-        if (users.length === 0) {
-            return null
-        }
-        const listViews = []
-        users.forEach(user => {
-            listViews.push(
-                <li className="user user-defined-transparent-bg-color-hover" key={user.id} onClick={event => {
-                    event.stopPropagation()
-                    event.preventDefault()
-                    console.log(user)
-                    handle_select(user)
-                }}>
-                    <img className="avatar" src={user.avatar_url} />
-                    <span className="name">{user.name}</span>
-                    <span className="display-name">{user.display_name}</span>
-                </li>
-            )
-        })
-        return (
-            <div className={classnames("complete-component", { "hidden": hidden })}>
-                <ul className="list">{listViews}</ul>
-            </div>
-        )
+const UserCompleteComponent = ({ users, is_hidden, handle_select }) => {
+    if (users.length === 0) {
+        return null
     }
+    const listViews = []
+    users.forEach(user => {
+        const display_name = user.display_name ? user.display_name : user.name
+        listViews.push(
+            <li className="user" key={user.id} onClick={event => {
+                event.stopPropagation()
+                event.preventDefault()
+                handle_select(user)
+            }}>
+                <img className="avatar" src={user.avatar_url} />
+                <span className="display-name">{display_name}</span>
+                <span className="name">{`@${user.name}`}</span>
+            </li>
+        )
+    })
+    return (
+        <div className={classnames("complete-component", { "hidden": is_hidden })}>
+            <ul className="list">{listViews}</ul>
+        </div>
+    )
 }
 class UserMuteComponent extends Component {
     constructor(props) {
@@ -76,6 +79,7 @@ class UserMuteComponent extends Component {
             "match": [],
             "muted_users": muted_users,
             "complete_enabled": false,
+            "in_progress": false
         }
         if (typeof document !== "undefined") {
             document.body.addEventListener("click", this.onDocumentClick)
@@ -101,7 +105,7 @@ class UserMuteComponent extends Component {
     }
     onComplete = user => {
         const { name } = user
-        this.setState({ "name": "@" + name })
+        this.setState({ "name": "@" + name, "complete_enabled": false, "match": [] })
     }
     search = () => {
         const { users } = this.props
@@ -121,71 +125,70 @@ class UserMuteComponent extends Component {
     }
     create = async event => {
         event.preventDefault()
-        if (this.pending) {
+        if (this.state.in_progress) {
             return
         }
-        this.pending = true
+        this.setState({ "in_progress": true })
+        await timeout(250)
         const { name } = this.state
         try {
             {
                 const res = await request.post("/mute/user/create", {
                     "user_name_to_mute": name.replace("@", "")
                 })
-                const { data } = res
-                if (data.success == false) {
-                    throw new Error(data.error)
+                const { success, error } = res.data
+                if (success == false) {
+                    throw new Error(error)
                 }
             }
             {
                 const res = await request.get("/mute/users/list", {})
-                const { data } = res
-                if (data.success == false) {
-                    throw new Error(data.error)
+                const { success, error, users } = res.data
+                if (success == false) {
+                    throw new Error(error)
                 }
-                const { users } = data
                 this.setState({ "name": "@", "match": [], "muted_users": users })
             }
-            Snackbar.show("ミュートしました", false)
+            Toast.push(`${name}をミュートしました`, true)
         } catch (error) {
-            alert(error)
+            Toast.push(error.toString(), false)
         }
-        this.pending = false
+        this.setState({ "in_progress": false })
     }
     destory = async user => {
-        if (this.pending) {
+        if (this.state.in_progress) {
             return
         }
-        this.pending = true
+        this.setState({ "in_progress": true })
         try {
             {
                 const res = await request.post("/mute/user/destory", {
                     "user_id_to_mute": user.id
                 })
-                const { data } = res
-                if (data.success == false) {
-                    throw new Error(data.error)
+                const { success, error } = res.data
+                if (success == false) {
+                    throw new Error(error)
                 }
             }
             {
                 const res = await request.get("/mute/users/list", {})
-                const { data } = res
-                if (data.success == false) {
-                    throw new Error(data.error)
+                const { success, error, users } = res.data
+                if (success == false) {
+                    throw new Error(error)
                 }
-                const { users } = data
                 this.setState({ "muted_users": users })
             }
-            Snackbar.show("ミュートを解除しました", false)
+            Toast.push(`@${user.name}のミュートを解除しました`, true)
         } catch (error) {
-            alert(error)
+            Toast.push(error.toString(), false)
         }
-        this.pending = false
+        this.setState({ "in_progress": false })
     }
     render = () => {
         const { users } = this.props
         const { match, muted_users } = this.state
         return (
-            <div className="settings-component mute user-mute">
+            <div className="settings-content-component mute user-mute">
                 <div className="head">
                     <h1>ユーザー</h1>
                 </div>
@@ -193,8 +196,9 @@ class UserMuteComponent extends Component {
                     <p className="description">ミュートしたいユーザーのユーザー名を入力してください</p>
                     <div className="username-component">
                         <div className="input-component">
-                            <input type="text"
-                                className="ignore-click form-input"
+                            <input
+                                type="text"
+                                className="ignore-click form-input user-defined-border-color-focus"
                                 value={this.state.name}
                                 onChange={this.onInputChange}
                                 onFocus={this.onInputFocus} />
@@ -202,7 +206,12 @@ class UserMuteComponent extends Component {
                                 hidden={!this.state.complete_enabled}
                                 handle_select={this.onComplete} />
                         </div>
-                        <button className="button user-defined-bg-color" onClick={this.create}>追加する</button>
+                        <div className="submit" style={{ "opacity": this.state.name.replace("@", "").length > 0 ? 1 : 0 }}>
+                            <LoadingButton
+                                handle_click={this.create}
+                                is_loading={this.state.in_progress}
+                                label="ミュートする" />
+                        </div>
                     </div>
                     <MutedUserListComponent users={muted_users} handle_destory={this.destory} />
                 </div>
@@ -215,15 +224,16 @@ class WordMuteComponent extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            "pending": false
+            "in_progress": false
         }
     }
     update = async event => {
         event.preventDefault()
-        if (this.state.pending) {
+        if (this.state.in_progress) {
             return
         }
-        this.setState({ "pending": true })
+        this.setState({ "in_progress": true })
+        await timeout(250)
         const words_str = this.refs.textarea.value
         const tmp_word_array = words_str.split(/\r?\n/)
         let joined_words_str = ""
@@ -233,20 +243,19 @@ class WordMuteComponent extends Component {
             }
             joined_words_str += str + ","
         })
-
         try {
             const res = await request.post("/mute/words/update", {
                 "words": joined_words_str
             })
-            const { data } = res
-            if (data.success == false) {
-                throw new Error(data.error)
+            const { success, error } = res.data
+            if (success == false) {
+                throw new Error(error)
             }
-            Snackbar.show("保存しました", false)
+            Toast.push("保存しました", true)
         } catch (error) {
-            alert(error)
+            Toast.push(error.toString(), false)
         }
-        this.setState({ "pending": false })
+        this.setState({ "in_progress": false })
     }
     render() {
         const { muted_words } = this.props
@@ -255,7 +264,7 @@ class WordMuteComponent extends Component {
             text += str + "\n"
         })
         return (
-            <div className="settings-component mute word-mute">
+            <div className="settings-content-component mute word-mute">
                 <div className="head">
                     <h1>ワード</h1>
                 </div>
@@ -263,10 +272,10 @@ class WordMuteComponent extends Component {
                     <p className="description">表示したくない単語を改行で区切って入力してください</p>
                     <textarea className="words form-input user-defined-border-color-focus" ref="textarea">{text}</textarea>
                     <div className="submit">
-                        <button className={classnames("button user-defined-bg-color", {
-                            "in-progress": this.state.pending
-                        })}
-                            onClick={this.update}>保存する</button>
+                        <LoadingButton
+                            handle_click={this.update}
+                            is_loading={this.state.in_progress}
+                            label="保存する" />
                     </div>
                 </div>
             </div>
@@ -278,13 +287,16 @@ export default class App extends AppComponent {
     render() {
         const { platform, logged_in_user, users, muted_users, muted_words } = this.props
         return (
-            <div id="app" className="settings">
+            <div className="app settings">
                 <Head title={`ミュート / 設定 / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
-                <NavigationbarView logged_in_user={logged_in_user} is_bottom_hidden={true} />
-                <div className="settings-container">
+                <NavigationbarComponent logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <Toast />
+                <div className="client">
                     <div className="inside">
-                        <SettingsMenuView active="mute" />
-                        <div className="settings-container-main">
+                        <div className="settings-menu-area">
+                            <SettingsMenuComponent active_page="mute" />
+                        </div>
+                        <div className="settings-contents-area">
                             <UserMuteComponent
                                 logged_in_user={logged_in_user}
                                 users={users}

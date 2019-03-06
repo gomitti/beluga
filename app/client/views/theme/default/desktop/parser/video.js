@@ -1,5 +1,5 @@
 import config from "../../../../../beluga.config"
-import VideoView from "../status/video"
+import VideoComponent from "../status/video"
 
 export default sentence => {
     const url = sentence
@@ -10,7 +10,7 @@ export default sentence => {
             const width = parts[2]
             const height = parts[3]
             const poster_url = `${prefix}/${width}-${height}.poster.jpg`
-            return <VideoView src={url} poster={poster_url} width={width} height={height} />
+            return <VideoComponent src={url} poster={poster_url} width={width} height={height} />
         }
     }
     return null

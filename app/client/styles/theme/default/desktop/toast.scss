@@ -1,0 +1,67 @@
+#toast {
+    position: fixed;
+    z-index: 9;
+    width: 250px;
+    top: 66px;
+    right: 20px;
+
+    > .messages {
+        > .item {
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin-top: 10px;
+            animation-duration: 0.25s;
+            animation-fill-mode: both;
+
+            > .inside {
+                color: white;
+                font-size: 14px;
+                line-height: 1.3em;
+            }
+
+            &:first-child {
+                margin-top: 0;
+            }
+
+            &.success {
+                background-color: rgba(12, 166, 137, 0.9);
+            }
+
+            &.error {
+                background-color: rgba(252, 44, 86, 0.9);
+            }
+
+            &.fade-in {
+                animation-name: animation-fade-in;
+            }
+
+            &.fade-out {
+                animation-name: animation-fade-out;
+            }
+        }
+    }
+}
+
+@keyframes animation-fade-in {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes animation-fade-out {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}

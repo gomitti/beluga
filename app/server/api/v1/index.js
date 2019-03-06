@@ -2,7 +2,7 @@ import status from "./status"
 import statuses from "./statuses"
 import user from "./user"
 import users from "./users"
-import server from "./server"
+import community from "./community"
 import channel from "./channel"
 import timeline from "./timeline"
 import media from "./media"
@@ -22,7 +22,7 @@ export default {
     statuses,
     user,
     users,
-    server,
+    community,
     channel,
     timeline,
     media,

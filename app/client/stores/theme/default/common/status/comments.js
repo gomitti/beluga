@@ -9,7 +9,7 @@ export default class CommentsStore {
     constructor(status) {
         this.status_id = status.id
         this.set(status.comments_count, status.commenters || [])
-        if (ws) {		// サーバーサイドではやる意味がない
+        if (ws) {		// コミュニティサイドではやる意味がない
             ws.addEventListener("message", event => {
                 const data = JSON.parse(event.data)
                 if (data.status_comments_updated) {

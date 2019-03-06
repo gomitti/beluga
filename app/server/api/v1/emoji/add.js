@@ -1,7 +1,7 @@
 import fileType from "file-type"
 import fs from "fs"
 import config from "../../../config/beluga"
-import { gm_noprofile, gm_shape } from "../../../lib/gm"
+import { gm_noprofile, gm_shape, gm_coalesce } from "../../../lib/gm"
 import assert, { is_string } from "../../../assert"
 import { try_convert_to_object_id } from "../../../lib/object_id"
 
@@ -11,7 +11,7 @@ const existing_shortnames = [
 
 export default async (db, params) => {
     const user_id = try_convert_to_object_id(params.user_id, "$user_idが不正です")
-    const server_id = try_convert_to_object_id(params.server_id, "$server_idが不正です")
+    const community_id = try_convert_to_object_id(params.community_id, "$community_idが不正です")
 
     const { shortname } = params
     assert(is_string(shortname), "コードが不正です")
@@ -20,7 +20,7 @@ export default async (db, params) => {
     assert(existing_shortnames.includes(shortname) === false, "このコードはすでに存在しています")
 
     const collection = db.collection("emojis")
-    const existing = await collection.findOne({ server_id, shortname })
+    const existing = await collection.findOne({ community_id, shortname })
     if (existing) {
         throw new Error("このコードはすでに存在しています")
     }
@@ -43,7 +43,12 @@ export default async (db, params) => {
         throw new Error("このファイル形式には対応していません")
     }
 
-    if (type.ext !== "gif") {
+    let coalesce_data = null
+    if (type.ext === "gif") {
+        // gifの静止画
+        coalesce_data = await gm_coalesce(data)
+
+    } else {
         data = await gm_noprofile(data)	// Exifを消す
     }
 
@@ -61,16 +66,19 @@ export default async (db, params) => {
         throw new Error(`画像の縦幅が大きすぎます (${shape.height} > ${config.emoji.max_size})`)
     }
 
-    const directory = `${config.emoji.path}/${server_id}`
+    const directory = `${config.emoji.path}/${community_id}`
     try {
         fs.mkdirSync(directory)
     } catch (error) {
 
     }
     fs.writeFileSync(`${directory}/${shortname}`, data)
+    if (coalesce_data) {
+        fs.writeFileSync(`${directory}/${shortname}.stop`, coalesce_data)
+    }
 
     const result = await collection.insertOne({
-        server_id, shortname,
+        community_id, shortname,
         "added_by": user_id,
         "added_at": Date.now(),
     })

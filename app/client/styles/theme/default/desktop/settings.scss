@@ -7,35 +7,61 @@
     -webkit-user-drag: element;
 }
 
-#app.settings {
+.app.settings {
     background-color: white;
-}
 
-.settings-container {
-    background-color: white;
-    padding-top: 50px;
-    margin: 0 auto;
-
-    > .inside {
-        width: 800px;
+    > .client {
+        padding-top: 50px;
         margin: 0 auto;
-        overflow: hidden;
+
+        > .inside {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            margin-top: 20px;
+        }
     }
 }
 
-.settings-menu-module {
-    float: left;
+.app.community-settings {
+    display: flex;
+    flex-direction: column;
+
+    > .client {
+        flex: 1 1 auto;
+        padding-top: 0;
+    }
 }
 
-.settings-menu-container {
+.app.channel-settings {
+    display: flex;
+    flex-direction: column;
+
+    > .client {
+        flex: 1 1 auto;
+        padding-top: 0;
+    }
+}
+
+.settings-menu-area {
     width: 200px;
-    border: 1px solid rgb(220, 220, 220);
-    font-size: 14px;
-    border-radius: 6px;
+    flex: 0 0 auto;
+}
+
+.settings-menu-component {
     margin-top: 20px;
-    overflow: hidden;
+
+    &:first-child {
+        margin-top: 0;
+    }
 
     > .inside {
+        width: 200px;
+        border: 1px solid rgb(220, 220, 220);
+        font-size: 14px;
+        border-radius: 6px;
+        overflow: hidden;
+
         > .title {
             border-bottom: 1px solid rgb(220, 220, 220);
             color: rgb(90, 90, 90);
@@ -49,18 +75,46 @@
             line-height: 38px;
         }
 
-        > .title.settings::before {
+        > .title::before {
             font-family: Beluga;
-            content: "\2427";
-            font-size: 24px;
             margin-right: 4px;
         }
 
+        > .title.settings::before {
+            content: "\2427";
+        }
+
         > .title.developers::before {
-            font-family: Beluga;
             content: "\245A";
-            font-size: 24px;
-            margin-right: 4px;
+        }
+
+        .menu {
+            box-sizing: border-box;
+
+            > .item {
+                text-decoration: none;
+                display: block;
+                border-bottom: 1px solid rgb(220, 220, 220);
+
+                > .label {
+                    color: rgb(100, 100, 100);
+                    box-sizing: border-box;
+                    height: 38px;
+                    line-height: 38px;
+                    display: block;
+                    padding: 0 10px;
+                    font-weight: bold;
+                    border-right: 4px solid transparent;
+                }
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                &:hover {
+                    background-color: rgb(252, 252, 252);
+                }
+            }
         }
     }
 
@@ -69,53 +123,16 @@
     }
 }
 
-.settings-menu {
-    > li {
-        width: 100%;
-        box-sizing: border-box;
-        height: 38px;
-        border-bottom: 1px solid rgb(220, 220, 220);
-
-        > .item {
-            color: rgb(100, 100, 100);
-            text-decoration: none;
-            display: block;
-            padding: 0 10px;
-            font-weight: bold;
-            box-sizing: border-box;
-            height: 38px;
-            line-height: 38px;
-            border-right: 4px solid transparent;
-
-            &.active::after {
-                font-family: Beluga;
-                content: "\200E";
-                margin-left: 2px;
-            }
-
-            &:hover::after {
-                font-family: Beluga;
-                content: "\200E";
-                margin-left: 2px;
-            }
-        }
-
-        &:last-child {
-            border: none;
-        }
-    }
-}
-
-.settings-container-main {
-    float: left;
+.settings-contents-area {
     margin-left: 40px;
     margin-bottom: 100px;
 }
 
-.settings-component {
-    margin-top: 40px;
+.settings-content-component {
+    margin-top: 80px;
     font-size: 15px;
     width: 500px;
+    flex: 0 0 auto;
 
     > .head {
         padding-bottom: 12px;
@@ -147,13 +164,13 @@
     }
 }
 
-.settings-component.form {
+.settings-content-component.form {
     > .item {
         margin-top: 20px;
         font-size: 14px;
 
         > .title {
-            font-size: 15px;
+            font-size: 14px;
             line-height: 1;
             font-weight: bold;
             color: rgb(60, 60, 60);
@@ -197,7 +214,7 @@
     }
 }
 
-.settings-component.desktop {
+.settings-content-component.desktop {
     > .item {
         > .title {
             margin-bottom: 6px;
@@ -205,7 +222,7 @@
     }
 }
 
-.settings-component.mute {
+.settings-content-component.mute {
     width: 500px;
 
     > .form-component {
@@ -215,18 +232,16 @@
 
         > .username-component {
             margin-top: 5px;
-            display: flex;
-            flex-direction: row;
 
             > .input-component {
-                flex: 1 1 auto;
                 margin-right: 5px;
                 position: relative;
+                z-index: 1;
 
-                > input {
-                    height: 33px;
+                > .form-input {
+                    height: 36px;
                     width: 100%;
-                    padding: 2px;
+                    padding: 4px;
                     font-size: 16px;
                     box-sizing: border-box;
                 }
@@ -240,7 +255,7 @@
                     background-color: white;
                     border: 1px solid rgb(220, 220, 220);
                     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-                    border-radius: 4px;
+                    border-radius: 8px;
                     overflow-x: hidden;
                     overflow-y: scroll;
 
@@ -249,30 +264,33 @@
                             cursor: pointer;
                             display: flex;
                             flex-direction: row;
+                            align-items: center;
                             height: 26px;
                             padding: 4px 10px;
                             overflow: hidden;
 
+                            &:hover {
+                                background-color: rgb(242, 242, 242);
+                            }
+
                             > .avatar {
                                 flex: 0 0 auto;
-                                width: 26px;
-                                height: 26px;
+                                width: 22px;
+                                height: 22px;
                                 border-radius: 15px;
                             }
 
                             > .name {
-                                font-weight: bold;
-                                font-size: 15px;
-                                color: black;
-                                line-height: 26px;
-                                margin-left: 10px;
+                                font-weight: normal;
+                                color: rgb(120, 120, 120);
+                                margin-left: 4px;
+                                font-size: 14px;
                             }
 
                             > .display-name {
-                                font-weight: normal;
-                                font-size: 15px;
-                                color: rgb(90, 90, 90);
-                                line-height: 26px;
+                                font-size: 14px;
+                                color: black;
+                                font-weight: bold;
                                 margin-left: 10px;
                             }
                         }
@@ -280,14 +298,18 @@
                 }
             }
 
-            > .button {
-                flex: 0 0 auto;
+            > .submit {
+                position: relative;
+                z-index: 0;
+                margin-top: 10px;
             }
         }
 
-        > .list-component {
+        > .muted-user-list-component {
+            margin-top: 20px;
+
             > .description {
-                margin: 20px 0 10px 0;
+                margin: 0 0 10px 0;
             }
 
             > .list {
@@ -296,12 +318,16 @@
 
                 > .user {
                     cursor: pointer;
+                    position: relative;
                     display: flex;
                     flex-direction: row;
+                    align-items: center;
+                    flex-wrap: nowrap;
                     height: 26px;
-                    padding: 10px 14px;
+                    padding: 10px 84px 10px 14px;
                     overflow: hidden;
                     border-bottom: 1px solid #dcdcdc;
+                    min-width: 0;
 
                     &:last-child {
                         border-bottom: none;
@@ -315,36 +341,44 @@
                     }
 
                     > .name {
-                        flex: 0 0 auto;
-                        font-weight: bold;
-                        font-size: 15px;
-                        color: black;
-                        line-height: 26px;
-                        margin-left: 10px;
+                        flex: 1 1 auto;
+                        font-size: 14px;
+                        color: rgb(90, 90, 90);
+                        font-weight: normal;
+                        margin-left: 4px;
                     }
 
                     > .display-name {
-                        flex: 1 1 auto;
-                        font-weight: normal;
-                        font-size: 15px;
-                        color: rgb(90, 90, 90);
-                        line-height: 26px;
+                        flex: 0 1 auto;
+                        font-weight: bold;
+                        font-size: 14px;
+                        color: black;
                         margin-left: 10px;
-                        text-overflow: ellipsis;
                         overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
                     }
 
                     > .destory-button {
-                        flex: 0 0 auto;
-                        font-size: 13px;
+                        display: none;
+                        font-size: 14px;
+                        font-weight: normal;
                         line-height: 26px;
                         margin-left: 10px;
-                        color: rgb(100, 100, 100);
+                        color: rgb(40, 40, 40);
                         text-decoration: none;
+                        position: absolute;
+                        right: 14px;
+                        top: calc(50% - 12px);
 
                         &:hover {
-                            text-decoration: none;
-                            color: black;
+                            text-decoration: underline;
+                        }
+                    }
+
+                    &:hover {
+                        > .destory-button {
+                            display: inline-block;
                         }
                     }
                 }
@@ -354,12 +388,12 @@
         > .words {
             margin-top: 4px;
             width: 100%;
-            height: 400px;
+            height: 300px;
         }
     }
 }
 
-.settings-component.word-mute {
+.settings-content-component.word-mute {
     > .form-component {
         > .submit {
             margin-top: 4px;
@@ -367,7 +401,7 @@
     }
 }
 
-.settings-component.profile {
+.settings-content-component.profile {
     > .item.status {
         > .editor {
             display: flex;
@@ -395,8 +429,7 @@
                         width: 100%;
                         height: 100%;
                         font-family: Beluga;
-                        font-size: 28px;
-                        line-height: 38px;
+                        font-size: 18px;
                         color: rgb(100, 100, 100);
 
                         &::before {
@@ -435,7 +468,7 @@
     }
 }
 
-.settings-component.color-pickers {
+.settings-content-component.color-pickers {
     > .picker {
         margin-bottom: 26px;
     }
@@ -468,10 +501,10 @@
     }
 }
 
-.settings-component.background-image {
-    .background-image-wrapper {
-        > a {
-            > img {
+.settings-content-component.background-image {
+    .background-image-area {
+        > .link {
+            > .image {
                 width: 300px;
                 border-radius: 6px;
             }
@@ -479,7 +512,7 @@
     }
 }
 
-.settings-component.pins {
+.settings-content-component.pins {
     > .description {
         > p {
             line-height: 18px;
@@ -642,7 +675,7 @@
     }
 }
 
-.settings-component.uploads-aggregation {
+.settings-content-component.uploads-aggregation {
     > .table {
         > .row {
             display: flex;
@@ -661,7 +694,7 @@
     }
 }
 
-.settings-component.uploads {
+.settings-content-component.uploads {
     width: 500px;
 
     > .file-list {
@@ -681,8 +714,7 @@
                 top: 16px;
                 right: 16px;
                 font-family: Beluga;
-                font-size: 24px;
-                line-height: 26px;
+                font-size: 16px;
                 color: rgb(100, 100, 100);
             }
 
@@ -736,7 +768,7 @@
     }
 }
 
-.settings-component.channel-access-control {
+.settings-content-component.channel-access-control {
     > .access-control {
         > .choice {
             display: block;
@@ -801,7 +833,7 @@
                     background-color: white;
                     border: 1px solid rgb(220, 220, 220);
                     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-                    border-radius: 4px;
+                    border-radius: 8px;
                     overflow-x: hidden;
                     overflow-y: scroll;
 
@@ -814,25 +846,29 @@
                             padding: 4px 10px;
                             overflow: hidden;
 
+                            &:hover {
+                                background-color: rgb(252, 252, 252);
+                            }
+
                             > .avatar {
                                 flex: 0 0 auto;
-                                width: 26px;
-                                height: 26px;
-                                border-radius: 15px;
+                                width: 24px;
+                                height: 24px;
+                                border-radius: 50%;
                             }
 
                             > .name {
-                                font-weight: bold;
-                                font-size: 15px;
-                                color: black;
+                                font-weight: normal;
+                                font-size: 13px;
+                                color: rgb(90, 90, 90);
                                 line-height: 26px;
                                 margin-left: 10px;
                             }
 
                             > .display-name {
-                                font-weight: normal;
-                                font-size: 15px;
-                                color: rgb(90, 90, 90);
+                                font-weight: bold;
+                                font-size: 14px;
+                                color: black;
                                 line-height: 26px;
                                 margin-left: 10px;
                             }

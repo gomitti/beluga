@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { Player, BigPlayButton, ControlBar } from "video-react"
 
-export default class VideoView extends Component {
+export default class VideoComponent extends Component {
     render() {
         const { width, height, src, poster } = this.props
         return (

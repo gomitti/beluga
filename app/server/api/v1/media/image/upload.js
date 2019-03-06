@@ -139,7 +139,7 @@ const try_ftp_mkdir = async ftp => {
 export default async (db, params) => {
     const user_id = try_convert_to_object_id(params.user_id, "$user_idが不正です")
     const { storage } = params
-    assert(typeof storage === "object", "不正なサーバーです")
+    assert(typeof storage === "object", "不正なコミュニティです")
 
     const {
         original_shape,

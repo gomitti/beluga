@@ -1,7 +1,7 @@
 import model from "../../../model"
 
 module.exports = (fastify, options, next) => {
-    fastify.post(`/api/v1/favorite/create`, async (req, res) => {
+    fastify.post("/api/v1/favorite/create", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -16,7 +16,7 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
-    fastify.post(`/api/v1/favorite/destroy`, async (req, res) => {
+    fastify.post("/api/v1/favorite/destroy", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
