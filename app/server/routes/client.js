@@ -13,8 +13,12 @@ const handle = next({ dev }).getRequestHandler()
 
 module.exports = (fastify, options, next) => {
     fastify.decorate("error", (app, req, res, code) => {
-        res.res.statusCode = code;
-        return app.render(req.req, res.res, "/_error", { code })
+        if (code == 404) {
+            res.code(404).send("このURLは存在しません。トップページに戻ってください。")
+        } else {
+            res.res.statusCode = code
+            app.render(req.req, res.res, "/_error", { code })
+        }
     })
     fastify.setNotFoundHandler((request, reply) => {
         reply.code(404).send("このURLは存在しません。トップページに戻ってください。")
@@ -86,6 +90,8 @@ module.exports = (fastify, options, next) => {
                 "trim_channel": false,
                 "trim_favorited_by": false,
                 "trim_recipient": false,
+                "trim_commenters": false,
+                "trim_reaction_users": false,
                 "requested_by": logged_in_user.id
             }, timeline_query)
 
@@ -163,6 +169,7 @@ module.exports = (fastify, options, next) => {
                     "trim_recipient": false,
                     "trim_favorited_by": false,
                     "trim_commenters": false,
+                    "trim_reaction_users": false,
                     "requested_by": logged_in_user.id
                 })
                 if (in_reply_to_status === null) {

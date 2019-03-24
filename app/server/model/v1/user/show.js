@@ -19,9 +19,9 @@ export default async (db, params) => {
             "tags": []
         }
     }
-    if (!!user.display_name === false) {
-        user.display_name = ""
-    }
+    // if (!!user.display_name === false) {
+    //     user.display_name = ""
+    // }
     if (params.trim_profile === true) {
         delete user.profile
     }

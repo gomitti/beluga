@@ -18,5 +18,5 @@ export const parse_bool_str = value => {
             return true
         }
     }
-    return false
+    throw new Error("bool型に変換できない値です")
 }

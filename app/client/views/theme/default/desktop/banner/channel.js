@@ -4,6 +4,10 @@ export default ({ community, channel }) => {
     return (
         <div className="channel-banner-compoent">
             <div className="inside">
+                <div className="title-area">
+                    設定
+                </div>
+                <div className="divider"></div>
                 <div className="channel-area">
                     <span className="icon"></span>
                     <a href={`/${community.name}/${channel.name}`} className="name">{channel.name}</a>

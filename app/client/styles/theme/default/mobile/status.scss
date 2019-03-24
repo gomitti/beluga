@@ -167,7 +167,7 @@
     height: 20px;
     display: inline-block;
     text-indent: -9999px;
-    margin-bottom: -3px;
+    line-height: 22px;
 }
 
 .bigger-emoji {
@@ -196,6 +196,7 @@
 
 .status-body-tweet {
     min-width: 0;
+    max-width: 300px;
 }
 
 .status-favofites {
@@ -257,7 +258,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    margin: 6px 0 -4px -4px;
+    margin: 6px 0 8px -4px;
 
     > .status-reaction {
         flex: 0 0 auto;
@@ -319,7 +320,7 @@
         flex: 1 1 auto;
         display: flex;
         flex-direction: row;
-        font-size: 14px;
+        font-size: 13px;
         text-decoration: none;
         margin-left: 5px;
         min-width: 0;
@@ -345,7 +346,7 @@
             flex: 0 0 auto;
             font-family: Beluga;
             margin-left: 4px;
-            height: 12px;
+            height: 13px;
 
             &::before {
                 content: "\2E63";
@@ -354,8 +355,8 @@
     }
 }
 
-.status-bars {
-    > .bar:last-child.status-body-commenters {
+.status-details {
+    > .detail-row:last-child.status-body-commenters {
         margin-bottom: 10px;
     }
 }
@@ -536,10 +537,9 @@
     > p {
         width: 18px;
         height: 18px;
-        font-size: 32px;
-        line-height: 9px;
+        font-size: 18px;
         display: inline-block;
-        margin: 0 0 3px 0px;
+        margin: 0 0 2px 0px;
         color: rgb(254, 197, 46);
     }
 

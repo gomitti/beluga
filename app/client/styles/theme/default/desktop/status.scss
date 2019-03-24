@@ -281,6 +281,7 @@
 
 .status-body-tweet {
     min-width: 0;
+    max-width: 300px;
 }
 
 .status-favofites {
@@ -341,7 +342,7 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    margin: 6px 0 -4px -4px;
+    margin: 6px 0 8px -4px;
 
     > .status-reaction {
         flex: 0 0 auto;
@@ -377,8 +378,8 @@
     }
 }
 
-.status-bars {
-    > .bar:last-child.status-body-commenters {
+.status-details {
+    > .detail-row:last-child.status-body-commenters {
         margin-bottom: 14px;
     }
 }
@@ -594,8 +595,7 @@
     > p {
         width: 16px;
         height: 16px;
-        font-size: 28px;
-        line-height: 6px;
+        font-size: 16px;
         display: inline-block;
         margin: 0 0 3px 0px;
         color: rgb(254, 197, 46);

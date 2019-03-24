@@ -105,3 +105,24 @@
         }
     }
 }
+
+.tooltip-content-reactions {
+    > .name-list {
+        font-size: 14px;
+        line-height: 18px;
+
+        > .name {}
+
+        > .comma {
+            width: 8px;
+            text-align: left;
+            display: inline-block;
+        }
+    }
+
+    > .shortname {
+        margin-top: 3px;
+        font-size: 14px;
+        color: rgb(180, 180, 180);
+    }
+}

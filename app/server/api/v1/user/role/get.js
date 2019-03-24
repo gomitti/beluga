@@ -1,4 +1,4 @@
-import config from "../../../../config/beluga"
+import constants from "../../../../constants"
 import { try_convert_to_object_id } from "../../../../lib/object_id"
 
 export default async (db, params) => {
@@ -7,7 +7,7 @@ export default async (db, params) => {
 
     const doc = await db.collection("user_role").findOne({ user_id, community_id })
     if (doc === null) {
-        return config.role.number.guest
+        return constants.role.guest
     }
     return doc.role
 }

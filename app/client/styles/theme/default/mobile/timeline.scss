@@ -50,7 +50,6 @@
                 display: flex;
                 justify-content: end;
                 align-items: center;
-                cursor: pointer;
             }
 
             > .icon {
@@ -62,7 +61,6 @@
                 justify-content: end;
                 align-items: center;
                 color: black;
-                cursor: pointer;
 
                 &.channel {
                     width: 16px;
@@ -103,7 +101,9 @@
                 overflow: hidden;
             }
 
-            &.thread {
+            &.thread,
+            &.channel,
+            &.community-public-timeline {
                 > .label {
                     flex: 0 1 auto;
                 }
@@ -112,7 +112,7 @@
             > .divider {
                 flex: 0 0 auto;
                 font-family: Beluga;
-                margin: 0 8px;
+                margin: 0 10px;
 
                 &::before {
                     content: "\2E65";
@@ -150,6 +150,93 @@
                     overflow: hidden;
                 }
             }
+
+            > .community-avatar-area {
+                flex: 0 0 auto;
+
+                > .link {
+                    text-decoration: none;
+                    display: block;
+
+                    > .image {
+                        width: 22px;
+                        height: 22px;
+                        border-radius: 6px;
+                        margin: 0 auto;
+                        display: block;
+                    }
+                }
+            }
+
+            > .community-name {
+                flex: 0 1 auto;
+                font-weight: normal;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                color: black;
+                margin-left: 6px;
+            }
+        }
+
+        > .dropdown-menu {
+            position: relative;
+
+            > .icon {
+                width: 32px;
+                height: 50px;
+                font-size: 18px;
+                font-family: Beluga;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-bottom: -4px;
+
+                &::before {
+                    content: "\2E55";
+                }
+            }
+
+            > .dropdown-component {
+                width: 220px;
+                position: absolute;
+                top: 100%;
+                right: 0px;
+                display: none;
+
+                > .inside {
+                    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 12px 0 rgba(0, 0, 0, 0.12);
+                    border-radius: 6px;
+                    overflow: hidden;
+                    background-color: rgb(255, 255, 255);
+
+                    > .menu {
+                        padding: 12px 0;
+
+                        > .item {
+                            padding: 6px 22px;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: center;
+                            text-align: left;
+                            color: black;
+                            font-size: 16px;
+                            font-weight: normal;
+                        }
+
+                        > .divider {
+                            border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+                            margin: 8px 0 7px 0;
+                            display: inline-block;
+                            width: 100%;
+                        }
+                    }
+                }
+
+                &.active {
+                    display: block;
+                }
+            }
         }
 
         > .menu {
@@ -179,7 +266,6 @@
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    cursor: pointer;
 
                     &.notification::before {
                         content: "\2E57";
@@ -248,7 +334,6 @@
                 color: black;
                 font-size: 14px;
                 font-weight: normal;
-                cursor: pointer;
 
                 &:hover {
                     text-decoration: none;

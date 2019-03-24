@@ -39,15 +39,17 @@ class ClientSideTimelineStore {
     @observable.shallow filtered_status_stores = []
     @observable pending_fetch_newer = false
     @observable pending_fetch_older = false
-    constructor(endpoint, request_query, params, options) {
+    constructor(endpoint, request_query, params, options, logged_in_user) {
         assert(is_string(endpoint), "$endpoint must be of type string")
         assert(is_object(request_query), "$request_query must be of type object")
         assert(options instanceof TimelineOptions, "$options must be an instance of TimelineOptions")
+        assert(is_object(logged_in_user), "$logged_in_user must be of type object")
         options.validate()
 
         this.endpoint = endpoint
         this.request_query = assign(request_query)
         this.params = params
+        this.logged_in_user = logged_in_user
 
         this.current_fetch_type = null
         this.auto_reloading_enabled = options.auto_reloading_enabled
@@ -168,7 +170,7 @@ class ClientSideTimelineStore {
                 const store = this.status_store_cache[status_obj.id]
                 filtered_status_stores.push(store)
             } else {
-                const store = new StatusStore(status_obj)
+                const store = new StatusStore(status_obj, this.logged_in_user)
                 filtered_status_stores.push(store)
                 this.status_store_cache[status_obj.id] = store
             }
@@ -397,7 +399,7 @@ class ServerSideTimelineStore {
                     return
                 }
             }
-            // コミュニティサイドではstatusがグローバルスコープなのでコピーしてから編集する
+            // サーバーサイドではstatusがグローバルスコープなのでコピーしてから編集する
             status = assign(status)
             status.likes = {
                 "count": status.likes_count

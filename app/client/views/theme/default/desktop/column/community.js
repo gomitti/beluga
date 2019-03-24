@@ -44,7 +44,7 @@ class MembersComponent extends Component {
             this.pending = true
             const { community } = this.props
             request
-                .get("/community/members", { "id": community.id })
+                .get("/community/members", { "community_id": community.id })
                 .then(res => {
                     const data = res.data
                     if (data.success == false) {
@@ -67,7 +67,7 @@ class MembersComponent extends Component {
                 <a className="item" onClick={this.toggle}>
                     <span className="icon members"></span>
                     <span className="verdana count">{this.state.members_count}</span>
-                    <span className="meiryo label">メンバー</span>
+                    <span className="meiryo label">ユーザー</span>
                 </a>
                 <UserListComponent users={members} is_hidden={this.state.is_list_hidden} is_active={true} />
             </div>
@@ -91,7 +91,7 @@ class OnlineMembersComponent extends Component {
             const data = JSON.parse(e.data)
             if (data.online_members_changed) {
                 request
-                    .get("/community/online_members", { "name": community.name })
+                    .get("/community/online_members", { "community_name": community.name })
                     .then(res => {
                         const data = res.data
                         if (data.success == false) {
@@ -147,7 +147,7 @@ export default class View extends Component {
                     <div className="name">
                         <a href={`/${community.name}`}>{community.display_name}</a>
                     </div>
-                    <div className="dropdown-menu">
+                    <div className="dropdown-menu user-defined-color-hover">
                         <span className="icon"></span>
                         <div className="dropdown-component">
                             <div className="inside">
@@ -156,6 +156,8 @@ export default class View extends Component {
                                     <a className="item user-defined-bg-color-hover" href={`/${community.name}/channels`}>チャンネル一覧</a>
                                     <span className="divider"></span>
                                     <a className="item user-defined-bg-color-hover" href={`/${community.name}/settings/profile`}>コミュニティ設定</a>
+                                    <a className="item user-defined-bg-color-hover" href={`/${community.name}/customize/emoji`}>絵文字の追加</a>
+                                    <a className="item user-defined-bg-color-hover" href={`/${community.name}/create_new_channel`}>チャンネルの作成</a>
                                     <span className="divider"></span>
                                     <a className="item user-defined-bg-color-hover">{`${community.display_name} から退出する`}</a>
                                 </ul>

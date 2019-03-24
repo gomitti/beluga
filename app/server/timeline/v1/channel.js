@@ -14,19 +14,13 @@ export default async (db, params) => {
     }
 
     const timeline_params = assign(api.v1.timeline.default_params, params)
-    const status_params = assign(collection.v1.status.default_params, {
-        "trim_user": false,
-        "trim_community": false,
-        "trim_channel": false,
-        "trim_recipient": false,
-        "trim_favorited_by": false,
-        "trim_commenters": false,
+    const status_params = assign(collection.v1.status.default_params, params, {
         "requested_by": params.requested_by
     })
 
     const rows = await memcached.v1.timeline.channel(db, timeline_params)
     const statuses = []
-    for(let i = 0;i < rows.length;i++){
+    for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
         status_params.id = row.status_id
         const status = await collection.v1.status.show(db, status_params)

@@ -12,14 +12,14 @@ import NotificationsTimelineStore from "./timeline/notifications"
 import { TimelineOptions } from "./timeline"
 import { PostboxOptions } from "../common/postbox"
 
-export const get_timeline_store = (type, params, options) => {
+export const get_timeline_store = (type, params, options, logged_in_user) => {
     if (type === enums.column.type.message) {
         const { user } = params
         assert(is_object(user), "$user must be of type object")
         const request_query = {
             "recipient_id": user.id,
         }
-        return new DirectMessageTimelineStore(request_query, params, options)
+        return new DirectMessageTimelineStore(request_query, params, options, logged_in_user)
     }
     if (type === enums.column.type.channel) {
         const { channel } = params
@@ -27,7 +27,7 @@ export const get_timeline_store = (type, params, options) => {
         const request_query = {
             "channel_id": channel.id,
         }
-        return new ChannelTimelineStore(request_query, params, options)
+        return new ChannelTimelineStore(request_query, params, options, logged_in_user)
     }
     if (type === enums.column.type.community) {
         const { community } = params
@@ -36,7 +36,7 @@ export const get_timeline_store = (type, params, options) => {
             "community_id": community.id,
             "count": 60
         }
-        return new CommunityTimelineStore(request_query, params, options)
+        return new CommunityTimelineStore(request_query, params, options, logged_in_user)
     }
     if (type === enums.column.type.thread) {
         const { in_reply_to_status, community } = params
@@ -44,11 +44,11 @@ export const get_timeline_store = (type, params, options) => {
         const request_query = {
             "in_reply_to_status_id": in_reply_to_status.id,
         }
-        return new ThreadTimelineStore(request_query, params, options)
+        return new ThreadTimelineStore(request_query, params, options, logged_in_user)
     }
     if (type === enums.column.type.notifications) {
         const request_query = {}
-        return new NotificationsTimelineStore(request_query, params, options)
+        return new NotificationsTimelineStore(request_query, params, options, logged_in_user)
     }
     throw new Error("Invalid timeline")
 }
@@ -77,19 +77,23 @@ class ClientSideColumnStore {
     params = null
     history = []
     is_closable = false
-    constructor(target, settings, muted_users, muted_words) {
+    constructor(target, settings, muted_users, muted_words, logged_in_user) {
+        assert(settings instanceof ColumnSettings, "$settings must be an instance of ColumnSettings")
+        assert(is_array(muted_users), "$muted_users must be of type array")
+        assert(is_array(muted_words), "$muted_words must be of type array")
+        assert(is_object(logged_in_user), "$logged_in_user must be of type object")
         this.target = target
         this.identifier = uid(8)    // Reactのkeyに使う
-        assert(settings instanceof ColumnSettings, "$settings must be an instance of ColumnSettings")
         this.settings = settings
-        this.muted_users = muted_users ? muted_users : []
-        this.muted_words = muted_words ? muted_words : []
+        this.muted_users = muted_users
+        this.muted_words = muted_words
         this.muted_users.forEach(user => {
             assert(is_object(user), "$user must be of type object")
         })
         this.muted_words.forEach(word => {
             assert(is_string(word), "$word must be of type string")
         })
+        this.logged_in_user = logged_in_user
     }
     @action.bound
     restore = (history, settings) => {
@@ -121,7 +125,7 @@ class ClientSideColumnStore {
         assert(is_object(params), "$params must be of type object")
         assert(options instanceof ColumnOptions, "$options must be an instance of ColumnOptions")
 
-        this.timeline = get_timeline_store(type, params, options.timeline)
+        this.timeline = get_timeline_store(type, params, options.timeline, this.logged_in_user)
         if (Array.isArray(initial_statuses)) {
             this.timeline.setStatuses(initial_statuses)
         }
@@ -165,7 +169,7 @@ class ServerSideColumnStore {
         if (muted_users) {
             muted_users.forEach(user => {
                 assert(is_object(user), "$user must be of type object")
-                this.muted_users.push(assign(user)) // コミュニティサイドではuserはグローバルスコープなのでコピー
+                this.muted_users.push(assign(user)) // サーバーサイドではuserはグローバルスコープなのでコピー
             })
         }
         this.muted_words = muted_words ? muted_words : []
@@ -185,7 +189,7 @@ class ServerSideColumnStore {
         assert(is_object(params), "$params must be of type object")
         assert(options instanceof ColumnOptions, "$options must be an instance of ColumnOptions")
 
-        this.timeline = get_timeline_store(type, params, options.timeline)
+        this.timeline = get_timeline_store(type, params, options.timeline, this.logged_in_user)
         if (Array.isArray(initial_statuses)) {
             this.timeline.setStatuses(initial_statuses)
         }

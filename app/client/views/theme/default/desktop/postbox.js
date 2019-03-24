@@ -69,7 +69,7 @@ export default class PostboxComponent extends Component {
         assert(timeline instanceof TimelineStore, "$timeline must be an instance of TimelineStore")
 
         uploader.callback_error = error => {
-            Toast.show(error, false)
+            Toast.push(error, false)
         }
         uploader.callback_upload = url => {
             const { textarea } = this.refs

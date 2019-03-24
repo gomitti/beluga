@@ -23,7 +23,7 @@ const hex_to_gradient_string = hex => {
 const hex_to_box_shadow_string = hex => {
     const hsv = convert.hex.hsv(hex)
     const rgb = convert.hsv.rgb([hsv[0], hsv[1], Math.min(255, hsv[2] + 20)])
-    return `0 2px 8px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.3)`
+    return `0 2px 8px rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.2)`
 }
 
 export default class HeadComponent extends Component {
@@ -60,12 +60,6 @@ export default class HeadComponent extends Component {
                     .user-defined-transparent-bg-color:hover {
                         background-color: ${hex_to_rgba_string(color, 0.1)};
                     }
-					.react-toggle--checked .react-toggle-track {
-						background-color: ${color};
-					}
-					.react-toggle--checked .react-toggle-thumb {
-						border-color: ${color};
-					}
 					.user-defined-border-color-focus:focus,
 					.user-defined-border-color-active.active {
 						border-color: ${color} !important;

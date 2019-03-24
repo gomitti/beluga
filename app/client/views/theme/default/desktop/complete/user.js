@@ -80,7 +80,7 @@ class MemberComplete extends Component {
             "is_hidden": false, position
         })
         request
-            .get("/community/members", { "id": community_id })
+            .get("/community/members", { "community_id": community_id })
             .then(res => {
                 const data = res.data
                 if (data.success == false) {

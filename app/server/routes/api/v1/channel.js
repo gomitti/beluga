@@ -12,12 +12,6 @@ module.exports = (fastify, options, next) => {
                 throw new Error("ログインしてください")
             }
             const params = assign(req.body, { "user_id": session.user_id })
-            if (params.is_public) {
-                params.is_public = parse_bool_str(params.is_public)
-            }
-            if (params.invitation_needed) {
-                params.invitation_needed = parse_bool_str(params.invitation_needed)
-            }
             const channel = await model.v1.channel.create(fastify.mongo.db, params)
             res.send({ "success": true, channel })
         } catch (error) {
@@ -44,12 +38,6 @@ module.exports = (fastify, options, next) => {
                 throw new Error("ログインしてください")
             }
             const params = assign(req.body, { "user_id": session.user_id })
-            if (params.is_public) {
-                params.is_public = parse_bool_str(params.is_public)
-            }
-            if (params.invitation_needed) {
-                params.invitation_needed = parse_bool_str(params.invitation_needed)
-            }
             await model.v1.channel.attribute.update(fastify.mongo.db, params)
             res.send({ "success": true })
         } catch (error) {
@@ -159,10 +147,36 @@ module.exports = (fastify, options, next) => {
                 throw new Error("ログインしてください")
             }
             const members = await model.v1.channel.members(fastify.mongo.db, {
-                "id": req.query.channel_id
+                "channel_id": req.query.channel_id
             })
             res.send({ "success": true, members })
         } catch (error) {
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
+    fastify.post("/api/v1/channel/permissions/update", async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            const { allowed } = req.body
+            if (typeof allowed !== "boolean") {
+                throw new Error("allowedを指定してください")
+            }
+            const { channel_id } = req.body
+            await model.v1.channel.permissions.update(fastify.mongo.db, Object.assign({}, req.body, {
+                "channel_id": channel_id,
+                "user_id": session.user_id,
+                "allowed": allowed
+            }))
+
+            const permissions = await api.v1.channel.permissions.get(fastify.mongo.db, {
+                "channel_id": channel_id
+            })
+            res.send({ "success": true })
+        } catch (error) {
+            console.log(error)
             res.send({ "success": false, "error": error.toString() })
         }
     })

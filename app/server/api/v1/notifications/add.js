@@ -6,7 +6,7 @@ export default async (db, params) => {
     const user_id = try_convert_to_object_id(params.user_id, "$user_idが不正です")
     const status_id = try_convert_to_object_id(params.status_id, "$status_idが不正です")
 
-    // typeの値についてはenums参照
+    // typeの値についてはconstants.js参照
     const { type } = params
     assert(is_number(type), "$type must be of type number")
 

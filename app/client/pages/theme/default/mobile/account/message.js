@@ -20,7 +20,7 @@ configure({ "enforceActions": true })
 export default class App extends Component {
     constructor(props) {
         super(props)
-        const { has_newer_statuses, has_older_statuses, statuses, muted_users, muted_words } = props
+        const { has_newer_statuses, has_older_statuses, statuses, muted_users, muted_words, logged_in_user } = props
 
         const timeline_options = new TimelineOptions()
         timeline_options.has_newer_statuses = has_newer_statuses
@@ -42,7 +42,7 @@ export default class App extends Component {
 
         this.timeline = new DirectMessageTimelineStore({
             "recipient_id": recipient.id
-        }, {}, timeline_options)
+        }, {}, timeline_options, logged_in_user)
         this.timeline.setStatuses(statuses)
 
         this.postbox = new PostboxStore({

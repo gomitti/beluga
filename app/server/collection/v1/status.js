@@ -6,6 +6,7 @@ const default_params = {
     "trim_channel": true,
     "trim_recipient": true,
     "trim_favorited_by": true,
+    "trim_reaction_users": true,
     "trim_commenters": true,
 }
 

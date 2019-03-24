@@ -7,6 +7,9 @@ export const is_bool = value => {
     return typeof value === "boolean"
 }
 export const is_object = value => {
+    if (value === null) {
+        return false
+    }
     return typeof value === "object"
 }
 export const is_number = value => {

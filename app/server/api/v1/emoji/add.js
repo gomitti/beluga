@@ -54,16 +54,16 @@ export default async (db, params) => {
 
     const shape = await gm_shape(data)
     if (shape.width < config.emoji.min_size) {
-        throw new Error(`画像の横幅が小さすぎます (${shape.width} < ${config.emoji.min_size})`)
+        throw new Error(`画像の横幅が小さすぎます (${shape.width}px < ${config.emoji.min_size}px)`)
     }
     if (shape.height < config.emoji.min_size) {
-        throw new Error(`画像の縦幅が小さすぎます (${shape.height} < ${config.emoji.min_size})`)
+        throw new Error(`画像の縦幅が小さすぎます (${shape.height}px < ${config.emoji.min_size}px)`)
     }
     if (shape.width > config.emoji.max_size) {
-        throw new Error(`画像の横幅が大きすぎます (${shape.width} > ${config.emoji.max_size})`)
+        throw new Error(`画像の横幅が大きすぎます (${shape.width}px > ${config.emoji.max_size}px)`)
     }
     if (shape.height > config.emoji.max_size) {
-        throw new Error(`画像の縦幅が大きすぎます (${shape.height} > ${config.emoji.max_size})`)
+        throw new Error(`画像の縦幅が大きすぎます (${shape.height}px > ${config.emoji.max_size}px)`)
     }
 
     const directory = `${config.emoji.path}/${community_id}`

@@ -56,7 +56,7 @@ export default class App extends AppComponent {
         return (
             <div className="app channel-settings settings">
                 <Head title={`情報を編集 / 設定 / ${community.name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
-                <NavigationbarComponent logged_in_user={logged_in_user} is_bottom_hidden={true} />
+                <NavigationbarComponent logged_in_user={logged_in_user} />
                 <BannerComponent community={community} channel={channel} />
                 <Toast />
                 <div className="client">

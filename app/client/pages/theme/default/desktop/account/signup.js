@@ -74,7 +74,7 @@ export default class App extends Component {
     render() {
         const { platform } = this.props
         return (
-            <div id="app" className="account">
+            <div className="app account">
                 <Head title={`プロフィール / 設定 / ${config.site.name}`} platform={platform} />
                 <NavigationbarComponent />
                 <div className="account-container">

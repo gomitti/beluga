@@ -1,7 +1,9 @@
 import { Component } from "react"
 import classnames from "classnames"
+import assert, { is_object } from "../../../../../../assert";
 
 const CommunityComponent = ({ community }) => {
+    assert(is_object(community), "$community must be of type object")
     return (
         <div className="community-area">
             <div className="detail">
@@ -15,6 +17,8 @@ const CommunityComponent = ({ community }) => {
                         <div className="inside">
                             <ul className="menu">
                                 <a className="item user-defined-bg-color-hover" href={`/${community.name}/settings/profile`}>コミュニティ設定</a>
+                                <a className="item user-defined-bg-color-hover" href={`/${community.name}/customize/emoji`}>絵文字の追加</a>
+                                <a className="item user-defined-bg-color-hover" href={`/${community.name}/create_new_channel`}>チャンネルの作成</a>
                                 <span className="divider"></span>
                                 <a className="item user-defined-bg-color-hover">{`${community.display_name} から退出する`}</a>
                             </ul>
@@ -27,6 +31,7 @@ const CommunityComponent = ({ community }) => {
 }
 
 const TabMenuComponent = ({ community, active_tab }) => {
+    assert(is_object(community), "$community must be of type object")
     return (
         <div className="tab-menu-area">
             <div className="tab-menu">
@@ -46,7 +51,7 @@ const TabMenuComponent = ({ community, active_tab }) => {
                     "active": active_tab === "members"
                 })} href={`/${community.name}/members`}>
                     <span className="icon members"></span>
-                    <span className="label">メンバー</span>
+                    <span className="label">ユーザー</span>
                 </a>
                 <a className="item border-bottom user-defined-color-active user-defined-border-color-active" href={`/${community.name}/statuses`}>
                     <span className="icon timeline"></span>

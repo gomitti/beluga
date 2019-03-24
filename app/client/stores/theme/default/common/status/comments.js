@@ -8,8 +8,8 @@ export default class CommentsStore {
     @observable.shallow commenters = []
     constructor(status) {
         this.status_id = status.id
-        this.set(status.comments_count, status.commenters || [])
-        if (ws) {		// コミュニティサイドではやる意味がない
+        this.set(status.comments_count, status.commenters)
+        if (ws) {		// サーバーサイドではやる意味がない
             ws.addEventListener("message", event => {
                 const data = JSON.parse(event.data)
                 if (data.status_comments_updated) {

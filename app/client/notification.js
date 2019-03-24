@@ -44,8 +44,12 @@ if (typeof window !== "undefined") {
             return
         }
         const notification = new Notification(title, options)
+        notification.onclick = () => {
+            window.focus()
+            notification.close()
+        }
         setTimeout(notification.close.bind(notification), 5000)
-        
+
         const buffer = window.audio.notification
         if (buffer) {
             const source = context.createBufferSource()

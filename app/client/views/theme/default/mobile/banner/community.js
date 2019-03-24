@@ -5,12 +5,12 @@ export default class HeaderComponent extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            "is_menu_hidde": true
+            "is_menu_hidden": true
         }
     }
     toggleMenu = () => {
         this.setState({
-            "is_menu_hidde": !this.state.is_menu_hidde
+            "is_menu_hidden": !this.state.is_menu_hidden
         })
     }
     render() {
@@ -29,7 +29,7 @@ export default class HeaderComponent extends Component {
                         </div>
                         <div className="dropdown-menu">
                             <span className="icon" onClick={this.toggleMenu}></span>
-                            <div className={classnames("dropdown-component", { "active": !this.state.is_menu_hidde })}>
+                            <div className={classnames("dropdown-component", { "active": !this.state.is_menu_hidden })}>
                                 <div className="inside">
                                     <ul className="menu">
                                         <a className="item user-defined-bg-color-hover" href={`/${community.name}/statuses`}>パブリックタイムライン</a>

@@ -1,5 +1,4 @@
 import classnames from "classnames"
-import Toggle from "react-toggle"
 import { SliderPicker, CirclePicker } from 'react-color'
 import enums from "../../../../../enums"
 import Head from "../../../../../views/theme/default/desktop/head"

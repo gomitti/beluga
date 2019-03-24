@@ -11,7 +11,7 @@ export default class FavoritesStore {
         }
         this.status_id = status.id
         this.parent = parent
-        if (ws) {		// コミュニティサイドではやる意味がない
+        if (ws) {		// サーバーサイドではやる意味がない
             ws.addEventListener("message", (e) => {
                 const data = JSON.parse(e.data)
                 if (data.favorites_updated) {

@@ -343,14 +343,17 @@ class UserStatusComponent extends Component {
     constructor(props) {
         super(props)
         const { logged_in_user } = this.props
-        const shortname = logged_in_user.status_emoji_shortname
         this.state = {
             "selected_emoji": null,
             "text": logged_in_user.status_text
         }
-        if (shortname) {
-            const category = get_category_by_shortname_or_null(shortname)
-            this.state.selected_emoji = { shortname, category }
+        const { profile } = logged_in_user
+        if (profile) {
+            const shortname = profile.status_emoji_shortname
+            if (shortname) {
+                const category = get_category_by_shortname_or_null(shortname)
+                this.state.selected_emoji = { shortname, category }
+            }
         }
     }
     onSelectEmoji = event => {

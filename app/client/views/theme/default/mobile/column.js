@@ -103,7 +103,7 @@ export class ChannelColumnComponent extends ColumnComponent {
         return (
             <div className="column-component rounded-corner timeline">
                 <div className="inside">
-                    <ChannelTimelineHeaderComponent column={column} channel={channel} />
+                    <ChannelTimelineHeaderComponent column={column} channel={channel} community={community} />
                     <JoinChannelComponent is_hidden={this.state.joined} handle_join={this.onJoin} />
                     <div className="contents">
                         <div className="vertical-line"></div>
@@ -131,14 +131,14 @@ export class ChannelColumnComponent extends ColumnComponent {
     }
 }
 
-export class CommunityColumnComponent extends ColumnComponent {
+export class CommunityPublicTimelineColumnComponent extends ColumnComponent {
     render() {
         const { community, column, logged_in_user, pinned_media, recent_uploads, request_query } = this.props
         assert(column.type === enums.column.type.community, "$column.type must be 'community'")
         return (
             <div className="column-component rounded-corner timeline">
                 <div className="inside">
-                    <CommunityTimelineHeaderComponent />
+                    <CommunityTimelineHeaderComponent community={community} />
                     <div className="contents">
                         <div className="vertical-line"></div>
                         <StatusGroupTimelineComponent

@@ -55,6 +55,8 @@ const main = async () => {
         db.collection("access_tokens").createIndex({ "user_id": -1 }, { "unique": true })
         db.collection("user_role").createIndex({ "community_id": -1, "user_id": -1 }, { "unique": true })
         db.collection("kvs").createIndex({ "user_id": -1 })
+        db.collection("channel_permissions").createIndex({ "channel_id": -1 })
+        db.collection("channel_permissions").createIndex({ "channel_id": -1, "role": -1 }, { "unique": true })
 
         db.collection("emojis").createIndex({ "community_id": -1 })
         db.collection("emojis").createIndex({ "added_by": -1 })

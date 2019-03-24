@@ -1,6 +1,5 @@
 import React, { Component } from "react"
 import classnames from "classnames"
-import Toggle from "react-toggle"
 import { observer } from "mobx-react"
 import ws from "../../../../../../websocket"
 import assert, { is_object, is_function } from "../../../../../../assert"
@@ -73,7 +72,7 @@ export default class HeaderComponent extends Component {
                         "hidden": this.state.is_settings_hidden
                     })}>
                         <section>
-                            <label className="form-react-toggle">
+                            <label className="form">
                                 <Toggle onChange={this.toggleNotification} checked={column.settings.desktop_notification_enabled} defaultChecked={column.settings.desktop_notification_enabled} />
                                 <span>デスクトップ通知</span>
                             </label>

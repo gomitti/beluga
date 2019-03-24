@@ -59,6 +59,10 @@
                     content: "\2E53";
                 }
 
+                &.channels::before {
+                    content: "\2006";
+                }
+
                 &.search::before {
                     content: "\2E52";
                 }
@@ -83,5 +87,53 @@
                 text-decoration: none;
             }
         }
+    }
+}
+
+.navigationbar-dropdown-component {
+    position: absolute;
+    top: 100%;
+    padding-top: 6px;
+    width: 60%;
+
+    > .inside {
+        box-shadow: rgba(23, 23, 23, 0.15) 0px 8px 16px;
+        border-radius: 8px;
+        overflow: hidden;
+
+        > .menu {
+            > .item {
+                padding: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: rgb(180, 180, 180);
+                border-bottom: 2px solid rgb(50, 50, 50);
+                font-weight: bold;
+                background-color: rgb(30, 30, 30);
+                transition: all 0.05s ease-out 0s;
+                font-size: 16px;
+
+                &:last-child {
+                    border-bottom: none;
+                }
+
+                &:hover {
+                    background-color: rgb(56, 56, 56);
+                    text-decoration: none;
+                    color: white;
+                }
+            }
+        }
+    }
+
+    &.more {
+        right: 50%;
+        transform: translateX(80%);
+    }
+
+    &.settings {
+        right: 50%;
+        transform: translateX(60%);
     }
 }

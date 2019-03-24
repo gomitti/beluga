@@ -18,7 +18,7 @@ export default class StatusStore {
     @observable favorited = false
     @observable.shallow last_comment = null
 
-    constructor(status) {
+    constructor(status, logged_in_user) {
         for (const key in status) {
             if (key in this) {	// observableなキーを除く
                 continue
@@ -28,9 +28,10 @@ export default class StatusStore {
         if (status.last_comment) {
             this.setLastComment(status.last_comment)
         }
+        this.logged_in_user = logged_in_user
         this.likes = observable(new LikesStore(status))
         this.favorites = observable(new FavoritesStore(status, this))
-        this.reactions = observable(new ReactionsStore(status))
+        this.reactions = observable(new ReactionsStore(status, logged_in_user))
         this.comments = observable(new CommentsStore(status))
         this.favorited = !!status.favorited
         if (ws) {

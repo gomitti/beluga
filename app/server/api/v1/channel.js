@@ -5,5 +5,6 @@ import join from "./channel/join"
 import leave from "./channel/leave"
 import joined from "./channel/joined"
 import attribute from "./channel/attribute"
+import permissions from "./channel/permissions"
 import members from "./channel/members"
-export default { create, show, update, join, leave, joined, attribute, members }
+export default { create, show, update, join, leave, joined, attribute, members, permissions }

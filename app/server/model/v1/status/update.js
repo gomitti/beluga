@@ -5,7 +5,7 @@ import config from "../../../config/beluga"
 import api from "../../../api"
 import memcached from "../../../memcached"
 import assert, { is_string } from "../../../assert"
-import { mentions_type } from "../../../enums"
+import constants from "../../../constants"
 import { try_convert_to_object_id } from "../../../lib/object_id"
 
 // 連投規制用
@@ -170,7 +170,7 @@ const parse_mentions = async (db, text) => {
                 "user_id": user.id,
                 "status_id": status.id,
                 "community_id": community ? community.id : null,
-                "type": mentions_type.reply
+                "type": constants.mention_type.reply
             })
             mentions.push(user)
             memcached.v1.timeline.notifications.flush(user.id)
@@ -217,6 +217,13 @@ export const update_channel = async (db, params) => {
 
     const community = await memcached.v1.community.show(db, { "id": channel.community_id })
     assert(community !== null, "コミュニティが見つかりません")
+
+    const role = await memcached.v1.user.role.get(db, { "user_id": user.id, "community_id": community.id })
+    const permissions = await memcached.v1.channel.permissions.get(db, { "channel_id": channel_id })
+    const role_perms = permissions[role]
+    if (role_perms.update_status !== true){
+        throw new Error("投稿が禁止されています")
+    }
 
     params.community_id = community.id
     params.is_public = !!channel.is_public
@@ -285,6 +292,13 @@ export const update_thread = async (db, params) => {
         const community = await memcached.v1.community.show(db, { "id": channel.community_id })
         assert(community !== null, "コメント先の投稿が属しているコミュニティが見つかりません")
         params.community_id = community.id
+
+        const role = await memcached.v1.user.role.get(db, { "user_id": user.id, "community_id": community.id })
+        const permissions = await memcached.v1.channel.permissions.get(db, { "channel_id": channel_id })
+        const role_perms = permissions[role]
+        if (role_perms.update_status !== true) {
+            throw new Error("リアクションは禁止されています")
+        }
     }
 
     params.is_public = false
@@ -326,7 +340,7 @@ export const update_thread = async (db, params) => {
         "user_id": in_reply_to_status_user.id,
         "status_id": status.id,
         "community_id": params.community_id,
-        "type": mentions_type.comment
+        "type": constants.mention_type.comment
     })
     memcached.v1.timeline.notifications.flush(in_reply_to_status_user.id)
     mentions.push(in_reply_to_status_user)

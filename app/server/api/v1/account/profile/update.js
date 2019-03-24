@@ -14,16 +14,17 @@ export default async (db, params) => {
         user.profile = {}
     }
 
-    const query = {}
-    const profile = Object.assign({
-        "location": "",
-        "description": "",
-        "theme_color": config.user.profile.default_theme_color,
-        "use_background_image": false,
-        "status_emoji_shortname": null,
-        "status_text": null,
-        "tags": []
-    }, user.profile)
+    const query = {
+        "profile": Object.assign({
+            "location": "",
+            "description": "",
+            "theme_color": config.user.profile.default_theme_color,
+            "use_background_image": false,
+            "status_emoji_shortname": null,
+            "status_text": null,
+            "tags": []
+        }, user.profile)
+    }
 
     const { display_name, theme_color, description, location, tags, status_text, status_emoji_shortname } = params
 
@@ -36,7 +37,7 @@ export default async (db, params) => {
 
     if (is_string(theme_color)) {
         if (theme_color.match(/#[0-9a-fA-F]{6}/) || theme_color.match(/#[0-9a-fA-F]{3}/)) {
-            profile.theme_color = theme_color.toLowerCase()
+            query.profile.theme_color = theme_color.toLowerCase()
         }
     }
 
@@ -44,32 +45,29 @@ export default async (db, params) => {
         if (description.length > config.user.profile.max_description_length) {
             throw new Error(`自己紹介を${config.user.profile.max_description_length}文字以内で入力してください。（${description.length} > ${config.user.profile.max_description_length}）`)
         }
-        profile.description = description
+        query.profile.description = description
     }
 
     if (is_string(location)) {
         if (location.length > config.user.profile.max_location_length) {
             throw new Error(`現在位置を${config.user.profile.max_location_length}文字以内で入力してください。（${location.length} > ${config.user.profile.max_location_length}）`)
         }
-        profile.location = location
+        query.profile.location = location
     }
 
     if (is_string(status_emoji_shortname) && status_emoji_shortname.length > 0) {
         if (status_emoji_shortname.length > config.emoji.max_shortname_length) {
             throw new Error(`ステータスの絵文字コードを${config.emoji.max_shortname_length}文字以内で入力してください。（${status_emoji_shortname.length} > ${config.emoji.max_shortname_length}）`)
         }
-        query.status_emoji_shortname = status_emoji_shortname
+        query.profile.status_emoji_shortname = status_emoji_shortname
 
         // 絵文字がない場合ステータスのテキストは設定されない
         if (is_string(status_text)) {
             if (status_text.length > config.user.max_status_text_length) {
                 throw new Error(`ステータスを${config.user.max_status_text_length}文字以内で入力してください。（${status_text.length} > ${config.user.max_status_text_length}）`)
             }
-            query.status_text = status_text
+            query.profile.status_text = status_text
         }
-    } else {
-        query.status_emoji_shortname = null
-        query.status_text = null
     }
 
 
@@ -88,10 +86,8 @@ export default async (db, params) => {
         if (tags.length > config.user.profile.max_num_tags) {
             throw new Error(`タグの個数は${config.user.profile.max_num_tags}までです。（${tags.length} > ${config.user.profile.max_num_tags}）`)
         }
-        profile.tags = tags
+        query.profile.tags = tags
     }
-
-    query.profile = profile
 
     const result = await collection.updateOne({ "_id": user_id }, {
         "$set": query

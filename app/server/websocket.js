@@ -34,7 +34,7 @@ const get_community_name = url => {
     return splits[1]
 }
 
-class OnlineManager {
+class OnlineUserManager {
     constructor() {
         this.users = new Set()
         this.users_on_community = {}
@@ -92,18 +92,18 @@ class WebsocketBridge {
         if (!!community.name === false) {
             return []
         }
-        if (!!(community.name in online.users_on_community) === false) {
+        if (!!(community.name in user_manager.users_on_community) === false) {
             return []
         }
         const user_ids = []
-        for (const user_id in online.users_on_community[community.name]) {	// 辞書なのでキーだけ取り出す
+        for (const user_id in user_manager.users_on_community[community.name]) {	// 辞書なのでキーだけ取り出す
             user_ids.push(user_id)
         }
         return user_ids
     }
 }
 
-const online = new OnlineManager()
+const user_manager = new OnlineUserManager()
 
 const authenticate = async (websocket, headers) => {
     const { access_token, access_token_secret, cookie } = headers
@@ -136,7 +136,7 @@ const update_online_members = () => {
     }
 
     // 全て消去
-    online.clear()
+    user_manager.clear()
 
     // 再追加
     const clients = []
@@ -160,9 +160,9 @@ const update_online_members = () => {
         return 0
     })
     clients.forEach(client => {
-        online.register(client.url, client.user_id)
+        user_manager.register(client.url, client.user_id)
     })
-    broadcast("online_members_changed", { "count": online.total() })		// 全員に通知
+    broadcast("online_members_changed", { "count": user_manager.total() })		// 全員に通知
 }
 
 websocket
@@ -199,7 +199,7 @@ websocket
                 //     this.is_alive = true
                 // })
                 client.on("close", function () {
-                    const did_disappear = online.remove(this.url, this.user_id)	// コミュニティとユーザーの関連付け
+                    const did_disappear = user_manager.remove(this.url, this.user_id)	// コミュニティとユーザーの関連付け
                     if (did_disappear) {
                         update_online_members()
                     }

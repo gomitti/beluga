@@ -7,7 +7,7 @@ export default class LikesStore {
     constructor(status) {
         this.count = parseInt(status.likes_count)
         this.status_id = status.id
-        if (ws) {		// コミュニティサイドではやる意味がない
+        if (ws) {		// サーバーサイドではやる意味がない
             ws.addEventListener("message", (e) => {
                 const data = JSON.parse(e.data)
                 if (data.like_created) {

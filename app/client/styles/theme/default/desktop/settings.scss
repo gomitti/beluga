@@ -768,6 +768,162 @@
     }
 }
 
+.settings-content-component.community-role {
+    position: relative;
+    z-index: 0;
+
+    > .role-component {
+        margin-top: 40px;
+        position: relative;
+
+        > .title {
+            padding: 0px 8px;
+        }
+
+        > .user-list {
+            margin-top: 10px;
+            position: relative;
+
+            .user {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: nowrap;
+                align-items: center;
+                position: relative;
+                padding: 4px 8px;
+                border-radius: 4px;
+
+                > .label-area {
+                    flex: 1 1 auto;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    text-decoration: none;
+                    flex-wrap: nowrap;
+                    height: 36px;
+                    color: black;
+                    position: relative;
+
+                    > .avatar {
+                        width: 30px;
+                        height: 30px;
+                        border-radius: 30px;
+                    }
+
+                    > .name {
+                        font-size: 14px;
+                        font-weight: normal;
+                        color: rgb(120, 120, 120);
+                        margin-left: 4px;
+
+                        &::before {
+                            content: "@";
+                        }
+                    }
+
+                    > .display-name {
+                        font-size: 16px;
+                        font-weight: bold;
+                        margin-left: 10px;
+                    }
+                }
+
+                &:hover {
+                    background-color: rgb(247, 247, 247);
+
+                    > .label-area {
+                        > .display-name {}
+                    }
+
+                    > .menu-area {
+                        > .dropdown-menu {
+                            > .label {
+                                font-weight: bold;
+                            }
+                        }
+                    }
+                }
+
+                > .menu-area {
+                    flex: 0 0 auto;
+                    position: relative;
+
+                    > .dropdown-menu {
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        position: relative;
+                        height: 30px;
+                        color: rgb(0, 0, 0);
+                        cursor: pointer;
+
+                        > .label {
+                            flex: 1 1 auto;
+                            font-size: 14px;
+                            font-weight: normal;
+                        }
+
+                        > .icon {
+                            flex: 0 0 auto;
+                            font-size: 14px;
+                            width: 20px;
+                            text-align: center;
+
+                            &::before {
+                                font-family: Beluga;
+                                content: "\2E66";
+                            }
+                        }
+
+                        > .dropdown-component {
+                            position: absolute;
+                            z-index: 2;
+                            top: 100%;
+                            right: -10px;
+                            display: none;
+                            width: 160px;
+
+                            > .inside {
+                                box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 12px 0 rgba(0, 0, 0, 0.12);
+                                border-radius: 6px;
+                                overflow: hidden;
+                                background-color: rgb(255, 255, 255);
+
+                                > .menu {
+                                    padding: 8px 0;
+
+                                    > .item {
+                                        padding: 8px 0;
+                                        display: flex;
+                                        flex-direction: column;
+                                        justify-content: center;
+                                        text-align: center;
+                                        color: black;
+                                        font-size: 14px;
+                                        font-weight: normal;
+                                        cursor: pointer;
+
+                                        &:hover {
+                                            text-decoration: none;
+                                            color: white;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        &:hover {
+                            > .dropdown-component {
+                                display: block;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 .settings-content-component.channel-access-control {
     > .access-control {
         > .choice {
@@ -933,7 +1089,7 @@
 
                     > .kick-button {
                         flex: 0 0 auto;
-                        font-size: 14px;
+                        font-size: 10px;
                         line-height: 26px;
                         margin-left: 10px;
                         color: rgb(100, 100, 100);
@@ -947,9 +1103,60 @@
                         &::before {
                             font-family: Beluga;
                             content: "\245C";
-                            font-size: 18px;
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+.settings-content-component.channel-permissions {
+    > .role-component-area {
+        > .role-component {
+            margin-top: 40px;
+
+            > .title {
+                font-size: 16px;
+                font-weight: bold;
+            }
+
+            > .permission-list {
+                margin-top: 10px;
+
+                > .item {
+                    margin-top: 20px;
+
+                    > .toggle-button {
+                        font-size: 14px;
+                        font-weight: bold;
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+
+                        > .react-toggle {
+                            flex: 0 0 auto;
+                        }
+
+                        > .label {
+                            flex: 0 0 auto;
+                            margin: 1px 0 0 10px;
+                        }
+                    }
+
+                    > .hint {
+                        font-size: 14px;
+                        color: rgb(140, 140, 140);
+                        margin-top: 10px;
+                    }
+                }
+            }
+
+            &:first-child {
+                margin-top: 20px;
+
+                > .permission-list {
+                    margin-top: 0px;
                 }
             }
         }

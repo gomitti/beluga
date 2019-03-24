@@ -169,6 +169,13 @@ module.exports = (fastify, options, next) => {
 
             const statuses = await timeline.v1.notifications(fastify.mongo.db, assign(req.query, {
                 "user_id": logged_in_user.id,
+                "trim_user": false,
+                "trim_community": false,
+                "trim_channel": false,
+                "trim_favorited_by": false,
+                "trim_recipient": false,
+                "trim_commenters": false,
+                "trim_reaction_users": false,
                 "count": req.query.count ? parseInt(req.query.count) : 30
             }))
 
@@ -234,6 +241,13 @@ module.exports = (fastify, options, next) => {
 
             const statuses = await timeline.v1.message(fastify.mongo.db, assign(req.query, {
                 "recipient_id": recipient.id,
+                "trim_user": false,
+                "trim_community": false,
+                "trim_channel": false,
+                "trim_favorited_by": false,
+                "trim_recipient": false,
+                "trim_commenters": false,
+                "trim_reaction_users": false,
                 "count": req.query.count ? parseInt(req.query.count) : 30
             }))
 

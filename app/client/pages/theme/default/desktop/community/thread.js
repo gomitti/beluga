@@ -1,6 +1,5 @@
 import { configure } from "mobx"
 import classnames from "classnames"
-import enums from "../../../../../enums"
 import assign from "../../../../../libs/assign"
 import assert, { is_object, is_array, is_string } from "../../../../../assert"
 import warning from "../../../../../libs/warning"

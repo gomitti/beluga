@@ -13,6 +13,9 @@ export default ({ active_page, community, channel }) => {
                     <a className="item" href={`/${community.name}/${channel.name}/settings/access_control`}>
                         <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "access_control" })}>アクセスコントロール</span>
                     </a>
+                    <a className="item" href={`/${community.name}/${channel.name}/settings/permissions`}>
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "permissions" })}>役職の権限</span>
+                    </a>
                     <a className="item" href={`/${community.name}/${channel.name}/settings/kick`}>
                         <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "kick" })}>キック</span>
                     </a>

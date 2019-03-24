@@ -14,6 +14,6 @@ const register_flush_func = target => {
 }
 
 export default register_flush_func(async (db, params) => {
-    const channel_id = try_convert_to_hex_string(params.id, "$idを指定してください")
+    const channel_id = try_convert_to_hex_string(params.channel_id, "$channel_idを指定してください")
     return await memcached.fetch(channel_id, db, params)
 })

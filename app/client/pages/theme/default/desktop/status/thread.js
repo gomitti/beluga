@@ -28,7 +28,7 @@ const do_nothing = () => true
 export default class App extends Component {
     constructor(props) {
         super(props)
-        const { has_newer_statuses, has_older_statuses, statuses, muted_users, muted_words } = props
+        const { has_newer_statuses, has_older_statuses, statuses, muted_users, muted_words, logged_in_user } = props
 
         const timeline_options = new TimelineOptions()
         timeline_options.has_newer_statuses = has_newer_statuses
@@ -49,7 +49,7 @@ export default class App extends Component {
         const { in_reply_to_status } = this.props
         this.timeline = new ThreadTimelineStore({
             "in_reply_to_status_id": in_reply_to_status.id
-        }, {}, timeline_options)
+        }, {}, timeline_options, logged_in_user)
         this.timeline.setStatuses(statuses)
 
         this.postbox = new PostboxStore({
@@ -66,7 +66,7 @@ export default class App extends Component {
             <div className="app">
                 <Head title={title} platform={platform} logged_in_user={logged_in_user} device={device} />
                 <NavigationbarComponent logged_in_user={logged_in_user} />
-                <div className="client timeline channel tooltip-offset-base emoji-picker-offset-base logged_in_user">
+                <div className="client tooltip-offset-base emoji-picker-offset-base logged_in_user">
                     <div className="inside">
                         <div className="column-component timeline">
                             <div className="inside round">

@@ -1,5 +1,4 @@
 import { Component } from "react"
-import { configure } from "mobx"
 import classnames from "classnames"
 import ReactCrop, { makeAspectCrop } from "react-image-crop"
 import Head from "../../../../../../views/theme/default/desktop/head"
@@ -11,9 +10,6 @@ import { request } from "../../../../../../api"
 import AppComponent from "../../../../../../views/app"
 import Toast from "../../../../../../views/theme/default/desktop/toast"
 import { LoadingButton } from "../../../../../../views/theme/default/desktop/button"
-
-// mobxの状態をaction内でのみ変更可能にする
-configure({ "enforceActions": true })
 
 class ProfileComponent extends Component {
     constructor(props) {
@@ -116,7 +112,7 @@ class AvatarComponent extends Component {
         const { profile_image_size } = this.props
         const size = Math.min(image.naturalWidth, image.naturalHeight)
         if (size < profile_image_size) {
-            alert(`画像サイズが小さすぎます。（${image.naturalWidth}x${image.naturalHeight} < ${profile_image_size}x${profile_image_size}）`)
+            Toast.push(`画像サイズが小さすぎます。（${image.naturalWidth}x${image.naturalHeight} < ${profile_image_size}x${profile_image_size}）`, false)
         }
         const crop = makeAspectCrop(
             {
@@ -160,7 +156,7 @@ class AvatarComponent extends Component {
         const scale = original_width / scaled_width
         const square_width = crop.width / 100.0 * scaled_width * scale	// crop.widthは%
         if (square_width < profile_image_size) {
-            alert(`切り抜き後のサイズが小さすぎます。（${Math.floor(square_width)} < ${profile_image_size}）`)
+            Toast.push(`切り抜き後のサイズが小さすぎます。（${Math.floor(square_width)} < ${profile_image_size}）`, false)
             return
         }
         console.log("scale:", scale)
@@ -187,7 +183,7 @@ class AvatarComponent extends Component {
     }
     crop = () => {
         if (this.state.is_crop_ready === false) {
-            alert("画像を選択してください")
+            Toast.push("画像を選択してください", false)
             return
         }
         if (this.state.update_in_progress === true) {
@@ -239,9 +235,9 @@ class AvatarComponent extends Component {
             })
             .then(res => {
                 const data = res.data
-                const { avatar_url, success } = data
+                const { avatar_url, success, error } = data
                 if (success == false) {
-                    alert(data.error)
+                    Toast.push(error, false)
                 } else {
                     community.avatar_url = avatar_url
                     this.setState({ "preview_src": avatar_url })
@@ -268,13 +264,13 @@ class AvatarComponent extends Component {
             const src = reader.result
             const component = src.split(";")
             if (component.length !== 2) {
-                alert("問題が発生しました。ブラウザを変えると解消する可能性があります。")
+                Toast.push("問題が発生しました。ブラウザを変えると解消する可能性があります。", false)
                 return
             }
             const extension = component[0].replace("data:", "")
             const allowed_extensions = ["image/jpeg", "image/png"]
             if (!!(allowed_extensions.includes(extension)) === false) {
-                alert("この拡張子には対応していません")
+                Toast.push("この拡張子には対応していません", false)
                 return
             }
             this.setState({ src, extension })
@@ -340,7 +336,7 @@ export default class App extends AppComponent {
             <div className="app community-settings settings">
                 <Head title={`プロフィール / 設定 / ${community.name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} />
                 <NavigationbarComponent logged_in_user={logged_in_user} is_bottom_hidden={true} />
-                <BannerComponent community={community} />
+                <BannerComponent title="設定" community={community} />
                 <Toast />
                 <div className="client">
                     <div className="inside">

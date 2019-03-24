@@ -1,82 +1,120 @@
-// .column-component {
-//     background-color: white;
-//     margin-bottom: 10px;
-
-//     > .content {
-//         padding: 20px;
-//         border-top: 1px solid rgb(238, 238, 238);
-
-//         > .title {
-//             font-size: 15px;
-//             font-weight: bold;
-//             color: rgb(20, 20, 20);
-//             padding: 0;
-//             margin: 0;
-//             margin-bottom: 10px;
-//         }
-//     }
-// }
-
 .column-component.custom-emoji-list {
     > .content {
         padding: 10px 20px;
     }
 }
 
-.column.customize-emoji {
-    flex: 0 1 360px;
-    width: 360px;
-}
-
-.settings-component.customize-emoji {
-    width: 100%;
-
-    > .item {
-        .image-input {
-            margin-top: 10px;
+.app.community-customize-emoji {
+    > .client {
+        > .inside {
+            width: 400px;
+            margin: 0 auto;
         }
     }
 }
 
-.custom-emoji-list-area {
-    > ul {
-        > .item {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            border-bottom: 1px solid rgb(220, 220, 220);
-            padding: 6px 0;
+.column-component.community-customize-emoji-form {
+    margin: 0;
 
-            &:last-child {
-                border: none;
-            }
+    > .inside {
+        padding: 20px;
 
-            > .image-area {
-                width: 50px;
-                flex: 0 0 auto;
+        > .settings-content-component {
+            width: 100%;
 
-                > .image {
-                    width: 30px;
-                    height: 30px;
+            > .item {
+                > .title {
+                    margin-bottom: 5px;
+                }
+
+                &.upload-image {
+                    > .dialog-area {
+                        display: flex;
+                        flex-direction: row;
+                        margin-top: 10px;
+
+                        > .image-area {
+                            flex: 0 0 auto;
+                            width: 46px;
+                            height: 46px;
+                            position: relative;
+                            box-sizing: border-box;
+                            border-radius: 3px;
+                            border: 1px solid rgb(220, 220, 220);
+
+                            > .image {
+                                position: absolute;
+                                top: 50%;
+                                right: 50%;
+                                transform: translateX(50%) translateY(-50%);
+                                width: 30px;
+                                height: 30px;
+                            }
+                        }
+
+                        > .form-area {
+                            flex: 1 1 auto;
+                            margin-left: 10px;
+
+                            > .hint {
+                                color: rgb(160, 160, 160);
+                                text-align: right;
+                                margin-top: 6px;
+                                font-size: 12px;
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+}
 
-            > .shortname-area {
-                flex: 1 1 auto;
-                word-wrap: break-word;
-                margin-right: 5px;
-                font-size: 15px;
-            }
+.column-component.community-customize-emoji-list {
+    margin: 10px 0 0 0;
 
-            > .actions-area {
-                flex: 0 1 auto;
+    > .inside {
+        padding: 10px 20px;
+
+        > .emoji-list {
+            > .item {
                 display: flex;
                 flex-direction: row;
                 align-items: center;
+                border-bottom: 1px solid rgb(220, 220, 220);
+                padding: 6px 0;
 
-                > .remove-link {
+                &:last-child {
+                    border: none;
+                }
+
+                > .image-area {
+                    width: 50px;
+                    flex: 0 0 auto;
+
+                    > .image {
+                        width: 30px;
+                        height: 30px;
+                    }
+                }
+
+                > .shortname-area {
+                    flex: 1 1 auto;
+                    word-wrap: break-word;
+                    margin-right: 5px;
+                    font-size: 15px;
+                }
+
+                > .actions-area {
                     flex: 0 1 auto;
-                    font-size: 14px;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+
+                    > .remove-link {
+                        flex: 0 1 auto;
+                        font-size: 14px;
+                    }
                 }
             }
         }

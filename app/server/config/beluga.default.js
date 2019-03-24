@@ -72,17 +72,9 @@ export default {
             "default_theme_color": "#477da7"
         },
     },
-    "role": {
-        "number": {
-            "admin": 3,
-            "moderator": 2,
-            "member": 1,
-            "guest": 0
-        }
-    },
     "channel": {
         "reserved_names": ["create_new_channel"],
-        "max_name_length": 100			// UTF16基準なので注意。サロゲートペアは2文字扱いになる
+        "max_name_length": 100,			// UTF16基準なので注意。サロゲートペアは2文字扱いになる
     },
     "community": {
         "name_regexp": "[a-zA-Z0-9_]+",

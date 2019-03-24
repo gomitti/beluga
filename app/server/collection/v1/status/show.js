@@ -7,7 +7,7 @@ export default async (db, params) => {
         return status
     }
     if (params.trim_user === false) {
-        const user = await model.v1.user.show(db, { "id": status.user_id })
+        const user = await model.v1.user.show(db, { "id": status.user_id, "trim_profile": false })
         if (user === null) {
             return null
         }
@@ -38,6 +38,17 @@ export default async (db, params) => {
         const last_comment = await model.v1.status.show(db, { "id": status.last_comment_status_id })
         if (last_comment) {
             status.last_comment = last_comment
+        }
+    }
+    if (params.trim_reaction_users === false) {
+        for (let j = 0; j < status.reactions.length; j++) {
+            const reaction = status.reactions[j]
+            const { user_id } = reaction
+            const user = await model.v1.user.show(db, { "id": user_id, "trim_profile": true })
+            if (user === null) {
+                continue
+            }
+            reaction.user = user
         }
     }
     return status

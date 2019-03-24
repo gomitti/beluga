@@ -80,6 +80,25 @@ const MoreMenuItem = ({ handle_close, handle_expand }) => {
     )
 }
 
+const LabelComponent = ({ community, channel }) => {
+    if (!!community === false) {
+        return null
+    }
+    if (!!channel === false) {
+        return null
+    }
+    return (
+        <div className="label-area thread">
+            <span className="label">スレッド</span>
+            <span className="divider"></span>
+            <a className="link" href={`/${community.name}/${channel.name}`}>
+                <span className="icon channel"></span>
+                <span className="label">{channel.name}</span>
+            </a>
+        </div>
+    )
+}
+
 export default class HeaderComponent extends Component {
     constructor(props) {
         super(props)
@@ -92,14 +111,7 @@ export default class HeaderComponent extends Component {
         return (
             <div className="timeline-header-component">
                 <div className="inside">
-                    <div className="label-area thread">
-                        <span className="label">スレッド</span>
-                        <span className="divider"></span>
-                        <a className="link" href={`/${community.name}/${channel.name}`}>
-                            <span className="icon channel"></span>
-                            <span className="label">{channel.name}</span>
-                        </a>
-                    </div>
+                    <LabelComponent channel={channel} community={community} />
                     <div className="menu">
                         <NotificationMenuItem timeline={timeline} />
                         <MoreMenuItem handle_close={handle_close} handle_expand={handle_expand} />

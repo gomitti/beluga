@@ -7,4 +7,5 @@ import profile from "./community/profile"
 import joined from "./community/joined"
 import join from "./community/join"
 import members from "./community/members"
-export default { create, show, destroy, avatar, channels, profile, joined, join, members }
+import permissions from "./community/permissions"
+export default { create, show, destroy, avatar, channels, profile, joined, join, members, permissions }

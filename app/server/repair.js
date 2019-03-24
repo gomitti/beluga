@@ -1,5 +1,5 @@
 import mongo from "./mongo"
-import config from "./config/beluga"
+import constants from "./constants"
 const MongoClient = require("mongodb").MongoClient
 
 const main = async () => {
@@ -115,7 +115,7 @@ const main = async () => {
                 try {
                     const ret = await db.collection("user_role").updateOne(
                         { user_id, community_id },
-                        { "$set": { "role": config.role.number.admin } },
+                        { "$set": { "role": constants.role.admin } },
                         { "upsert": true })
                 } catch (error) {
                     console.log(error)

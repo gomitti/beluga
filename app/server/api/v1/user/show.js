@@ -27,7 +27,7 @@ const build_query = params => {
     if (params.id) {
         return build_query_by_id(params)
     }
-    if (params.name) {
+    if (typeof params.name === "string") {
         return build_query_by_name(params)
     }
     throw new Error("パラメータを指定してください")

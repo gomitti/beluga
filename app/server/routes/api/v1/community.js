@@ -2,6 +2,7 @@ import model from "../../../model"
 import memcached from "../../../memcached"
 import api from "../../../api"
 import storage from "../../../config/storage"
+import constants from "../../../constants"
 
 module.exports = (fastify, options, next) => {
     // オンラインのユーザーを取得
@@ -26,8 +27,8 @@ module.exports = (fastify, options, next) => {
     })
     fastify.post("/api/v1/community/create", async (req, res) => {
         // トランザクション
-        const session = fastify.mongo.client.startSession()
-        session.startTransaction()
+        const mongodb_session = fastify.mongo.client.startSession()
+        mongodb_session.startTransaction()
         try {
             const session = await fastify.authenticate(req, res)
             if (session.user_id === null) {
@@ -35,23 +36,23 @@ module.exports = (fastify, options, next) => {
             }
             const params = Object.assign({ "user_id": session.user_id }, req.body)
             const community = await model.v1.community.create(fastify.mongo.db, params)
-            await unko.v1.user.role.update(fastify.mongo.db,
-                {
-                    "community_id": community.id,
-                    "user_id": session.user_id,
-                    "role": config.role.number.admin
-                }
-            )
-            await model.v1.community.join(fastify.mongo.fastify.mongo.db,
+
+            await api.v1.user.role.update(fastify.mongo.db, {
+                "user_id": session.user_id,
+                "community_id": community.id,
+                "role": constants.role.admin,
+            })
+            memcached.v1.user.role.get.flush(community.id, session.user_id)
+            await model.v1.community.join(fastify.mongo.db,
                 { "community_id": community.id, "user_id": session.user_id }
             )
-            await session.commitTransaction();
-            session.endSession()
+            await mongodb_session.commitTransaction()
+            mongodb_session.endSession()
             res.send({ "success": true, community })
         } catch (error) {
             console.log(error)
-            await session.abortTransaction();
-            session.endSession()
+            await mongodb_session.abortTransaction()
+            mongodb_session.endSession()
             res.send({ "success": false, "error": error.toString() })
         }
     })
@@ -77,11 +78,16 @@ module.exports = (fastify, options, next) => {
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            const community = await memcached.v1.community.show(fastify.mongo.db, { "id": req.query.id, "name": req.query.name })
+            const { community_id, community_name } = req.query
+            const community = await memcached.v1.community.show(fastify.mongo.db, {
+                "id": community_id, "name": community_name
+            })
             if (community === null) {
                 throw new Error("コミュニティが見つかりません")
             }
-            const members = await model.v1.community.members(fastify.mongo.db, { "community_id": community.id })
+            const members = await model.v1.community.members(fastify.mongo.db, {
+                "community_id": community.id
+            })
             res.send({ "success": true, members })
         } catch (error) {
             console.log(error)
@@ -94,7 +100,10 @@ module.exports = (fastify, options, next) => {
             if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-            const community = await memcached.v1.community.show(fastify.mongo.db, { "name": req.query.name })
+            const { community_id, community_name } = req.query
+            const community = await memcached.v1.community.show(fastify.mongo.db, {
+                "id": community_id, "name": community_name
+            })
             if (community === null) {
                 throw new Error("コミュニティが見つかりません")
             }
@@ -108,25 +117,13 @@ module.exports = (fastify, options, next) => {
     fastify.post("/api/v1/community/avatar/reset", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            const { user_id } = session
-            if (!!user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-
-            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
-            if (user === null) {
-                throw new Error("ユーザーが見つかりません")
-            }
-
-            const community = await memcached.v1.community.show(fastify.mongo.db, { "id": req.body.community_id })
-            if (community === null) {
-                throw new Error("コミュニティが見つかりません")
-            }
-
             const remote = storage.servers[0]
             const url = await model.v1.community.avatar.reset(fastify.mongo.db, {
-                "community_id": community.id,
-                "user_id": user.id,
+                "community_id": req.body.community_id,
+                "user_id": session.user_id,
                 "storage": remote
             })
             res.send({ "success": true, "avatar_url": url })
@@ -138,34 +135,23 @@ module.exports = (fastify, options, next) => {
     fastify.post("/api/v1/community/avatar/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            const { user_id } = session
-            if (!!user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-
-            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
-            if (user === null) {
-                throw new Error("ユーザーが見つかりません")
-            }
-
-            if (!!req.body.data === false || typeof req.body.data !== "string") {
+            const { community_id, data } = req.body
+            if (typeof data !== "string") {
                 throw new Error("画像がありません")
             }
 
-            const community = await memcached.v1.community.show(fastify.mongo.db, { "id": req.body.community_id })
-            if (community === null) {
-                throw new Error("コミュニティが見つかりません")
-            }
-
-            const base64_components = req.body.data.split(",")
-            const base64_data = base64_components.length == 2 ? base64_components[1] : req.body.data
-            const data = new Buffer(base64_data, "base64");
+            const base64_components = data.split(",")
+            const base64_data = base64_components.length == 2 ? base64_components[1] : data
+            const buffer = new Buffer(base64_data, "base64");
 
             const remote = storage.servers[0]
             const url = await model.v1.community.avatar.update(fastify.mongo.db, {
-                data,
-                "community_id": community.id,
-                "user_id": user.id,
+                "data": buffer,
+                "community_id": community_id,
+                "user_id": session.user_id,
                 "storage": remote
             })
             res.send({ "success": true, "avatar_url": url })
@@ -177,27 +163,16 @@ module.exports = (fastify, options, next) => {
     fastify.post("/api/v1/community/profile/update", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)
-            const { user_id } = session
-            if (!!user_id === false) {
+            if (session.user_id === null) {
                 throw new Error("ログインしてください")
             }
-
-            const user = await memcached.v1.user.show(fastify.mongo.db, { "id": user_id })
-            if (user === null) {
-                throw new Error("ユーザーが見つかりません")
-            }
-
-            const community = await memcached.v1.community.show(fastify.mongo.db, { "id": req.body.community_id })
-            if (community === null) {
-                throw new Error("コミュニティが見つかりません")
-            }
-
+            const { community_id } = req.body
             await model.v1.community.profile.update(fastify.mongo.db, Object.assign({}, req.body, {
-                "community_id": community.id,
-                "user_id": user.id
+                "community_id": community_id,
+                "user_id": session.user_id
             }))
 
-            const updated_community = await model.v1.community.show(fastify.mongo.db, { "id": community.id })
+            const updated_community = await model.v1.community.show(fastify.mongo.db, { "id": community_id })
             res.send({ "success": true, "community": updated_community })
         } catch (error) {
             console.log(error)
@@ -212,6 +187,31 @@ module.exports = (fastify, options, next) => {
             }
             await model.v1.community.join(fastify.mongo.db, { "community_id": community.id, "user_id": session.user_id })
             res.send({ "success": true, community })
+        } catch (error) {
+            console.log(error)
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
+    fastify.post("/api/v1/community/permissions/update", async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            const { user_id } = session
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            const { allowed, community_id } = req.body
+            if (typeof allowed !== "boolean") {
+                throw new Error("allowedを指定してください")
+            }
+            await model.v1.community.permissions.update(fastify.mongo.db, Object.assign({}, req.body, {
+                "community_id": community_id,
+                "user_id": session.user_id,
+                "allowed": allowed
+            }))
+            const permissions = await api.v1.community.permissions.get(fastify.mongo.db, {
+                "community_id": community_id
+            })
+            res.send({ "success": true })
         } catch (error) {
             console.log(error)
             res.send({ "success": false, "error": error.toString() })

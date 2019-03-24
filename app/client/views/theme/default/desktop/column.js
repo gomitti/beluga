@@ -247,11 +247,14 @@ export class MultipleColumnsContainerComponent extends Component {
         assert(is_object(params), "$params must be of type object")
         assert(column_options instanceof ColumnOptions, "$column_options must be an instance of ColumnOptions")
         assert(column_settings instanceof ColumnSettings, "$column_settings must be an instance of ColumnSettings")
+        assert(is_array(muted_users), "$muted_users must be of type array")
+        assert(is_array(muted_words), "$muted_words must be of type array")
         assert(is_array(initial_statuses), "$initial_statuses must be of type array")
         assert(is_number(insert_position), "$insert_position must be of type number")
+        const { logged_in_user } = this.props
         const settings = get_desktop_settings()
         target = target || settings.new_column_target
-        const column = new ColumnStore(target, column_settings, muted_users, muted_words)
+        const column = new ColumnStore(target, column_settings, muted_users, muted_words, logged_in_user)
         column.push(type, params, column_options, initial_statuses)
         if (insert_position === -1) {
             this.columns.push(column)
@@ -327,8 +330,8 @@ export class MultipleColumnsContainerComponent extends Component {
             }
 
             // 新しいカラムを作る
-            const { muted_users, muted_words } = this.props
-            const column = new ColumnStore(target, column_settings, muted_users, muted_words)
+            const { muted_users, muted_words, logged_in_user } = this.props
+            const column = new ColumnStore(target, column_settings, muted_users, muted_words, logged_in_user)
             column.push(type, params, column_options, initial_statuses)
 
             if (this.columns.length === 0) {
@@ -544,6 +547,7 @@ export class MultipleColumnsContainerComponent extends Component {
                 "trim_channel": false,
                 "trim_recipient": false,
                 "trim_favorited_by": false,
+                "trim_reaction_users": false,
                 "trim_commenters": false
             })
             .then(res => {

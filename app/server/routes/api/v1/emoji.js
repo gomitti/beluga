@@ -1,11 +1,28 @@
 import model from "../../../model"
+import memcached from "../../../memcached"
 import config from "../../../config/beluga"
 import assign from "../../../lib/assign";
+import assert, { is_object } from "../../../assert"
 
 module.exports = (fastify, options, next) => {
     fastify.register(require("fastify-multipart"), {
         "limits": {
             "fileSize": config.emoji.max_filesize,
+        }
+    })
+    fastify.get("/api/v1/emoji/list", async (req, res) => {
+        try {
+            const { community_id } = req.query
+            const custom_emoji_list = await memcached.v1.emoji.list(fastify.mongo.db, { community_id })
+            for (let j = 0; j < custom_emoji_list.length; j++) {
+                const emoji = custom_emoji_list[j]
+                const user = await memcached.v1.user.show(fastify.mongo.db, { "id": emoji.added_by })
+                assert(is_object(user), "$user must be of type object")
+                emoji.user = user
+            }
+            res.send({ "success": true, "custom_emoji_list": custom_emoji_list })
+        } catch (error) {
+            res.send({ "success": false, "error": error.toString() })
         }
     })
     fastify.post("/api/v1/emoji/remove", async (req, res) => {
@@ -74,6 +91,7 @@ module.exports = (fastify, options, next) => {
                         "shortname": shortname
                     })
                     fastify.websocket_broadcast("emoji_added", { shortname })
+                    memcached.v1.emoji.list.flush(community_id)
                     res.send({ "success": true })
                 } catch (error) {
                     res.send({ "success": false, "error": error.toString() })

@@ -296,10 +296,10 @@ export default class PostboxComponent extends Component {
                                     <Button className={classnames("action-button media-pinned user-defined-color-active", {
                                         "active": this.state.show_pinned_media
                                     })} onClick={this.onClickActionPinnedMedia}></Button>
-                                    <Button className="action-button emoji user-defined-color-active"
-                                        onClick={this.onClickActionEmoji}></Button>
                                 </div>
                                 <div className="button-group">
+                                    <Button className="action-button emoji user-defined-color-active"
+                                        onClick={this.onClickActionEmoji}></Button>
                                     <Button className={classnames("action-button preview user-defined-color-active", {
                                         "active": this.state.show_preview
                                     })} onClick={this.onClickActionPreview}></Button>

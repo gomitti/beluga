@@ -29,10 +29,14 @@ export class StatusHeaderDisplayNameComponent extends Component {
 export class StatusHeaderUserStatusComponent extends Component {
     render() {
         const { user } = this.props
-        if (is_string(user.status_emoji_shortname) === false) {
+        const { profile } = user
+        if (!!profile === false) {
             return null
         }
-        const image_url = get_image_url_by_shortname_or_null(user.status_emoji_shortname, null)
+        if (is_string(profile.status_emoji_shortname) === false) {
+            return null
+        }
+        const image_url = get_image_url_by_shortname_or_null(profile.status_emoji_shortname, null)
         if (image_url === null) {
             return null
         }

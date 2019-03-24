@@ -53,7 +53,7 @@ export default class App extends Component {
             platform, device } = this.props
         return (
             <div className="app community-detail">
-                <Head title={`メンバー / ${community.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} device={device} />
+                <Head title={`ユーザー / ${community.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} device={device} />
                 <NavigationbarComponent logged_in_user={logged_in_user} active="members" />
                 <div className="client">
                     <div className="inside">

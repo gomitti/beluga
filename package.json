@@ -10,7 +10,7 @@
         "build_sass": "sh ./build_sass.sh",
         "watch_sass_desktop": "node-sass app/client/styles/theme/default/desktop/style.scss www/css/theme/default/desktop/style.css --watch  --output-style compressed",
         "watch_sass_mobile": "node-sass app/client/styles/theme/default/mobile/style.scss www/css/theme/default/mobile/style.css --watch  --output-style compressed",
-        "start": "env NODE_ENV=production node --expose-gc --inspect www/app.js",
+        "start": "env NODE_ENV=production node www/app.js",
         "next": "env NODE_ENV=production next start www/next/app.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },

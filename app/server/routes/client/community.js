@@ -1,4 +1,5 @@
 import config from "../../config/beluga"
+import constants from "../../constants"
 import api from "../../api"
 import model from "../../model"
 import memcached from "../../memcached"
@@ -16,6 +17,13 @@ const compare_shortname = (a, b) => {
         return 1
     }
     return 0
+}
+
+const map_role_number = {
+    "admin": constants.role.admin,
+    "moderator": constants.role.moderator,
+    "member": constants.role.member,
+    "guest": constants.role.guest,
 }
 
 module.exports = (fastify, options, next) => {
@@ -99,16 +107,16 @@ module.exports = (fastify, options, next) => {
             const menber_users = []
             const guest_users = []
             all_users.forEach(user => {
-                if (user.role === config.role.number.admin) {
+                if (user.role === constants.role.admin) {
                     return admin_users.push(user)
                 }
-                if (user.role === config.role.number.moderator) {
+                if (user.role === constants.role.moderator) {
                     return moderator_users.push(user)
                 }
-                if (user.role === config.role.number.member) {
+                if (user.role === constants.role.member) {
                     return menber_users.push(user)
                 }
-                if (user.role === config.role.number.guest) {
+                if (user.role === constants.role.guest) {
                     return guest_users.push(user)
                 }
             })
@@ -309,7 +317,11 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 404)
         }
 
-        if (logged_in_user.id.equals(community.created_by) === false) {
+        const role = await memcached.v1.user.role.get(fastify.mongo.db, {
+            "user_id": logged_in_user.id,
+            "community_id": community.id
+        })
+        if (role !== constants.role.admin && role !== constants.role.moderator) {
             return fastify.error(app, req, res, 404)
         }
 
@@ -319,6 +331,73 @@ module.exports = (fastify, options, next) => {
             csrf_token, profile_image_size, logged_in_user, device, community,
             "platform": fastify.platform(req),
         })
+    })
+    fastify.next("/:community_name/settings/role", async (app, req, res) => {
+        const session = await fastify.session.start(req, res)
+        const csrf_token = await fastify.csrf_token(req, res, session)
+        const logged_in_user = await fastify.logged_in_user(req, res, session)
+        if (logged_in_user === null) {
+            return fastify.error(app, req, res, 404)
+        }
+
+        const { community_name } = req.params
+        const community = await model.v1.community.show(fastify.mongo.db, { "name": community_name })
+        if (community === null) {
+            return fastify.error(app, req, res, 404)
+        }
+
+        const role = await memcached.v1.user.role.get(fastify.mongo.db, {
+            "user_id": logged_in_user.id,
+            "community_id": community.id
+        })
+        if (role !== constants.role.admin && role !== constants.role.moderator) {
+            return fastify.error(app, req, res, 404)
+        }
+
+        const members = await model.v1.community.members(fastify.mongo.db, { "community_id": community.id })
+
+        const profile_image_size = config.community.profile.image_size
+        const device = fastify.device(req)
+        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/community/settings/role`, {
+            csrf_token, profile_image_size, logged_in_user, device, community, members, map_role_number,
+            "platform": fastify.platform(req),
+        })
+    })
+    fastify.next("/:community_name/settings/permissions", async (app, req, res) => {
+        try {
+            const session = await fastify.session.start(req, res)
+            const csrf_token = await fastify.csrf_token(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
+            if (logged_in_user === null) {
+                return fastify.error(app, req, res, 404)
+            }
+    
+            const { community_name } = req.params
+            const community = await model.v1.community.show(fastify.mongo.db, { "name": community_name })
+            if (community === null) {
+                return fastify.error(app, req, res, 404)
+            }
+    
+            const role = await memcached.v1.user.role.get(fastify.mongo.db, {
+                "user_id": logged_in_user.id,
+                "community_id": community.id
+            })
+            if (role !== constants.role.admin && role !== constants.role.moderator) {
+                return fastify.error(app, req, res, 404)
+            }
+    
+            const permissions = await memcached.v1.community.permissions.get(fastify.mongo.db, {
+                "community_id": community.id
+            })
+    
+            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/community/settings/permissions`, {
+                csrf_token, community, logged_in_user, map_role_number, permissions,
+                "platform": fastify.platform(req),
+            })
+        } catch (error) {
+            console.log(error)
+            return fastify.error(app, req, res, 500)
+        }
     })
     fastify.next("/:community_name/create_new_channel", async (app, req, res) => {
         const session = await fastify.session.start(req, res)

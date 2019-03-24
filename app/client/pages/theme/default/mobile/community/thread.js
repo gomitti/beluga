@@ -2,7 +2,6 @@ import { configure } from "mobx"
 import NavigationbarComponent from "../../../../../views/theme/default/mobile/navigationbar"
 import ColumnStore from "../../../../../stores/theme/default/mobile/column"
 import { ThreadColumnComponent } from "../../../../../views/theme/default/mobile/column"
-import CommunityHeaderComponent from "../../../../../views/theme/default/mobile/banner/community"
 import Head from "../../../../../views/theme/default/mobile/head"
 import config from "../../../../../beluga.config"
 import assert, { is_object, is_string, is_array } from "../../../../../assert"
@@ -16,7 +15,7 @@ configure({ "enforceActions": true })
 export default class App extends Component {
     constructor(props) {
         super(props)
-        const { columns, request_query, custom_emoji_shortnames,
+        const { columns, request_query, custom_emoji_shortnames, logged_in_user,
             muted_users, muted_words, has_newer_statuses, has_older_statuses } = props
         assert(is_array(columns), "$columns must be of type array or null")
         assert(columns.length > 0, "$columns.length must be at least 1 ")
@@ -41,7 +40,7 @@ export default class App extends Component {
         column_options.timeline.muted_users = muted_users
         column_options.timeline.muted_words = muted_words
 
-        this.column = new ColumnStore(type, params, column_options, statuses)
+        this.column = new ColumnStore(type, params, column_options, statuses, logged_in_user)
     }
     render() {
         const { in_reply_to_status, community, logged_in_user, platform, device, pinned_emoji_shortnames, custom_emoji_shortnames } = this.props
@@ -52,7 +51,6 @@ export default class App extends Component {
                 <Head title={`${title} / ${community.display_name} / ${config.site.name}`} platform={platform} logged_in_user={logged_in_user} device={device} />
                 <NavigationbarComponent logged_in_user={logged_in_user} />
                 <div className="client">
-                    <CommunityHeaderComponent community={community} />
                     <ThreadColumnComponent {...this.props} column={this.column} />
                 </div>
                 <EmojiPicker

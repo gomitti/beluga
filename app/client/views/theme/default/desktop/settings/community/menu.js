@@ -12,6 +12,9 @@ export default ({ active_page, community }) => {
                     <a className="item" href={`/${community.name}/settings/role`}>
                         <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "role" })}>役職</span>
                     </a>
+                    <a className="item" href={`/${community.name}/settings/permissions`}>
+                        <span className={classnames("user-defined-color-hover user-defined-color-active label user-defined-border-color-active", { "active": active_page === "permissions" })}>役職の権限</span>
+                    </a>
                 </ul>
             </div>
         </div>

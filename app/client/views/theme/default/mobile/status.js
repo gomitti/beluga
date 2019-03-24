@@ -142,7 +142,7 @@ export default class StatusComponent extends Component {
             )
         })
         return (
-            <div className="status-favofites bar">
+            <div className="status-favofites detail-row">
                 <div className="users">
                     {userViews}
                 </div>
@@ -174,7 +174,7 @@ export default class StatusComponent extends Component {
             preview_text = preview_text.substr(0, 100)
         }
         return (
-            <a onClick={event => handle_click_thread(event, status.id)} className="status-body-commenters bar" href={`/thread/${status.id}`}>
+            <a onClick={event => handle_click_thread(event, status.id)} className="status-body-commenters detail-row" href={`/thread/${status.id}`}>
                 <div className="commenters">{commentersView}</div>
                 <div className="stats">
                     <span className="latest-comment">{preview_text}</span>
@@ -193,7 +193,7 @@ export default class StatusComponent extends Component {
         for (let i = 0; i < status.likes.count; i++) {
             starViews.push(<p></p>)
         }
-        return <div className="status-likes bar">{starViews}</div>
+        return <div className="status-likes detail-row">{starViews}</div>
     }
     render() {
         const { status, community, options, logged_in_user } = this.props
@@ -224,7 +224,7 @@ export default class StatusComponent extends Component {
                         <div className="status-content">
                             <div className="body">{this.state.body}</div>
                         </div>
-                        <div className="status-bars">
+                        <div className="status-details">
                             {commentsView}
                             {likesView}
                             {favoritesView}

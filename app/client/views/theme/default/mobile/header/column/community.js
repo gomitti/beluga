@@ -43,7 +43,7 @@ const TabMenuComponent = ({ community, active_tab }) => {
                 <a className={classnames("item border-bottom user-defined-color-active user-defined-border-color-active", {
                     "active": active_tab === "members"
                 })} href={`/${community.name}/members`}>
-                    <span className="label">メンバー</span>
+                    <span className="label">ユーザー</span>
                 </a>
                 <a className="item border-bottom user-defined-color-active user-defined-border-color-active" href={`/${community.name}/statuses`}>
                     <span className="label">タイムライン</span>

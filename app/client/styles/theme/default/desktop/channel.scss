@@ -1,5 +1,4 @@
 .create-channel-container {
-    padding-top: 40px;
     width: 350px;
     margin: 24px auto 0 auto;
 
@@ -18,60 +17,6 @@
         background-color: white;
         box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.08);
 
-        > .community-information {
-            display: flex;
-            justify-content: center;
-            flex-direction: row;
-            border-bottom: 1px solid rgb(244, 244, 244);
-            padding: 10px 20px;
-
-            > .avatar {
-                > a {
-                    > .image {
-                        width: 30px;
-                        height: 30px;
-                        border-radius: 35px;
-                        margin: 0 auto;
-                        display: block;
-                    }
-                }
-            }
-
-            > .name {
-                text-align: center;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-left: 10px;
-
-                > a {
-                    text-decoration: none;
-
-                    > h1 {
-                        color: black;
-                        font-weight: bold;
-                        font-size: 15px;
-                    }
-
-                    > h2 {
-                        color: rgb(153, 153, 153);
-                        font-weight: normal;
-                        font-size: 14px;
-                        margin-top: 1px;
-                    }
-
-                    &:hover {
-                        text-decoration: none;
-
-                        > h1,
-                        > h2 {
-                            text-decoration: underline;
-                        }
-                    }
-                }
-            }
-        }
-
         > .inside {
             padding: 20px;
 
@@ -82,27 +27,6 @@
 
                 &:first-child {
                     margin-top: 0;
-                }
-            }
-        }
-
-        > .community-container {
-            border-radius: 6px;
-
-            > .card {
-                padding: 0 20px;
-
-                > .group {
-                    display: flex;
-                    flex-direction: row;
-
-                    > .community-avatar {
-                        flex: 0 0 auto;
-                    }
-
-                    > .community-name {
-                        flex: 1 1 auto;
-                    }
                 }
             }
         }

@@ -11,10 +11,11 @@ export default async (db, params) => {
     const community = await memcached.v1.community.show(db, { "id": params.community_id })
     assert(community !== null, "コミュニティが見つかりません")
 
-    if (community.only_admin_can_add_emoji) {
-        if (user.id.equals(community.created_by) === false) {
-            throw new Error("権限がありません")
-        }
+    const role = await memcached.v1.user.role.get(db, { "user_id": user.id, "community_id": community.id })
+    const permissions = await memcached.v1.community.permissions.get(db, { "community_id": community.id })
+    const role_perms = permissions[role]
+    if (role_perms.add_emoji !== true) {
+        throw new Error("絵文字の追加が禁止されています")
     }
 
     await api.v1.emoji.add(db, params)
