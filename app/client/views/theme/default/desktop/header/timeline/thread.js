@@ -4,20 +4,44 @@ import ws from "../../../../../../websocket"
 import assert, { is_object, is_function } from "../../../../../../assert"
 import { ColumnStore } from "../../../../../../stores/theme/default/desktop/column"
 import * as notification from "../../../../../../notification"
-import ThreadTimelineStore from "../../../../../../stores/theme/default/desktop/timeline/thread"
 
 
 class NotificationMenuItem extends Component {
     constructor(props) {
         super(props)
-        const { timeline } = this.props
-        assert(timeline instanceof ThreadTimelineStore, "$timeline must be an instance of TimelineStore")
+        const { column } = this.props
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore")
         this.state = {
-            "notification_enabled": false
+            "notification_enabled": column.settings.desktop_notification_enabled
         }
     }
     componentDidMount = () => {
+        const original_title = (typeof document === "undefined") ? "" : document.title
+        if (typeof document !== "undefined") {
+            ws.addEventListener("message", event => {
+                if (document.hasFocus()) {
+                    return
+                }
+                const data = JSON.parse(event.data)
+                if (data.status_updated) {
+                    const { status } = data
+                    if (status.do_not_notify) {
+                        return
+                    }
+                    const { column } = this.props
+                    if (column.timeline.statusBelongsTo(status)) {
+                        document.title = "（新着あり）" + original_title
+                    }
+                }
+            })
+            document.addEventListener("mouseover", () => {
+                document.title = original_title
+            })
+        }
         ws.addEventListener("message", event => {
+            if (document.hasFocus()) {
+                return
+            }
             if (this.state.notification_enabled === false) {
                 return
             }
@@ -27,8 +51,8 @@ class NotificationMenuItem extends Component {
                 if (status.do_not_notify) {
                     return
                 }
-                const { timeline } = this.props
-                if (timeline.statusBelongsTo(status)) {
+                const { column } = this.props
+                if (column.timeline.statusBelongsTo(status)) {
                     let text = status.text
                     if (text.length > 140) {
                         text = text.slice(0, 140)
@@ -45,6 +69,8 @@ class NotificationMenuItem extends Component {
         this.setState({
             "notification_enabled": !this.state.notification_enabled
         })
+        const { column } = this.props
+        column.setDesktopNotificationEnabled(!this.state.notification_enabled)
     }
     render() {
         return (
@@ -81,20 +107,21 @@ const MoreMenuItem = ({ handle_close, handle_expand }) => {
 }
 
 const LabelComponent = ({ community, channel }) => {
-    if (!!community === false) {
-        return null
-    }
-    if (!!channel === false) {
-        return null
+    if(community && channel){
+        return (
+            <div className="label-area thread">
+                <span className="label">スレッド</span>
+                <span className="divider"></span>
+                <a className="link" href={`/${community.name}/${channel.name}`}>
+                    <span className="icon channel"></span>
+                    <span className="label">{channel.name}</span>
+                </a>
+            </div>
+        )
     }
     return (
         <div className="label-area thread">
             <span className="label">スレッド</span>
-            <span className="divider"></span>
-            <a className="link" href={`/${community.name}/${channel.name}`}>
-                <span className="icon channel"></span>
-                <span className="label">{channel.name}</span>
-            </a>
         </div>
     )
 }
@@ -102,18 +129,18 @@ const LabelComponent = ({ community, channel }) => {
 export default class HeaderComponent extends Component {
     constructor(props) {
         super(props)
-        const { in_reply_to_status } = props
-        assert(is_object(in_reply_to_status), "$in_reply_to_status must be of type object")
+        const { column } = props
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore: HeaderComponent::constructor()")
     }
     render() {
-        const { in_reply_to_status, timeline, handle_close, handle_expand, handle_back } = this.props
-        const { community, channel } = in_reply_to_status
+        const { column, handle_close, handle_expand, handle_back } = this.props
+        const { in_reply_to_status, community, channel, timeline } = column.params
         return (
             <div className="timeline-header-component">
                 <div className="inside">
                     <LabelComponent channel={channel} community={community} />
                     <div className="menu">
-                        <NotificationMenuItem timeline={timeline} />
+                        <NotificationMenuItem column={column} />
                         <MoreMenuItem handle_close={handle_close} handle_expand={handle_expand} />
                     </div>
                 </div>

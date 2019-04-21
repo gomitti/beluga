@@ -9,17 +9,15 @@ export default class CommentsStore {
     constructor(status) {
         this.status_id = status.id
         this.set(status.comments_count, status.commenters)
-        if (ws) {		// サーバーサイドではやる意味がない
-            ws.addEventListener("message", event => {
-                const data = JSON.parse(event.data)
-                if (data.status_comments_updated) {
-                    const { id, comments_count, commenters } = data
-                    if (id === this.status_id) {
-                        this.set(comments_count, commenters)
-                    }
+        ws.addEventListener("message", event => {
+            const data = JSON.parse(event.data)
+            if (data.status_comments_updated) {
+                const { id, comments_count, commenters } = data
+                if (id === this.status_id) {
+                    this.set(comments_count, commenters)
                 }
-            })
-        }
+            }
+        })
     }
     get count() {
         return this.count

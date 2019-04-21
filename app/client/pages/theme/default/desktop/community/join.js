@@ -62,7 +62,7 @@ export default class App extends Component {
             })
             membersView = (
                 <div className="members">
-                    <h3 className="title"><span className="meiryo">メンバー</span> - <span className="verdana">{memberListComponents.length}</span></h3>
+                    <h3 className="title"><span>メンバー</span> - <span>{memberListComponents.length}</span></h3>
                     <ul className="list">{memberListComponents}</ul>
                 </div>
             )
@@ -91,12 +91,12 @@ export default class App extends Component {
                             <p><b>{community.display_name}</b>のチャンネルに投稿するには参加する必要があります。</p>
                             <div className="submit">
                                 <button
-                                    className={classnames("button meiryo ready user-defined-bg-color", { "in-progress": this.state.pending_join })}
+                                    className={classnames("button ready user-defined-bg-color", { "in-progress": this.state.pending_join })}
                                     onClick={this.onJoin}>
                                     <span className="progress-text">参加する</span>
                                     <span className="display-text">参加する</span>
                                 </button>
-                                <button className="button meiryo neutral user-defined-bg-color" onClick={() => {
+                                <button className="button neutral user-defined-bg-color" onClick={() => {
                                     location.href = `/${community.name}`
                                 }}>
                                     <span className="display-text">詳細を見る</span>

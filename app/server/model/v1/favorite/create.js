@@ -21,8 +21,8 @@ export default async (db, params) => {
         const permissions = await memcached.v1.channel.permissions.get(db, { "channel_id": channel.id })
         const role = await memcached.v1.user.role.get(db, { "community_id": community.id, "user_id": user.id })
         const permissions_for_role = permissions[role]
-        const reaction_allowed = permissions_for_role[constants.channel.permission.add_reaction_to_status]
-        if (reaction_allowed !== true) {
+        const allowed_to_favorite = permissions_for_role[constants.channel.permission.favorite_status]
+        if (allowed_to_favorite !== true) {
             throw new Error("ふぁぼは禁止されています")
         }
     }

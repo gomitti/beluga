@@ -2,7 +2,7 @@ import { Component } from "react"
 import { split_emoji_unicode, parse_emoji_unicode } from "../parser"
 import { is_string } from "../../../../../assert"
 import Tooltip from "../tooltip"
-import { get_image_url_by_shortname_or_null } from "../../../../../stores/theme/default/common/emoji"
+import { get_image_url_for_shortname } from "../../../../../stores/theme/default/common/emoji"
 
 export class StatusHeaderDisplayNameComponent extends Component {
     render() {
@@ -37,13 +37,13 @@ export class StatusHeaderUserStatusComponent extends Component {
         if (is_string(profile.status_emoji_shortname) === false) {
             return null
         }
-        const image_url = get_image_url_by_shortname_or_null(profile.status_emoji_shortname, null)
+        const image_url = get_image_url_for_shortname(profile.status_emoji_shortname, null)
         if (image_url === null) {
             return null
         }
         const imageView = <span className="emoji emoji-sizer" style={{ "backgroundImage": `url(${image_url})` }}></span>
-        const content = user.status_text ?
-            <p className="tooltip-user-status">{imageView}<span className="string">{user.status_text}</span></p>
+        const content = profile.status_text ?
+            <p className="tooltip-user-status">{imageView}<span className="string">{profile.status_text}</span></p>
             : <p className="tooltip-user-status">{imageView}</p>
         return (
             <button

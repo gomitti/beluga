@@ -32,7 +32,7 @@ export default async (db, params) => {
     })
 
     const members_count = await db.collection("channel_members").find({
-        "community_id": channel.community_id
+        "channel_id": channel.id
     }).count()
     await db.collection("channels").updateOne({ "_id": channel.id }, {
         "$set": { members_count }

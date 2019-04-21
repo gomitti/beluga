@@ -94,6 +94,28 @@ module.exports = (fastify, options, next) => {
             res.send({ "success": false, "error": error.toString() })
         }
     })
+    fastify.get("/api/v1/community/channels", async (req, res) => {
+        try {
+            const session = await fastify.authenticate(req, res)
+            if (session.user_id === null) {
+                throw new Error("ログインしてください")
+            }
+            const { community_id, community_name } = req.query
+            const community = await memcached.v1.community.show(fastify.mongo.db, {
+                "id": community_id, "name": community_name
+            })
+            if (community === null) {
+                throw new Error("コミュニティが見つかりません")
+            }
+            const channels = await model.v1.community.channels(fastify.mongo.db, {
+                "community_id": community.id
+            })
+            res.send({ "success": true, channels })
+        } catch (error) {
+            console.log(error)
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
     fastify.get("/api/v1/community/online_members", async (req, res) => {
         try {
             const session = await fastify.authenticate(req, res)

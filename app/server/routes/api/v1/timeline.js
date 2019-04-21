@@ -1,22 +1,16 @@
 import timeline from "../../../timeline"
+import collection from "../../../collection"
 import { parse_bool_str } from "../../../lib/bool"
 import logger from "../../../logger"
 import assign from "../../../lib/assign";
 
 module.exports = (fastify, options, next) => {
     const parse_params = params => {
-        if (params.trim_user) {
-            params.trim_user = parse_bool_str(params.trim_user)
-        }
-        if (params.trim_channel) {
-            params.trim_channel = parse_bool_str(params.trim_channel)
-        }
-        if (params.trim_community) {
-            params.trim_community = parse_bool_str(params.trim_community)
-        }
-        if (params.trim_recipient) {
-            params.trim_recipient = parse_bool_str(params.trim_recipient)
-        }
+        Object.keys(collection.v1.status.default_params).forEach(key => {
+            if (key in params) {
+                params[key] = parse_bool_str(params[key])
+            }
+        })
         if (params.count) {
             params.count = parseInt(params.count)
         }

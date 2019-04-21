@@ -19,7 +19,7 @@ export default ({ in_reply_to_status }) => {
     return (
         <div className="timeline-header-component">
             <div className="inside">
-                <div className="label-area">
+                <div className="label-area thread">
                     <span className="label">スレッド</span>
                 </div>
             </div>

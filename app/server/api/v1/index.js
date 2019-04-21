@@ -14,6 +14,7 @@ import reaction from "./reaction"
 import access_token from "./access_token"
 import kvs from "./kvs"
 import channels from "./channels"
+import communities from "./communities"
 import emoji from "./emoji"
 import mute from "./mute"
 
@@ -34,6 +35,7 @@ export default {
     notifications,
     kvs,
     channels,
+    communities,
     emoji,
     mute
 }

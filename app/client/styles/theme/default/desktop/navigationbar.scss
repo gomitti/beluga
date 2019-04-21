@@ -34,7 +34,7 @@
                     flex: 0 0 auto;
                     width: 32px;
                     height: 32px;
-                    font-size: 22px;
+                    font-size: 20px;
                     font-family: Beluga;
                     display: flex;
                     justify-content: center;
@@ -53,6 +53,14 @@
                     &.explore::before {
                         content: "\2007";
                     }
+
+                    &.channel {
+                        width: 28px;
+
+                        &::before {
+                            content: "\2006";
+                        }
+                    }
                 }
 
                 > .label {
@@ -63,11 +71,14 @@
 
                 &.logo {
                     width: 60px;
-                    background-image: url(/asset/theme/default/logo.svg?v=1);
-                    background-repeat: no-repeat;
-                    background-position: 50% 50%;
-                    background-size: 26px 26px;
+                    font-family: Beluga;
+                    font-size: 26px;
                     margin-right: 10px;
+                    text-decoration-line: none;
+
+                    &::before {
+                        content: "\2E67";
+                    }
                 }
 
                 &.border-bottom {

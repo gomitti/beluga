@@ -3,20 +3,46 @@ import classnames from "classnames"
 import ws from "../../../../../../websocket"
 import assert, { is_object, is_function, is_string } from "../../../../../../assert"
 import * as notification from "../../../../../../notification"
-import ChannelTimelineStore from "../../../../../../stores/theme/default/desktop/timeline/channel"
+import { ColumnStore } from "../../../../../../stores/theme/default/desktop/column"
 
 
 class NotificationMenuItem extends Component {
     constructor(props) {
         super(props)
-        const { timeline } = this.props
-        assert(timeline instanceof ChannelTimelineStore, "$timeline must be an instance of TimelineStore")
+        const { column } = this.props
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore")
         this.state = {
-            "notification_enabled": false
+            "notification_enabled": column.settings.desktop_notification_enabled
         }
     }
     componentDidMount = () => {
+        const original_title = (typeof document === "undefined") ? "" : document.title
+        if (typeof document !== "undefined") {
+            ws.addEventListener("message", event => {
+                if (document.hasFocus()) {
+                    return
+                }
+                const data = JSON.parse(event.data)
+                if (data.status_updated) {
+                    const { status } = data
+                    if (status.do_not_notify) {
+                        return
+                    }
+                    const { column } = this.props
+                    if (column.timeline.statusBelongsTo(status)) {
+                        document.title = "（新着あり）" + original_title
+                    }
+                }
+            })
+            document.addEventListener("mouseover", () => {
+                document.title = original_title
+            })
+        }
+
         ws.addEventListener("message", event => {
+            if (document.hasFocus()) {
+                return
+            }
             if (this.state.notification_enabled === false) {
                 return
             }
@@ -26,8 +52,8 @@ class NotificationMenuItem extends Component {
                 if (status.do_not_notify) {
                     return
                 }
-                const { timeline } = this.props
-                if (timeline.statusBelongsTo(status)) {
+                const { column } = this.props
+                if (column.timeline.statusBelongsTo(status)) {
                     let text = status.text
                     if (text.length > 140) {
                         text = text.slice(0, 140)
@@ -44,6 +70,8 @@ class NotificationMenuItem extends Component {
         this.setState({
             "notification_enabled": !this.state.notification_enabled
         })
+        const { column } = this.props
+        column.setDesktopNotificationEnabled(!this.state.notification_enabled)
     }
     render() {
         return (
@@ -149,20 +177,24 @@ const MoreMenuItem = ({ community, channel, handle_close, handle_expand }) => {
 export default class HeaderComponent extends Component {
     constructor(props) {
         super(props)
-        const { channel } = props
-        assert(is_object(channel), "$channel must be of type object")
+        const { column } = props
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore: HeaderComponent::constructor()")
+        const { community, channel } = column.params
+        assert(is_object(community), "$community must be of type object: HeaderComponent::constructor()")
+        assert(is_object(channel), "$channel must be of type object: HeaderComponent::constructor()")
     }
     render() {
-        const { community, channel, timeline, handle_close, handle_expand, handle_back } = this.props
+        const { column, handle_close, handle_expand, handle_back } = this.props
+        const { community, channel } = column.params
         return (
             <div className="timeline-header-component">
                 <div className="inside">
-                    <div className="label-area">
+                    <div className="label-area channel">
                         <span className="icon channel"></span>
                         <span className="label">{channel.name}</span>
                     </div>
                     <div className="menu">
-                        <NotificationMenuItem timeline={timeline} />
+                        <NotificationMenuItem column={column} />
                         <SearchMenuItem />
                         <MoreMenuItem community={community} channel={channel} handle_close={handle_close} handle_expand={handle_expand} />
                     </div>

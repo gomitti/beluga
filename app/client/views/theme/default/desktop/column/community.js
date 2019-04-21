@@ -66,8 +66,8 @@ class MembersComponent extends Component {
             <div className="members-area">
                 <a className="item" onClick={this.toggle}>
                     <span className="icon members"></span>
-                    <span className="verdana count">{this.state.members_count}</span>
-                    <span className="meiryo label">ユーザー</span>
+                    <span className="count">{this.state.members_count}</span>
+                    <span className="label">ユーザー</span>
                 </a>
                 <UserListComponent users={members} is_hidden={this.state.is_list_hidden} is_active={true} />
             </div>
@@ -115,8 +115,8 @@ class OnlineMembersComponent extends Component {
             <div className="members-area">
                 <a className="item" onClick={this.toggle}>
                     <span className="icon online-members"></span>
-                    <span className="verdana count">{members.length}</span>
-                    <span className="meiryo label">オンライン</span>
+                    <span className="count">{members.length}</span>
+                    <span className="label">オンライン</span>
                 </a>
                 <UserListComponent users={members} is_hidden={this.state.is_list_hidden} is_active={true} />
             </div>

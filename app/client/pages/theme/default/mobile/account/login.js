@@ -2,44 +2,53 @@ import Head from "../../../../../views/theme/default/mobile/head"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import Component from "../../../../../views/app"
+import { LoadingButton } from "../../../../../views/theme/default/desktop/button"
 
 export default class App extends Component {
-    signin = event => {
+    constructor(props) {
+        super(props)
+        this.state = {
+            "in_progress": false
+        }
+    }
+    signin = async event => {
         event.preventDefault()
-        if (this.pending === true) {
-            return
+        if (this.state.in_progress === true) {
+            return false
         }
-        this.pending = true
-        const name = this.refs.name.value
-        const password = this.refs.password.value
-        if (name.length == 0) {
-            alert("ユーザー名を入力してください")
-            this.pending = false
-            return
-        }
-        if (password.length == 0) {
-            alert("パスワードを入力してください")
-            this.pending = false
-            return
-        }
-        request
-            .post("/account/signin", {
+        this.setState({
+            "in_progress": true
+        })
+        try {
+            const name = this.refs.name.value
+            const password = this.refs.password.value
+            if (name.length == 0) {
+                throw new Error("ユーザー名を入力してください")
+            }
+            if (password.length == 0) {
+                throw new Error("パスワードを入力してください")
+            }
+            const { request_query } = this.props
+            const res = await request.post("/account/signin", {
                 name,
                 "raw_password": password,
             })
-            .then(res => {
-                const data = res.data
-                if (data.success == false) {
-                    alert(data.error)
-                    this.pending = false
-                    return
+            const { success, error } = res.data
+            if (success == false) {
+                throw new Error(error)
+            }
+            if (request_query && request_query.redirect) {
+                if (request_query.redirect.match(/^\/.+$/)) {
+                    return location.href = request_query.redirect
                 }
-                location.href = "/"
-            })
-            .catch(error => {
-                alert(error)
-                this.pending = false
-            })
+            }
+            return location.href = "/communities"
+        } catch (error) {
+            alert(error.toString())
+        }
+        this.setState({
+            "in_progress": false
+        })
     }
     render() {
         const { platform } = this.props
@@ -63,7 +72,7 @@ export default class App extends Component {
                                 </p>
                             </div>
                             <div className="submit">
-                                <button className="button user-defined-bg-color" onClick={this.signin}>ログイン</button>
+                                <LoadingButton is_loading={this.state.in_progress} label="ログイン" handle_click={this.signin} />
                             </div>
                         </div>
                     </div>

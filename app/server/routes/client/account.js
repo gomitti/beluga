@@ -14,10 +14,17 @@ const compare_shortname = (a, b) => {
     return 0
 }
 
+const status_trim_params = {}
+Object.keys(collection.v1.status.default_params).forEach(key => {
+    status_trim_params[key] = false
+})
+
 module.exports = (fastify, options, next) => {
     fastify.next("/signup", async (app, req, res) => {
         const csrf_token = await fastify.csrf_token(req, res)
-        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/account/signup`, { csrf_token })
+        app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/account/signup`, { 
+            csrf_token, "request_query": req.query
+         })
     })
     fastify.next("/login", async (app, req, res) => {
         const csrf_token = await fastify.csrf_token(req, res)
@@ -169,15 +176,8 @@ module.exports = (fastify, options, next) => {
 
             const statuses = await timeline.v1.notifications(fastify.mongo.db, assign(req.query, {
                 "user_id": logged_in_user.id,
-                "trim_user": false,
-                "trim_community": false,
-                "trim_channel": false,
-                "trim_favorited_by": false,
-                "trim_recipient": false,
-                "trim_commenters": false,
-                "trim_reaction_users": false,
                 "count": req.query.count ? parseInt(req.query.count) : 30
-            }))
+            }, status_trim_params))
 
             const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags(
                 memcached.v1.statuses.notifications.count, {
@@ -239,17 +239,15 @@ module.exports = (fastify, options, next) => {
                 "key": "desktop_settings"
             })
 
-            const statuses = await timeline.v1.message(fastify.mongo.db, assign(req.query, {
-                "recipient_id": recipient.id,
-                "trim_user": false,
-                "trim_community": false,
-                "trim_channel": false,
-                "trim_favorited_by": false,
-                "trim_recipient": false,
-                "trim_commenters": false,
-                "trim_reaction_users": false,
-                "count": req.query.count ? parseInt(req.query.count) : 30
-            }))
+            const { originalUrl } = req.raw
+            const initial_column = {
+                "param_ids": {
+                    "recipient_id": recipient.id,
+                },
+                "type": "message"
+            }
+            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await fastify.restore_columns(logged_in_user.id, originalUrl) : []
+            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in_user, req.query)
 
             const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags(
                 memcached.v1.statuses.message.count, {
@@ -267,20 +265,15 @@ module.exports = (fastify, options, next) => {
             const pinned_media = await collection.v1.account.pin.media.list(fastify.mongo.db, { "user_id": logged_in_user.id })
             const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in_user.id, "count": 100 })
             const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in_user.id })
-            const custom_emoji_list = []
 
             const custom_emoji_shortnames = []
-            custom_emoji_list.forEach(emoji => {
-                custom_emoji_shortnames.push(emoji.shortname)
-            })
-            custom_emoji_shortnames.sort(compare_shortname)
             const custom_emoji_version = "0"
 
             const device = fastify.device(req)
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/account/message`, {
                 "platform": fastify.platform(req),
                 "request_query": req.query,
-                csrf_token, logged_in_user, device, desktop_settings, statuses, recipient,
+                csrf_token, logged_in_user, device, desktop_settings, columns, recipient,
                 pinned_media, recent_uploads, pinned_emoji_shortnames, custom_emoji_shortnames,
                 custom_emoji_version, muted_users, muted_words, has_newer_statuses, has_older_statuses
             })

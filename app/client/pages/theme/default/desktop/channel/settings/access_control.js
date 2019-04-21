@@ -84,7 +84,7 @@ class AccessControlComponent extends Component {
     render() {
         const { community } = this.props
         return (
-            <div className="settings-content-component form channel-access-control meiryo">
+            <div className="settings-content-component form channel-access-control">
                 <div className="head">
                     <h1>アクセスコントロール</h1>
                 </div>

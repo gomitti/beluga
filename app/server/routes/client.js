@@ -6,6 +6,7 @@ import collection from "../collection"
 import timeline from "../timeline"
 import config from "../config/beluga"
 import assign from "../lib/assign"
+import assert, { is_array } from "../assert"
 
 const next = require("next")
 const dev = process.env.NODE_ENV !== "production"
@@ -67,6 +68,10 @@ module.exports = (fastify, options, next) => {
         if (stored_columns.length == 0) {
             stored_columns.push(initial_column)
         }
+        const status_trim_params = {}
+        Object.keys(collection.v1.status.default_params).forEach(key => {
+            status_trim_params[key] = false
+        })
         const columns = []
         for (let column_index = 0; column_index < stored_columns.length; column_index++) {
             const column = stored_columns[column_index]
@@ -85,17 +90,10 @@ module.exports = (fastify, options, next) => {
             }
             const { type, param_ids, timeline_query } = column
             const query = assign({
-                "trim_user": false,
-                "trim_community": false,
-                "trim_channel": false,
-                "trim_favorited_by": false,
-                "trim_recipient": false,
-                "trim_commenters": false,
-                "trim_reaction_users": false,
                 "requested_by": logged_in_user.id
-            }, timeline_query)
+            }, status_trim_params, timeline_query)
 
-            const { community_id, user_id, channel_id, in_reply_to_status_id } = param_ids
+            const { community_id, recipient_id, channel_id, in_reply_to_status_id } = param_ids
 
             if (type === "community") {
                 if (!!community_id === false) {
@@ -125,37 +123,30 @@ module.exports = (fastify, options, next) => {
                 if (channel === null) {
                     continue
                 }
-                const statuses = await timeline.v1.channel(fastify.mongo.db, assign(query, {
-                    "channel_id": channel_id
-                }))
-                column.statuses = statuses
-                column.params = { channel }
-            }
-            if (type === "message") {
-                if (!!user_id === false) {
-                    continue
-                }
-                const user = await model.v1.user.show(fastify.mongo.db, {
-                    "id": user_id
-                })
-                if (user === null) {
-                    continue
-                }
-                if (!!community_id === false) {
-                    continue
-                }
                 const community = await model.v1.community.show(fastify.mongo.db, {
-                    "id": community_id
+                    "id": channel.community_id
                 })
                 if (community === null) {
                     continue
                 }
-                const statuses = await timeline.v1.message(fastify.mongo.db, assign(query, {
-                    "user_id": user_id,
-                    "community_id": community_id
+                const statuses = await timeline.v1.channel(fastify.mongo.db, assign(query, {
+                    "channel_id": channel_id
                 }))
                 column.statuses = statuses
-                column.params = { community, user }
+                column.params = { channel, community }
+            }
+            if (type === "message") {
+                if (!!recipient_id === false) {
+                    continue
+                }
+                const recipient = await model.v1.user.show(fastify.mongo.db, {
+                    "id": recipient_id
+                })
+                if (recipient === null) {
+                    continue
+                }
+                column.statuses = await timeline.v1.message(fastify.mongo.db, assign(query, { recipient_id }))
+                column.params = { recipient }
             }
             if (type === "thread") {
                 if (!!in_reply_to_status_id === false) {
@@ -163,14 +154,9 @@ module.exports = (fastify, options, next) => {
                 }
                 const in_reply_to_status = await collection.v1.status.show(fastify.mongo.db, {
                     "id": in_reply_to_status_id,
-                    "trim_user": false,
-                    "trim_community": false,
+                    "requested_by": logged_in_user.id,
                     "trim_channel": false,
-                    "trim_recipient": false,
-                    "trim_favorited_by": false,
-                    "trim_commenters": false,
-                    "trim_reaction_users": false,
-                    "requested_by": logged_in_user.id
+                    "trim_community": false,
                 })
                 if (in_reply_to_status === null) {
                     continue
@@ -179,7 +165,25 @@ module.exports = (fastify, options, next) => {
                     "in_reply_to_status_id": in_reply_to_status_id,
                 }))
                 column.statuses = statuses
-                column.params = { in_reply_to_status }
+                // channel_idがない場合メッセージへのコメントになっている
+                if (in_reply_to_status.channel_id) {
+                    const channel = await model.v1.channel.show(fastify.mongo.db, {
+                        "id": in_reply_to_status.channel_id,
+                        "requested_by": logged_in_user.id
+                    })
+                    if (channel === null) {
+                        continue
+                    }
+                    const community = await model.v1.community.show(fastify.mongo.db, {
+                        "id": channel.community_id
+                    })
+                    if (community === null) {
+                        continue
+                    }
+                    column.params = { in_reply_to_status, channel, community }
+                } else {
+                    column.params = { in_reply_to_status }
+                }
             }
             if (type === "notifications") {
                 const statuses = await timeline.v1.notifications(fastify.mongo.db, assign(query, {
@@ -197,7 +201,7 @@ module.exports = (fastify, options, next) => {
     })
     fastify.decorate("generate_pagination_flags", async (count_func, count_query, request_query) => {
         let has_newer_statuses = false
-        let has_older_statuses = false
+        let has_older_statuses = true
         let needs_redirect = false
         const expected_count = request_query.count ? parseInt(request_query.count) : config.timeline.default_count
         if (request_query.since_id) {
@@ -209,21 +213,8 @@ module.exports = (fastify, options, next) => {
             }
             has_newer_statuses = true
             has_older_statuses = true
-        } else {
-            if (request_query.max_id) {
-                const count = await count_func(fastify.mongo.db, assign(count_query, {
-                    "max_id": request_query.max_id
-                }))
-                if (count > expected_count) {
-                    has_older_statuses = true
-                }
-                has_newer_statuses = true
-            } else {
-                const count = await count_func(fastify.mongo.db, count_query)
-                if (count > expected_count) {
-                    has_older_statuses = true
-                }
-            }
+        } else if (request_query.max_id) {
+            has_newer_statuses = true
         }
         return { has_newer_statuses, has_older_statuses, needs_redirect }
     })
@@ -251,7 +242,7 @@ module.exports = (fastify, options, next) => {
         pathname = pathname.replace(/[#?].+$/, "")
         const stored_columns = await memcached.v1.kvs.restore(fastify.mongo.db, {
             "user_id": user_id,
-            "key": `client.default.columns.${pathname}`
+            "key": `client_default_columns_${pathname}`
         })
         if (stored_columns === null) {
             return []
@@ -271,19 +262,32 @@ module.exports = (fastify, options, next) => {
         try {
             const logged_in_user = await fastify.logged_in_user(req, res)
             const db = fastify.mongo.db
-            const rows = await db.collection("channels").find({}).toArray()
-            const channels = []
-            for (let j = 0; j < rows.length; j++) {
-                const channel = rows[j]
-                const community = await model.v1.community.show(db, { "id": channel.community_id })
-                if (!community) {
-                    continue
+
+            const status_ids = await fastify.mongo.db.collection("statuses").find().sort({ "_id": -1 }).limit(30).toArray()
+            const statuses = []
+            for (let k = 0; k < status_ids.length; k++) {
+                const status_id = status_ids[k]._id
+                const status_params = assign(collection.v1.status.default_params, {
+                    "id": status_id,
+                    "trim_user": false,
+                    "trim_community": false,
+                    "trim_channel": false,
+                    "trim_recipient": false,
+                    "trim_favorited_by": false,
+                    "trim_reaction_users": false,
+                    "trim_commenters": false,
+                })
+                const status = await collection.v1.status.show(db, status_params)
+                if (status) {
+                    statuses.push(status)
                 }
-                channel.community = community
-                channels.push(channel)
             }
+
             const device = fastify.device(req)
-            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/entrance`, { channels, logged_in_user })
+            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/entrance`, {
+                logged_in_user, statuses,
+                "platform": fastify.platform(req)
+            })
         } catch (error) {
             console.log(error)
             return fastify.error(app, req, res, 500)

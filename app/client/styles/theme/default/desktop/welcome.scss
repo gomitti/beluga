@@ -1,0 +1,186 @@
+.welcome-component {
+    width: 100vw;
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    background-color: white;
+    overflow: hidden;
+
+    > .left-area {
+        flex: 1 1 auto;
+
+        > .inside {
+            max-width: 1000px;
+            min-width: 600px;
+            margin: 0 auto;
+
+            > .hero {
+                text-align: center;
+
+                > .title {
+                    font-size: 40px;
+                    font-weight: bold;
+                    line-height: 1em;
+                    color: rgb(20, 20, 20);
+                    padding: 100px 0 0 0;
+                }
+
+                > .form {
+                    margin-top: 40px;
+
+                    > .button {
+                        font-weight: bold;
+                        padding: 8px 20px;
+                        height: auto;
+                        font-size: 15px;
+                    }
+
+                    > .login-link {
+                        font-size: 14px;
+                        display: block;
+                        margin-top: 10px;
+                    }
+                }
+
+                > .description {
+                    font-size: 18px;
+                    line-height: 1em;
+                    color: rgb(20, 20, 20);
+                    margin: 40px 0 10px 0;
+                }
+
+                > .note {
+                    margin-top: 10px;
+                    font-size: 14px;
+                    line-height: 1em;
+                    color: rgb(140, 140, 140);
+                }
+            }
+        }
+    }
+
+    > .timeline-area {
+        flex: 0 0 360px;
+        width: 360px;
+        min-height: 0;
+        display: flex;
+
+        > .multiple-columns-component {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            height: calc(100vh - 40px);
+
+            > .column-component {
+                width: 360px;
+
+                > .inside {
+                    // box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 0px 12px 0 rgba(0, 0, 0, 0.1);
+                    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.06);
+
+                    .timeline-component {
+                        overflow-y: scroll;
+                        flex: 0 1 auto;
+                        padding-top: 10px;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.features-component {
+    margin-top: 60px;
+
+    > .header {
+        text-align: center;
+
+        > h1 {
+            font-size: 28px;
+            font-weight: bold;
+            line-height: 1em;
+            margin-bottom: 20px;
+            color: rgb(20, 20, 20);
+        }
+
+        > h2 {
+            font-size: 14px;
+            line-height: 1em;
+            color: rgb(20, 20, 20);
+        }
+    }
+
+    > .features-grid {
+        > .row {
+            display: flex;
+            flex-direction: row;
+            margin-top: 40px;
+
+            > .feature {
+                flex: 0 0 50%;
+                width: 50%;
+                box-sizing: border-box;
+                padding: 0 20px;
+
+                > .title {
+                    font-size: 18px;
+                    font-weight: bold;
+                    text-align: center;
+                    color: rgb(71, 125, 167);
+                    margin-bottom: 20px;
+
+                    &.like {
+                        color: rgb(247, 149, 51);
+                    }
+
+                    &.favorite {
+                        color: rgb(239, 78, 123);
+                    }
+
+                    &.reaction {
+                        color: rgb(80, 115, 184);
+                    }
+
+                    &.comment {
+                        color: rgb(7, 179, 155);
+                    }
+                }
+
+                > .description {
+                    font-size: 14px;
+                    font-weight: normal;
+                    color: rgb(20, 20, 20);
+                    margin-bottom: 20px;
+                    text-align: center;
+
+                    > .like {
+                        width: 16px;
+                        height: 16px;
+                        font-family: Beluga;
+                        font-size: 16px;
+                        display: inline-block;
+                        margin: 0 0 3px 0px;
+                        color: rgb(254, 197, 46);
+
+                        &::before {
+                            content: "\245B";
+                        }
+                    }
+                }
+
+                > .status-area {
+                    > .status {
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.06);
+
+                        > .inside {
+                            padding: 10px;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

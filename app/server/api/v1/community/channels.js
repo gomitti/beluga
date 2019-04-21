@@ -15,7 +15,7 @@ export default async (db, params) => {
     const collection = db.collection("channels")
     const rows = await collection.find({
         "community_id": community_id,
-        "is_public": true,
+        "invitation_needed": false,
         "statuses_count": { "$gt": params.threshold }
     }).sort({ "members_count": -1 }).toArray()
 

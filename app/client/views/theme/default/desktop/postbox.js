@@ -15,6 +15,7 @@ import PostboxStore from "../../../../stores/theme/default/common/postbox"
 import TimelineStore from "../../../../stores/theme/default/desktop/timeline"
 import Toast from "./toast"
 import { LoadingButton } from "./button"
+import { ColumnStore } from "../../../../stores/theme/default/desktop/column"
 
 class TooltipButton extends Component {
     render() {
@@ -64,9 +65,9 @@ export const wrap_with_tag = (text, start, end, tag, insert_linebreak) => {
 export default class PostboxComponent extends Component {
     constructor(props) {
         super(props)
-        const { postbox, timeline, uploader } = props
+        const { postbox, column, uploader } = props
         assert(postbox instanceof PostboxStore, "$postbox must be an instance of PostboxStore")
-        assert(timeline instanceof TimelineStore, "$timeline must be an instance of TimelineStore")
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore")
 
         uploader.callback_error = error => {
             Toast.push(error, false)
@@ -124,7 +125,8 @@ export default class PostboxComponent extends Component {
         postbox.post(text, () => {
             this.setText("")
             this.setState({ "is_post_button_active": false })
-            const { timeline } = this.props
+            const { column } = this.props
+            const { timeline } = column
             timeline.fetchLatestIfNeeded()
         }, () => {
             this.setState({ "is_post_button_active": true })
@@ -357,7 +359,9 @@ export default class PostboxComponent extends Component {
         if (event.target.nodeName === "SPAN") {
             return
         }
-        const is_active = EmojiPicker.toggle(event.target, shortname => {
+        const { column } = this.props
+        const { community } = column.params
+        const is_active = EmojiPicker.toggle(event.target, community, shortname => {
             const { textarea } = this.refs
             this.setText(textarea.value + `:${shortname}:`)
         }, () => {
@@ -413,7 +417,8 @@ export default class PostboxComponent extends Component {
             )
         }
 
-        const { uploader, postbox, community } = this.props
+        const { uploader, postbox, column } = this.props
+        const { community } = column.params
         const { uploading_file_metadatas } = uploader
 
         const preview_status = {

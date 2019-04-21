@@ -2,7 +2,12 @@ import config from "./beluga.config"
 import path from "path"
 let ws = undefined
 
-if (typeof window !== "undefined") {
+if (typeof window === "undefined") {
+    class ServerSideWebSocketClient {
+        addEventListener(name, callback) { }
+    }
+    ws = new ServerSideWebSocketClient()
+} else {
     const components = location.href.split("/")
     let endpoint = ""
     for (let i = 3; i < components.length; i++) {
@@ -24,7 +29,10 @@ if (typeof window !== "undefined") {
         initWebSocket() {
             if (this.ws) {
                 this.listeners.forEach(listener => {
-                    this.ws.removeEventListener(listener.name, listener.callback)
+                    const { name, callback } = listener
+                    if (callback) {
+                        this.ws.removeEventListener(name, callback)
+                    }
                 })
             }
             const url = `${protocol}://${config.domain}:${config.websocket_port}/${endpoint}`
@@ -47,14 +55,28 @@ if (typeof window !== "undefined") {
                 console.log("onerror", e)
             }
             this.listeners.forEach(listener => {
-                this.ws.addEventListener(listener.name, listener.callback)
+                const { name, callback } = listener
+                if (callback) {
+                    this.ws.addEventListener(listener.name, listener.callback)
+                }
             })
         }
         addEventListener(name, callback) {
             this.listeners.push({ name, callback })
             this.ws.addEventListener(name, callback)
+            return this.listeners.length - 1
+        }
+        removeEventListener(listener_id) {
+            const { name, callback } = this.listeners[listener_id]
+            this.ws.addEventListener(name, callback)
+            this.listeners[listener_id] = {
+                "name": name,
+                "callback": null
+            }
+            console.log(`[WebSocketClient] removeEventListener(): listener ${listener_id} has been removed`)
         }
     }
     ws = new WebSocketClient()
+
 }
 export default ws

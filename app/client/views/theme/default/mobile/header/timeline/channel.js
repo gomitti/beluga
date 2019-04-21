@@ -14,7 +14,8 @@ export default class HeaderComponent extends Component {
         })
     }
     render() {
-        const { community, channel } = this.props
+        const { column } = this.props
+        const { community, channel } = column.params
         return (
             <div className="timeline-header-component">
                 <div className="inside">

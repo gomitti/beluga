@@ -34,23 +34,21 @@ export default class StatusStore {
         this.reactions = observable(new ReactionsStore(status, logged_in_user))
         this.comments = observable(new CommentsStore(status))
         this.favorited = !!status.favorited
-        if (ws) {
-            ws.addEventListener("message", event => {
-                const data = JSON.parse(event.data)
-                if (data.status_deleted) {
-                    const { id } = data
-                    if (id === this.id) {
-                        this.setDeleted(true)
-                    }
+        ws.addEventListener("message", event => {
+            const data = JSON.parse(event.data)
+            if (data.status_deleted) {
+                const { id } = data
+                if (id === this.id) {
+                    this.setDeleted(true)
                 }
-                if (data.status_comments_updated) {
-                    const { id, last_comment } = data
-                    if (id === this.id) {
-                        this.setLastComment(last_comment)
-                    }
+            }
+            if (data.status_comments_updated) {
+                const { id, last_comment } = data
+                if (id === this.id) {
+                    this.setLastComment(last_comment)
                 }
-            })
-        }
+            }
+        })
     }
     @action.bound
     destroy() {

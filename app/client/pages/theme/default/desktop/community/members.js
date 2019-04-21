@@ -15,8 +15,8 @@ const ListComponent = ({ users }) => {
         listViews.push(
             <a key={user.id} className="item" href={`/user/${user.name}`}>
                 <img className="avatar" src={user.avatar_url} />
-                <span className="display-name meiryo">{display_name}</span>
-                <span className="name verdana">{user.name}</span>
+                <span className="display-name">{display_name}</span>
+                <span className="name">{user.name}</span>
             </a>
         )
     })

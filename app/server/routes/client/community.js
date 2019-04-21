@@ -45,11 +45,32 @@ module.exports = (fastify, options, next) => {
             return fastify.error(app, req, res, 500)
         }
     })
+    fastify.next("/communities", async (app, req, res) => {
+        try {
+            const session = await fastify.session.start(req, res)
+            const csrf_token = await fastify.csrf_token(req, res, session)
+            const logged_in_user = await fastify.logged_in_user(req, res, session)
+
+            const communities = await collection.v1.communities.list(fastify.mongo.db)
+
+            const device = fastify.device(req)
+            app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/communities`, {
+                csrf_token, communities, logged_in_user, device,
+                "platform": fastify.platform(req),
+            })
+        } catch (error) {
+            console.log(error)
+            return fastify.error(app, req, res, 500)
+        }
+    })
     fastify.next("/:community_name/channels", async (app, req, res) => {
         try {
             const session = await fastify.session.start(req, res)
             const csrf_token = await fastify.csrf_token(req, res, session)
             const logged_in_user = await fastify.logged_in_user(req, res, session)
+            if (logged_in_user === null) {
+                return fastify.error(app, req, res, 404)
+            }
 
             const { community_name } = req.params
             const community = await model.v1.community.show(fastify.mongo.db, {
@@ -66,7 +87,7 @@ module.exports = (fastify, options, next) => {
             })
 
             const community_channels = await model.v1.community.channels(fastify.mongo.db, {
-                "id": community.id,
+                "community_id": community.id,
                 "threshold": 0
             })
 
@@ -371,25 +392,25 @@ module.exports = (fastify, options, next) => {
             if (logged_in_user === null) {
                 return fastify.error(app, req, res, 404)
             }
-    
+
             const { community_name } = req.params
             const community = await model.v1.community.show(fastify.mongo.db, { "name": community_name })
             if (community === null) {
                 return fastify.error(app, req, res, 404)
             }
-    
+
             const role = await memcached.v1.user.role.get(fastify.mongo.db, {
                 "user_id": logged_in_user.id,
                 "community_id": community.id
             })
-            if (role !== constants.role.admin && role !== constants.role.moderator) {
+            if (role !== constants.role.admin) {
                 return fastify.error(app, req, res, 404)
             }
-    
+
             const permissions = await memcached.v1.community.permissions.get(fastify.mongo.db, {
                 "community_id": community.id
             })
-    
+
             app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${fastify.device(req)}/community/settings/permissions`, {
                 csrf_token, community, logged_in_user, map_role_number, permissions,
                 "platform": fastify.platform(req),

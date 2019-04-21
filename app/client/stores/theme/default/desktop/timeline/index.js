@@ -35,7 +35,7 @@ export class TimelineOptions {
 // @param {object} request_query
 // @param {object} params
 // @param {TimelineOptions} options
-class ClientSideTimelineStore {
+class TimelineStore {
     @observable.shallow filtered_status_stores = []
     @observable pending_fetch_newer = false
     @observable pending_fetch_older = false
@@ -72,23 +72,22 @@ class ClientSideTimelineStore {
         this.original_has_older_statuses = options.has_older_statuses
         this.status_store_cache = {}
 
-        if (ws) {
-            ws.addEventListener("message", (e) => {
-                const data = JSON.parse(e.data)
-                if (data.status_updated) {
-                    const { status } = data
-                    if (this.statusBelongsTo(status)) {
-                        this.fetchLatestIfNeeded()
-                    }
+        this.ws_listener_id = ws.addEventListener("message", (e) => {
+            const data = JSON.parse(e.data)
+            if (data.status_updated) {
+                const { status } = data
+                if (this.statusBelongsTo(status)) {
+                    this.fetchLatestIfNeeded()
                 }
-            })
-        }
+            }
+        })
         this.setIntervalIfNeeded()
     }
     terminate = () => {
         if (this.timer_id) {
             clearInterval(this.timer_id)
         }
+        ws.removeEventListener(this.ws_listener_id)
     }
     // 自動更新の設定
     setIntervalIfNeeded = () => {
@@ -96,7 +95,7 @@ class ClientSideTimelineStore {
             clearInterval(this.timer_id)
         }
         if (this.auto_reloading_enabled) {
-            console.log("[timeline] setting interval ...")
+            console.log("[TimelineStore] setting interval ...")
             this.timer_id = setInterval(() => {
                 this.fetchLatestIfNeeded()
             }, this.reload_interval_sec * 1000) // msec
@@ -142,7 +141,7 @@ class ClientSideTimelineStore {
     setStatuses = status_objs => {
         if (Object.keys(this.status_store_cache) > 500) {
             this.status_store_cache = {}
-            console.log("[timeline] store cache released")
+            console.log("[TimelineStore] store cache released")
         }
         const filtered_status_stores = []
         status_objs.forEach(status_obj => {
@@ -191,13 +190,16 @@ class ClientSideTimelineStore {
         if (this.pending_fetch_latest) {
             return
         }
-        console.log("[timeline] fetching latest statuses ...")
+        console.log("[TimelineStore] fetching latest statuses ...")
         this.pending_fetch_latest = true
         const query = {
             "trim_user": false,
             "trim_community": false,
             "trim_channel": false,
             "trim_recipient": false,
+            "trim_favorited_by": false,
+            "trim_reaction_users": false,
+            "trim_commenters": false,
             "count": this.statuses_count_to_fetch_latest,
         }
         try {
@@ -224,7 +226,7 @@ class ClientSideTimelineStore {
         if (this.pending_fetch_older) {
             return
         }
-        console.log("[timeline] fetching older statuses ...")
+        console.log("[TimelineStore] fetching older statuses ...")
         this.setPendingFetchOlder(true)
         const query = {
             "trim_user": false,
@@ -242,22 +244,22 @@ class ClientSideTimelineStore {
             if (this.current_fetch_type === fetch_types.older) {
                 const { data } = res
                 const { statuses } = data
-                console.log(`[timeline] fetched older statuses (length: ${statuses.length}`)
+                console.log(`[TimelineStore] fetched older statuses (length: ${statuses.length}`)
                 if (statuses.length === 0) {
                     this.has_newer_statuses = true
                     this.has_older_statuses = false
-                    console.log(`[timeline] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
+                    console.log(`[TimelineStore] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
                 } else {
                     this.setStatuses(statuses)
                     if (statuses.length < this.statuses_count_to_fetch_older) {
                         this.has_newer_statuses = true
                         this.has_older_statuses = false
-                        console.log(`[timeline] ${statuses.length} < ${this.statuses_count_to_fetch_older}`)
-                        console.log(`[timeline] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
+                        console.log(`[TimelineStore] ${statuses.length} < ${this.statuses_count_to_fetch_older}`)
+                        console.log(`[TimelineStore] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
                     } else {
                         this.has_newer_statuses = true
                         this.has_older_statuses = true
-                        console.log(`[timeline] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
+                        console.log(`[TimelineStore] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
                     }
                 }
             }
@@ -273,7 +275,7 @@ class ClientSideTimelineStore {
         if (this.pending_fetch_newer) {
             return
         }
-        console.log("[timeline] fetching newer statuses ...")
+        console.log("[TimelineStore] fetching newer statuses ...")
         this.setPendingFetchNewer(true)
         const query = {
             "trim_user": false,
@@ -291,24 +293,24 @@ class ClientSideTimelineStore {
             if (this.current_fetch_type === fetch_types.newer) {
                 const { data } = res
                 const { statuses } = data
-                console.log(`[timeline] fetched older statuses (length: ${statuses.length}`)
+                console.log(`[TimelineStore] fetched older statuses (length: ${statuses.length}`)
                 if (statuses.length === 0) {
                     this.has_newer_statuses = false
                     this.has_older_statuses = true
                     this.auto_reloading_enabled = true
-                    console.log(`[timeline] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses} auto_reloading_enabled: ${this.auto_reloading_enabled}`)
+                    console.log(`[TimelineStore] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses} auto_reloading_enabled: ${this.auto_reloading_enabled}`)
                 } else {
                     this.setStatuses(statuses)
                     if (statuses.length < this.statuses_count_to_fetch_newer) {
                         this.has_newer_statuses = false
                         this.has_older_statuses = true
                         this.auto_reloading_enabled = true
-                        console.log(`[timeline] ${statuses.length} < ${this.statuses_count_to_fetch_newer}`)
-                        console.log(`[timeline] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
+                        console.log(`[TimelineStore] ${statuses.length} < ${this.statuses_count_to_fetch_newer}`)
+                        console.log(`[TimelineStore] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
                     } else {
                         this.has_newer_statuses = true
                         this.has_older_statuses = true
-                        console.log(`[timeline] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
+                        console.log(`[TimelineStore] newer: ${this.has_newer_statuses} older: ${this.has_older_statuses}`)
                     }
                 }
             }
@@ -456,7 +458,7 @@ const get_store_class = () => {
     if (typeof window === "undefined") {
         return ServerSideTimelineStore
     } else {
-        return ClientSideTimelineStore
+        return TimelineStore
     }
 }
 

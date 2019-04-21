@@ -18,6 +18,11 @@ const compare_shortname = (a, b) => {
     return 0
 }
 
+const status_trim_params = {}
+Object.keys(collection.v1.status.default_params).forEach(key => {
+    status_trim_params[key] = false
+})
+
 module.exports = (fastify, options, next) => {
     fastify.next("/thread/:in_reply_to_status_id", async (app, req, res) => {
         try {
@@ -38,16 +43,10 @@ module.exports = (fastify, options, next) => {
             // }
 
             const in_reply_to_status_id = req.params.in_reply_to_status_id
-            const in_reply_to_status = await collection.v1.status.show(fastify.mongo.db, {
+            const in_reply_to_status = await collection.v1.status.show(fastify.mongo.db, Object.assign({
                 "id": in_reply_to_status_id,
-                "trim_user": false,
-                "trim_community": false,
-                "trim_channel": false,
-                "trim_recipient": false,
-                "trim_favorited_by": false,
-                "trim_commenters": false,
                 "requested_by": logged_in_user.id
-            })
+            }, status_trim_params))
             if (in_reply_to_status === null) {
                 return fastify.error(app, req, res, 404)
             }
@@ -64,28 +63,27 @@ module.exports = (fastify, options, next) => {
             const recent_uploads = await collection.v1.media.list(fastify.mongo.db, { "user_id": logged_in_user.id, "count": 100 })
             const pinned_emoji_shortnames = await model.v1.account.pin.emoji.list(fastify.mongo.db, { "user_id": logged_in_user.id })
 
+            const { originalUrl } = req.raw
+            const initial_column = {
+                "param_ids": {
+                    "in_reply_to_status_id": in_reply_to_status.id,
+                },
+                "type": "thread"
+            }
+            const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await fastify.restore_columns(logged_in_user.id, originalUrl) : []
+            const columns = await fastify.build_columns(stored_columns, initial_column, logged_in_user, req.query)
+
+            const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags(
+                memcached.v1.statuses.thread.count, {
+                    "in_reply_to_status_id": in_reply_to_status.id,
+                }, req.query)
+
+            if (needs_redirect) {
+                return res.redirect(`/thread/${in_reply_to_status.id}`)
+            }
 
             const { community } = in_reply_to_status
             if (community) {
-                const { originalUrl } = req.raw
-                const initial_column = {
-                    "param_ids": {
-                        "in_reply_to_status_id": in_reply_to_status.id,
-                    },
-                    "type": "thread"
-                }
-                const stored_columns = (desktop_settings && desktop_settings.multiple_columns_enabled) ? await fastify.restore_columns(logged_in_user.id, originalUrl) : []
-                const columns = await fastify.build_columns(stored_columns, initial_column, logged_in_user, req.query)
-
-                const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags(
-                    memcached.v1.statuses.thread.count, {
-                        "in_reply_to_status_id": in_reply_to_status.id,
-                    }, req.query)
-
-                if (needs_redirect) {
-                    return res.redirect(`/thread/${in_reply_to_status.id}`)
-                }
-
                 const joined_channels = await collection.v1.channels.joined(fastify.mongo.db, {
                     "community_id": community.id,
                     "user_id": logged_in_user.id
@@ -102,7 +100,7 @@ module.exports = (fastify, options, next) => {
                 fastify.websocket_broadcast("online_members_changed", {})
 
                 const device = fastify.device(req)
-                app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/community/thread`, {
+                app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/status/thread`, {
                     "platform": fastify.platform(req),
                     "request_query": req.query,
                     csrf_token, community, in_reply_to_status, logged_in_user, joined_channels, device, desktop_settings,
@@ -110,26 +108,6 @@ module.exports = (fastify, options, next) => {
                     muted_users, muted_words, has_newer_statuses, has_older_statuses, custom_emoji_version
                 })
             } else {
-                const statuses = await timeline.v1.thread(fastify.mongo.db, assign(req.query, {
-                    "trim_user": false,
-                    "trim_community": false,
-                    "trim_channel": false,
-                    "trim_recipient": false,
-                    "trim_favorited_by": false,
-                    "trim_commenters": false,
-                    "trim_reaction_users": false,
-                    "in_reply_to_status_id": in_reply_to_status.id,
-                }))
-
-                const { has_newer_statuses, has_older_statuses, needs_redirect } = await fastify.generate_pagination_flags(
-                    memcached.v1.statuses.thread.count, {
-                        "in_reply_to_status_id": in_reply_to_status.id
-                    }, req.query)
-
-                if (needs_redirect) {
-                    return res.redirect(`/@${recipient.name}`)
-                }
-
                 const muted_users = await model.v1.mute.users.list(fastify.mongo.db, { "user_id": logged_in_user.id })
                 const muted_words = await model.v1.mute.words.list(fastify.mongo.db, { "user_id": logged_in_user.id })
 
@@ -139,19 +117,15 @@ module.exports = (fastify, options, next) => {
                 const custom_emoji_list = []
 
                 const custom_emoji_shortnames = []
-                custom_emoji_list.forEach(emoji => {
-                    custom_emoji_shortnames.push(emoji.shortname)
-                })
-                custom_emoji_shortnames.sort(compare_shortname)
                 const custom_emoji_version = "0"
 
                 const device = fastify.device(req)
                 app.render(req.req, res.res, `/theme/${fastify.theme(req)}/${device}/status/thread`, {
                     "platform": fastify.platform(req),
                     "request_query": req.query,
-                    csrf_token, community, in_reply_to_status, logged_in_user, device, desktop_settings,
+                    csrf_token, columns, in_reply_to_status, logged_in_user, device, desktop_settings,
                     pinned_media, recent_uploads, pinned_emoji_shortnames, custom_emoji_shortnames,
-                    muted_users, muted_words, statuses, has_newer_statuses, has_older_statuses, custom_emoji_version
+                    muted_users, muted_words, has_newer_statuses, has_older_statuses, custom_emoji_version
                 })
             }
 

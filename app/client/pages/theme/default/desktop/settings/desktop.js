@@ -7,6 +7,7 @@ import SettingsMenuComponent from "../../../../../views/theme/default/desktop/se
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
 import assign from "../../../../../libs/assign"
+import Toggle from "react-toggle"
 import { get as get_desktop_settings } from "../../../../../settings/desktop"
 import { is_object } from "../../../../../assert"
 import Component from "../../../../../views/app"
@@ -20,7 +21,6 @@ export default class App extends Component {
         const desktop_settings = get_desktop_settings()
         this.state = {
             "color": logged_in_user ? logged_in_user.profile.theme_color : config.default_theme_color,
-            "new_column_target": desktop_settings.new_column_target,
             "multiple_columns_enabled": desktop_settings.multiple_columns_enabled,
             "in_progress": false
         }
@@ -33,7 +33,6 @@ export default class App extends Component {
         this.setState({ "in_progress": true })
         setTimeout(() => {
             const settings = assign(get_desktop_settings(), {
-                "new_column_target": this.state.new_column_target,
                 "multiple_columns_enabled": this.state.multiple_columns_enabled,
             })
             request
@@ -53,6 +52,12 @@ export default class App extends Component {
                     this.setState({ "in_progress": false })
                 })
         }, 250)
+    }
+    toggleMultipleColumnsEnabled = event => {
+        event.preventDefault()
+        this.setState({
+            "multiple_columns_enabled": !this.state.multiple_columns_enabled
+        })
     }
     render() {
         const { platform, logged_in_user } = this.props
@@ -74,38 +79,14 @@ export default class App extends Component {
                                 </div>
                                 <div className="item">
                                     <h3 className="title">マルチカラム</h3>
-                                    <p><label>
-                                        <input type="checkbox"
-                                            name="multiple_columns_enabled"
+                                    <label className="toggle-button">
+                                        <Toggle icons={false}
                                             checked={this.state.multiple_columns_enabled}
-                                            onChange={() => this.setState({ "multiple_columns_enabled": !this.state.multiple_columns_enabled })} />
-                                        マルチカラムを有効にする
-									</label></p>
+                                            defaultChecked={this.state.multiple_columns_enabled}
+                                            onChange={this.toggleMultipleColumnsEnabled} />
+                                        <span className="label">マルチカラムを有効にする</span>
+                                    </label>
                                 </div>
-                                {this.state.multiple_columns_enabled ?
-                                    <div className="item">
-                                        <h3 className="title">チャンネルの開き方</h3>
-                                        <p><label>
-                                            <input
-                                                type="radio"
-                                                name="new_column_target"
-                                                value="new"
-                                                checked={this.state.new_column_target === enums.column.target.new}
-                                                onChange={() => this.setState({ "new_column_target": enums.column.target.new })} />
-                                            一度だけ新しいカラムを開き、以降はそのカラムで開く
-                                            </label></p>
-                                        <p><label>
-                                            <input
-                                                type="radio"
-                                                name="new_column_target"
-                                                value="blank"
-                                                checked={this.state.new_column_target === enums.column.target.blank}
-                                                onChange={() => this.setState({ "new_column_target": enums.column.target.blank })} />
-                                            常に新しいカラムで開く
-                                            </label></p>
-                                    </div>
-                                    : null
-                                }
                                 <div className="submit">
                                     <LoadingButton
                                         handle_click={this.onUpdate}

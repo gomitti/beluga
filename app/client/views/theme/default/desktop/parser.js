@@ -3,7 +3,7 @@ import classnames from "classnames"
 import config from "../../../../beluga.config"
 import parser from "./parser/index"
 import assert, { is_object, is_string } from "../../../../assert"
-import { get_image_url_by_shortname_or_null, unicode_emoji_regexp, get_shortname_by_unicode } from "../../../../stores/theme/default/common/emoji"
+import * as EmojiPickerStore from "../../../../stores/theme/default/common/emoji"
 import { parse_block_markdown, parse_inline_markdown } from "./parser/markdown"
 import Tooltip from "./tooltip"
 
@@ -64,7 +64,7 @@ export const split_emoji_unicode = splits => {
             result.push(sentence)
             return
         }
-        const array = sentence.split(unicode_emoji_regexp)
+        const array = sentence.split(EmojiPickerStore.unicode_emoji_regexp)
         array.forEach(component => {
             if (component.length === 0) {
                 return
@@ -216,9 +216,13 @@ export const parse_link = (substr, subviews) => {
         }
         let url = substr.replace(/\/$/, "")
         url = url.replace(/^!/, "")
-        const display_text = decodeURI(url.replace(/^https?:\/\//, ""))
-        subviews.push(<a href={url} className="status-body-link user-defined-color user-defined-color-hover" target="_blank">{display_text}</a>)
-        return true
+        try {
+            const display_text = decodeURI(url.replace(/^https?:\/\//, ""))
+            subviews.push(<a href={url} className="status-body-link user-defined-color user-defined-color-hover" target="_blank">{display_text}</a>)
+            return true
+        } catch (error) {
+            return false
+        }
     }
     return false
 }
@@ -245,9 +249,10 @@ export const parse_tags = (substr, subviews, community, handlers) => {
 
 export const parse_emoji_unicode = (substr, subviews) => {
     if (substr.match(/[\u0023\u00AE\u00A9\u2049\u203C\u2122-\u21AA\u2328-\u23FA\u24C2\u25AA-\u25FE\u2600-\u26FF\u2700-\u27bf\u2935\u2934\u3030\u303D\u3297\u3299\uD800-\uDBFF]/g)) {
-        const shortname = get_shortname_by_unicode(substr)
+        const shortname = EmojiPickerStore.get_shortname_by_unicode(substr)
         if (shortname) {
-            const image_url = get_image_url_by_shortname_or_null(shortname, null)
+            const picker = EmojiPickerStore.shared_instance
+            const image_url = picker.getImageUrlForShortnameOrNull(shortname, null)
             if (image_url === null) {
                 return false
             }
@@ -267,7 +272,8 @@ export const parse_emoji_shortname = (substr, subviews, community) => {
     const m = substr.match(/^:([a-zA-Z0-9_]+):$/)
     if (m) {
         const shortname = m[1]
-        const image_url = get_image_url_by_shortname_or_null(shortname, community.id)
+        const picker = EmojiPickerStore.shared_instance
+        const image_url = picker.getImageUrlForShortnameOrNull(shortname, community.id)
         if (image_url) {
             subviews.push(<EmojiComponent key={`emoji-${shortname}-${subviews.length}`} image_url={image_url} shortname={shortname} />)
             return true

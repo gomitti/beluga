@@ -1,7 +1,7 @@
 export default {
     "url": "mongodb://localhost:27017",
     "database": {
-        "production": "beluga",
+        "production": "cx",
         "test": "__test__"
     }
 }

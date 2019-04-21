@@ -56,7 +56,7 @@ class ProfileComponent extends Component {
     }
     render() {
         return (
-            <div className="settings-content-component form profile meiryo">
+            <div className="settings-content-component form profile">
                 <div className="head">
                     <h1>プロフィール</h1>
                 </div>

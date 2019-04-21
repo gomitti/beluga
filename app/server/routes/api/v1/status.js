@@ -5,7 +5,10 @@ import collection from "../../../collection"
 import storage from "../../../config/storage"
 import assert, { is_string } from "../../../assert"
 import { parse_bool_str } from "../../../lib/bool"
-import assign from "../../../lib/assign";
+import assign from "../../../lib/assign"
+import { convert_to_hex_string_or_null } from "../../../lib/object_id";
+
+const g_popular_status_ids = []
 
 module.exports = (fastify, options, next) => {
     const parse_params = params => {
@@ -182,6 +185,46 @@ module.exports = (fastify, options, next) => {
             const status = await collection.v1.status.show(fastify.mongo.db, params)
             res.send({ "success": true, status })
         } catch (error) {
+            res.send({ "success": false, "error": error.toString() })
+        }
+    })
+    fastify.get("/api/v1/status/popular", async (req, res) => {
+        try {
+            if (g_popular_status_ids.length === 0) {
+                const set = new Set()
+                const likes = await memcached.v1.statuses.popular.like(fastify.mongo.db)
+                const favorites = await memcached.v1.statuses.popular.favorite(fastify.mongo.db)
+                likes.forEach(status_id => {
+                    if (set.has(status_id)) {
+                        return
+                    }
+                    set.add(status_id)
+                })
+                favorites.forEach(status_id => {
+                    if (set.has(status_id)) {
+                        return
+                    }
+                    set.add(status_id)
+                })
+                set.forEach(status_id => {
+                    g_popular_status_ids.push(status_id)
+                })
+                for (let k = g_popular_status_ids.length - 1; k > 0; k--) {
+                    const r = Math.floor(Math.random() * (k + 1));
+                    const tmp = g_popular_status_ids[k];
+                    g_popular_status_ids[k] = g_popular_status_ids[r];
+                    g_popular_status_ids[r] = tmp;
+                }
+                console.log("# of popular statuses:", g_popular_status_ids.length)
+            }
+            const index = parseInt(Date.now() / 1000) % g_popular_status_ids.length
+            const status_id = g_popular_status_ids[index]
+            const status = await collection.v1.status.show(fastify.mongo.db, {
+                "id": status_id
+            })
+            res.send({ "success": true, status })
+        } catch (error) {
+            console.log(error)
             res.send({ "success": false, "error": error.toString() })
         }
     })

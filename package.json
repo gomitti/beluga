@@ -50,6 +50,7 @@
         "react-tweet-embed": "^1.1.1",
         "redux": "^4.0.1",
         "speakeasy": "^2.0.0",
+        "tor-test": "^0.2.1",
         "uid-safe": "^2.1.5",
         "uws": "10.148.0",
         "video-react": "^0.13.1",
@@ -57,11 +58,11 @@
         "ws": "^6.1.2"
     },
     "devDependencies": {
-        "@babel/cli": "^7.2.3",
+        "@babel/cli": "^7.4.0",
         "@babel/core": "^7.2.2",
-        "@babel/plugin-proposal-class-properties": "^7.2.3",
-        "@babel/plugin-proposal-decorators": "^7.2.3",
-        "@babel/preset-env": "^7.2.3",
+        "@babel/plugin-proposal-class-properties": "^7.4.0",
+        "@babel/plugin-proposal-decorators": "^7.4.0",
+        "@babel/preset-env": "^7.4.0",
         "@babel/preset-react": "^7.0.0",
         "node-sass": "^4.11.0"
     }

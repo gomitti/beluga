@@ -1,36 +1,30 @@
-.message-component {
-    > .inside {
-        > .timeline-header-component {
-            > .inside {
-                > .label-area {
-                    > .label {
-                        display: flex;
-                        flex-direction: row;
-                        align-items: center;
+.column-component.message {
+    .label-area {
+        > .label {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
 
-                        > .display-name {
-                            font-weight: bold;
-                            color: rgb(20, 20, 20);
-                            font-size: 16px;
-                            margin-right: 4px;
-                        }
+            > .display-name {
+                font-weight: bold;
+                color: rgb(20, 20, 20);
+                font-size: 16px;
+                margin-right: 4px;
+            }
 
-                        > .name {
-                            &::before {
-                                content: "@";
-                            }
-
-                            font-size: 13px;
-                            color: rgb(120, 120, 120);
-                            font-weight: normal;
-                        }
-                    }
+            > .name {
+                &::before {
+                    content: "@";
                 }
+
+                font-size: 15px;
+                color: rgb(120, 120, 120);
+                font-weight: normal;
             }
         }
+    }
 
-        > .timeline-component {
-            padding: 10px 0;
-        }
+    .timeline-component {
+        padding: 10px 0;
     }
 }

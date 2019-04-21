@@ -40,7 +40,7 @@ const StatsComponent = ({ aggregation_result }) => {
     const { total_bytes, count } = aggregation_result
     const bytes_unit_str = convert_bytes_to_optimal_unit(total_bytes)
     return (
-        <div className="settings-content-component form uploads-aggregation meiryo">
+        <div className="settings-content-component form uploads-aggregation">
             <div className="head">
                 <h1>統計</h1>
             </div>
@@ -63,7 +63,7 @@ const MediaListComponentOrNull = ({ media, handle_click }) => {
         return null
     }
     return (
-        <div className="settings-content-component form uploads meiryo">
+        <div className="settings-content-component form uploads">
             <div className="head">
                 <h1>ファイル一覧</h1>
             </div>

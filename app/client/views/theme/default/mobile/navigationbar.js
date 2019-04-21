@@ -101,7 +101,7 @@ const DropdownMenuSettings = ({ is_active }) => {
 const TabMenuItemChannels = ({ active_tab }) => {
     return (
         <a className={classnames("item border-bottom", { "active": active_tab === "channels" })}
-            href="/settings">
+            href="/beluga/channels">
             <span className="icon channels"></span>
             <span className="label">チャンネル</span>
         </a>

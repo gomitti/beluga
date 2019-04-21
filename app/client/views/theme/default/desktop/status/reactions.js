@@ -2,7 +2,7 @@ import React, { Component } from "react"
 import { observer } from "mobx-react"
 import config from "../../../../../beluga.config"
 import Tooltip from "../tooltip"
-import { get_image_url_by_shortname_or_null } from "../../../../../stores/theme/default/common/emoji";
+import { get_image_url_for_shortname } from "../../../../../stores/theme/default/common/emoji";
 import { is_array } from "../../../../../assert";
 
 const TooltipContentComponent = ({ user_names, shortname }) => {
@@ -63,7 +63,7 @@ export default class ReactionsComponent extends Component {
         const buttons = []
         status.reactions.list.forEach(item => {
             const { shortname, count, user_names } = item
-            const image_url = get_image_url_by_shortname_or_null(shortname, community_id)
+            const image_url = get_image_url_for_shortname(shortname, community_id)
             const content = <TooltipContentComponent user_names={user_names} shortname={shortname} />
             buttons.push(
                 <Button handle_click={this.toggle} shortname={shortname} image_url={image_url} user_names={user_names} count={count} />

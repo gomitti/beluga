@@ -49,6 +49,7 @@ export default class App extends Component {
             return
         }
 
+        const { request_query } = this.props
         request
             .post("/account/signup", {
                 name,
@@ -59,6 +60,11 @@ export default class App extends Component {
                 if (data.success == false) {
                     alert(data.error)
                     return
+                }
+                if (request_query && request_query.redirect) {
+                    if (request_query.redirect.match(/^\/.+$/)) {
+                        return location.href = request_query.redirect
+                    }
                 }
                 location.href = "/"
             })

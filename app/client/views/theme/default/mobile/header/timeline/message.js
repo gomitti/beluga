@@ -72,7 +72,7 @@ export default class HeaderComponent extends Component {
         return (
             <div className="timeline-header-component">
                 <div className="inside">
-                    <div className="label-area">
+                    <div className="label-area message">
                         <img className="avatar" src={recipient.avatar_url} />
                         <span className="label">
                             <span className="display-name">{display_name}</span>

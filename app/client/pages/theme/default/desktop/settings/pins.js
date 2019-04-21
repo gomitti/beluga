@@ -5,7 +5,7 @@ import classnames from "classnames"
 import Head from "../../../../../views/theme/default/desktop/head"
 import NavigationbarComponent from "../../../../../views/theme/default/desktop/navigationbar"
 import SettingsMenuComponent from "../../../../../views/theme/default/desktop/settings/account/menu"
-import { get_category_by_shortname_or_null, EmojiPickerStore } from "../../../../../stores/theme/default/common/emoji"
+import * as EmojiPickerStore from "../../../../../stores/theme/default/common/emoji"
 import { EmojiPickerComponent } from "../../../../../views/theme/default/desktop/emoji"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
@@ -19,7 +19,7 @@ const NumberIndicatorComponentOrNull = ({ is_hidden, index }) => {
         return null
     }
     return (
-        <span className="number user-defined-bg-color verdana">{index}</span>
+        <span className="number user-defined-bg-color">{index}</span>
     )
 }
 
@@ -179,7 +179,7 @@ class MediaComponent extends Component {
             )
         })
         return (
-            <div className="settings-content-component pins meiryo">
+            <div className="settings-content-component pins">
                 <div className="head">
                     <h1>画像</h1>
                 </div>
@@ -212,9 +212,6 @@ class EmojiComponent extends Component {
     selected_shortnames = []
     constructor(props) {
         super(props)
-        const picker = new EmojiPickerStore()
-        picker.callback_pick = this.pick
-        this.picker = picker
         this.state = {
             "in_progress": false
         }
@@ -274,7 +271,7 @@ class EmojiComponent extends Component {
             selectedEmojiView.push(<button onClick={event => this.pick(shortname)} ><i className={`emoji-picker-ignore-click emoji-picker-item-image emojione-4 emojione-4-shortname-${shortname}`}></i></button>)
         })
         return (
-            <div className="settings-content-component pins meiryo">
+            <div className="settings-content-component pins">
                 <div className="head">
                     <h1>絵文字</h1>
                 </div>
@@ -318,7 +315,7 @@ export default class App extends AppComponent {
                         </div>
                         <div className="settings-contents-area">
                             <MediaComponent pinned={pinned_media} history={recent_uploads} />
-                            <EmojiComponent pinned={pinned_emoji} />
+                            <EmojiComponent />
                         </div>
                     </div>
                 </div>

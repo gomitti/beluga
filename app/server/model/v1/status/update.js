@@ -150,8 +150,9 @@ const after_update = user => {
     prev_updated_at[user.id] = Date.now()
 }
 
-const parse_mentions = async (db, text) => {
+const parse_mentions = async (db, status) => {
     const mentions = []
+    const { text, community } = status
     {
         const regexp = new RegExp(`@(${config.user.name_regexp})`, "g")
         let match = regexp.exec(text)
@@ -221,7 +222,8 @@ export const update_channel = async (db, params) => {
     const role = await memcached.v1.user.role.get(db, { "user_id": user.id, "community_id": community.id })
     const permissions = await memcached.v1.channel.permissions.get(db, { "channel_id": channel_id })
     const role_perms = permissions[role]
-    if (role_perms.update_status !== true){
+    const allowed_to_update_status = role_perms[constants.channel.permission.update_status]
+    if (allowed_to_update_status !== true) {
         throw new Error("投稿が禁止されています")
     }
 
@@ -230,7 +232,7 @@ export const update_channel = async (db, params) => {
     params.entities = await parse_entities(params.text)
 
     const status = await update(db, params)
-    const mentions = await parse_mentions(db, status.text)
+    const mentions = await parse_mentions(db, status)
 
     // タイムラインに追加
     await api.v1.timeline.channel.push(db, {
@@ -296,8 +298,10 @@ export const update_thread = async (db, params) => {
         const role = await memcached.v1.user.role.get(db, { "user_id": user.id, "community_id": community.id })
         const permissions = await memcached.v1.channel.permissions.get(db, { "channel_id": channel_id })
         const role_perms = permissions[role]
-        if (role_perms.update_status !== true) {
-            throw new Error("リアクションは禁止されています")
+
+        const allowed_to_comment = role_perms[constants.channel.permission.update_status]
+        if (allowed_to_comment !== true) {
+            throw new Error("コメントが禁止されています")
         }
     }
 
@@ -305,7 +309,7 @@ export const update_thread = async (db, params) => {
     params.entities = await parse_entities(params.text)
 
     const status = await update(db, params)
-    const mentions = await parse_mentions(db, status.text)
+    const mentions = await parse_mentions(db, status)
 
     // タイムラインに追加
     await api.v1.timeline.thread.push(db, {
@@ -399,7 +403,7 @@ export const update_message = async (db, params) => {
     params.entities = await parse_entities(params.text)
 
     const status = await update(db, params)
-    const mentions = await parse_mentions(db, status.text)
+    const mentions = await parse_mentions(db, status)
 
     // タイムラインに追加
     await api.v1.timeline.message.push(db, {

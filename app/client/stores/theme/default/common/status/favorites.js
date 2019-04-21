@@ -11,19 +11,17 @@ export default class FavoritesStore {
         }
         this.status_id = status.id
         this.parent = parent
-        if (ws) {		// サーバーサイドではやる意味がない
-            ws.addEventListener("message", (e) => {
-                const data = JSON.parse(e.data)
-                if (data.favorites_updated) {
-                    const { status } = data
-                    if (status.id === this.status_id) {
-                        if (status.favorited_by) {
-                            this.set(status.favorited_by)
-                        }
+        ws.addEventListener("message", (e) => {
+            const data = JSON.parse(e.data)
+            if (data.favorites_updated) {
+                const { status } = data
+                if (status.id === this.status_id) {
+                    if (status.favorited_by) {
+                        this.set(status.favorited_by)
                     }
                 }
-            })
-        }
+            }
+        })
     }
     get count() {
         return this.users.length

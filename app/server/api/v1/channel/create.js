@@ -7,6 +7,9 @@ export default async (db, params) => {
     if (is_string(name) === false) {
         throw new Error("チャンネル名を指定してください")
     }
+    if (name.indexOf("#") !== -1) {
+        throw new Error("チャンネル名に#を含めることはできません")
+    }
     if (name.length > config.channel.max_name_length) {
         throw new Error(`チャンネル名は${config.channel.max_name_length}文字を超えてはいけません`)
     }

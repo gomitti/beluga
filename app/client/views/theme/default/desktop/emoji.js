@@ -1,253 +1,190 @@
-import { Component } from "react"
+import { Component, Fragment } from "react"
 import classnames from "classnames"
 import { observer } from "../../../../stores/theme/default/common/mobx"
 import assert, { is_string, is_object, is_array } from "../../../../assert"
-import { get_category_by_shortname_or_null, get_all_categories, get_title_by_category, get_shortnames_by_category, search_by_shortname, get_image_url_by_shortname_or_null, EmojiPickerStore } from "../../../../stores/theme/default/common/emoji"
-import { get_shared_picker_store } from "../../../../stores/theme/default/common/emoji"
+import * as EmojiPickerStore from "../../../../stores/theme/default/common/emoji"
+
+const ShortnameListComponent = ({ category, handle_pick }) => {
+    const { emojis, name } = category
+    if (emojis.length === 0) {
+        return (
+            <div className={`emoji-category ${name}`}></div>
+        )
+    }
+    const buttons = []
+    emojis.forEach(emoji => {
+        const { shortname, is_custom, image_url } = emoji
+        if (is_custom) {
+            buttons.push(
+                <button
+                    key={shortname}
+                    onClick={event => handle_pick(shortname)}
+                    className="emoji-picker-ignore-click item">
+                    <span className={`emoji-picker-ignore-click emoji-picker-item-image emoji-sizer`}
+                        style={{ "backgroundImage": `url(${image_url})` }}></span>
+                </button>
+            )
+        } else {
+            buttons.push(
+                <button
+                    key={shortname}
+                    onClick={event => handle_pick(shortname)}
+                    className="emoji-picker-ignore-click item">
+                    <span className={`emoji-picker-ignore-click emoji-picker-item-image emojione-4 emojione-4-shortname-${shortname}`}></span>
+                </button>
+            )
+        }
+    })
+    const description = EmojiPickerStore.get_description_by_category_name(name)
+    return (
+        <div className={`emoji-category ${name}`}>
+            <header className="header">{description}</header>
+            <div className="button-grid">
+                {buttons}
+            </div>
+        </div>
+    )
+}
 
 @observer
-class EmojiListComponent extends Component {
+class CategoryShortnamesComponent extends Component {
     render() {
-        const { emojis, handle_pick, title, category, community, is_hidden } = this.props
-        if (is_hidden) {
-            return null
-        }
-        if (is_array(emojis) === false) {
-            return null
-        }
-        if (emojis.length === 0) {
-            return null
-        }
-        const buttons = []
-        emojis.forEach(emoji => {
-            const { shortname, category } = emoji
-            if (category === "custom") {
-                const image_url = get_image_url_by_shortname_or_null(shortname, community.id)
-                buttons.push(
-                    <button
-                        key={shortname}
-                        onClick={event => handle_pick(shortname, category)}
-                        className="emoji-picker-ignore-click item">
-                        <span className={`emoji-picker-ignore-click emoji-picker-item-image emoji-sizer`}
-                            style={{ "backgroundImage": `url(${image_url})` }}></span>
-                    </button>
-                )
-            } else {
-                buttons.push(
-                    <button
-                        key={shortname}
-                        onClick={event => handle_pick(shortname, category)}
-                        className="emoji-picker-ignore-click item">
-                        <span className={`emoji-picker-ignore-click emoji-picker-item-image emojione-4 emojione-4-shortname-${shortname}`}></span>
-                    </button>
-                )
-            }
-        })
-        return (
-            <div className={`emoji-category ${category}`}>
-                <header className="header">{title}</header>
-                <div className="button-grid">
-                    {buttons}
-                </div>
-            </div>
-        )
-    }
-}
-
-class EmojiSearchListComponent extends Component {
-    render() {
-        const { emojis, community, is_hidden, handle_pick } = this.props
-        return (
-            <div className={classnames("categories scroller", { "hidden": is_hidden })} ref="categories">
-                <EmojiListComponent emojis={emojis} community={community} handle_pick={handle_pick} title="検索" category="search" />
-            </div>
-        )
-    }
-}
-
-class EmojiDefaultListComponent extends Component {
-    constructor(props) {
-        super(props)
-        const { pinned_shortnames, current_category, handle_pick } = props
-
-        this.prev_category = current_category
-        this.map_category_dom = null
-
-        this.categoryViews = []
-        const categories = get_all_categories()
-        categories.forEach(category => {
-            const shortnames = get_shortnames_by_category(category)
-            const title = get_title_by_category(category)
-            const buttons = []
-            shortnames.forEach(shortname => {
-                buttons.push(
-                    <button
-                        key={shortname}
-                        onClick={event => {
-                            event.preventDefault()
-                            handle_pick(shortname, category)
-                        }}
-                        className="emoji-picker-ignore-click item">
-                        <i className={`emoji-picker-ignore-click emoji-picker-item-image emojione-4 emojione-4-shortname-${shortname}`}></i>
-                    </button>
-                )
-            })
-            this.categoryViews.push(
-                <div key={category} className={`emoji-category ${category}`}>
-                    <header className="header">{title}</header>
-                    <div className="button-grid">
-                        {buttons}
-                    </div>
-                </div>
+        console.log("[CategoryShortnamesComponent] render()")
+        const { categories, handle_pick } = this.props
+        const components = []
+        categories.forEach(category_store => {
+            const { emojis, category_name } = category_store
+            components.push(
+                <ShortnameListComponent
+                    key={category_name}
+                    category={category_store}
+                    handle_pick={handle_pick} />
             )
         })
-
-        this.pinned_emojis = []
-        if (Array.isArray(pinned_shortnames)) {
-            pinned_shortnames.forEach(shortname => {
-                const category = get_category_by_shortname_or_null(shortname)
-                if (category === null) {
-                    return
-                }
-                this.pinned_emojis.push({ shortname, category })
-            })
-        }
-    }
-    componentDidMount() {
-        this.map_category_dom = {}
-        const dom = this.refs.categories
-        assert(!!dom, "$dom is null")
-        const category_doms = dom.getElementsByClassName("emoji-category")
-        Array.prototype.forEach.call(category_doms, dom => {
-            const category = dom.className.split(" ")[1]
-            assert(is_string(category), "$category must be of type string")
-            this.map_category_dom[category] = dom
-        })
-    }
-    render() {
-        console.log("[EmojiDefaultListComponent] render")
-
-        const { custom_shortnames, current_category, community, history_emojis, handle_pick } = this.props
-        if (this.map_category_dom) {
-            if (current_category !== this.prev_category) {
-                const target = this.map_category_dom[current_category]
-                if (target) {
-                    this.refs.categories.scrollTop = target.offsetTop
-                }
-                this.prev_category = current_category
-            }
-        }
-
-        const custom_emojis = []
-        if (Array.isArray(custom_shortnames)) {
-            custom_shortnames.forEach(shortname => {
-                const category = "custom"
-                custom_emojis.push({ shortname, category })
-            })
-        }
-
-        const { is_hidden } = this.props
         return (
-            <div className={classnames("categories scroller webkit-scrollbar", { "hidden": is_hidden })} ref="categories">
-                <EmojiListComponent
-                    emojis={this.pinned_emojis}
-                    handle_pick={handle_pick}
-                    title="よく使う絵文字"
-                    category="pinned"
-                    is_hidden={(this.pinned_emojis.length === 0)} />
-                <EmojiListComponent
-                    emojis={history_emojis}
-                    community={community}
-                    handle_pick={handle_pick}
-                    title="履歴"
-                    category="history"
-                    is_hidden={!community} />
-                {this.categoryViews}
-                <EmojiListComponent
-                    emojis={custom_emojis}
-                    community={community}
-                    handle_pick={handle_pick}
-                    title="カスタム"
-                    category="custom"
-                    is_hidden={(community && custom_emojis.length === 0)} />
-            </div>
+            <Fragment>{components}</Fragment>
         )
     }
 }
 
 @observer
-export class EmojiPickerComponent extends Component {
+export class CategoryScrollerComponent extends Component {
+    render() {
+        const { is_searching, handle_pick } = this.props
+        const picker = EmojiPickerStore.shared_instance
+        if (is_searching) {
+            return (
+                <Fragment>
+                    <CategoryShortnamesComponent categories={picker.search_emoji.categories} handle_pick={handle_pick} />
+                </Fragment>
+            )
+        }
+        return (
+            <Fragment>
+                <CategoryShortnamesComponent categories={picker.pinned_emoji.categories} handle_pick={handle_pick} />
+                <CategoryShortnamesComponent categories={picker.history_emoji.categories} handle_pick={handle_pick} />
+                <CategoryShortnamesComponent categories={picker.standard_emoji.categories} handle_pick={handle_pick} />
+                <CategoryShortnamesComponent categories={picker.custom_emoji.categories} handle_pick={handle_pick} />
+            </Fragment>
+        )
+    }
+}
+
+export class EmojiPickerBaseComponent extends Component {
     constructor(props) {
         super(props)
-        const { picker } = props
-        assert(picker instanceof EmojiPickerStore, "$picker must be an instance of EmojiPickerStore")
         this.state = {
-            "search_result": []
+            "search_result": [],
+            "is_searching": false,
+            "current_category_name": "pinned"
         }
         this.search_timer_id = null
+        this.category_dom_by_name = {}
+
         if (typeof window !== "undefined") {
-            window.addEventListener(event_types.window_did_update, () => {
+            window.addEventListener(event_types.reset_state, () => {
                 const { search_input } = this.refs
-                const { picker } = this.props
-                search_input.value = ""
-                if (picker.is_active) {
+                this.setState({
+                    "current_category_name": "pinned",
+                    "is_searching": false
+                })
+                setTimeout(() => {
+                    search_input.value = ""
+                    this.refs.categories.scrollTop = 0
+                }, 100)
+            })
+            window.addEventListener(event_types.focus_input, () => {
+                setTimeout(() => {
+                    const { search_input } = this.refs
                     search_input.focus()
-                }
+                }, 100)
             })
         }
     }
-    onClickMenuItem = (event, category) => {
+    componentDidUpdate = (prevProps, prevState) => {
+        const dom = this.refs.categories
+        if (!!dom === false) {
+            return
+        }
+        console.log("[EmojiPickerBaseComponent] componentDidUpdate()")
+        const category_doms = dom.getElementsByClassName("emoji-category")
+        Array.prototype.forEach.call(category_doms, dom => {
+            const category_name = dom.className.split(" ")[1]
+            assert(is_string(category_name), "$category_name must be of type string")
+            this.category_dom_by_name[category_name] = dom
+        })
+    }
+    onClickMenuItem = (event, category_name) => {
         event.preventDefault()
-        const { picker } = this.props
-        picker.setCurrentCategory(category)
+        const target = this.category_dom_by_name[category_name]
+        console.log("target", target)
+        if (target) {
+            this.refs.categories.scrollTop = target.offsetTop
+        }
+        this.setState({
+            "current_category_name": category_name
+        })
     }
     onSearchInputChange = event => {
         const input = this.refs.search_input
-        const { picker } = this.props
-        const text = input.value
-        if (text.length == 0) {
-            return picker.setIsSearching(false)
+        const picker = EmojiPickerStore.shared_instance
+        const query = input.value
+        if (query.length == 0) {
+            return this.setState({
+                "is_searching": false
+            })
         }
-        picker.setIsSearching(true)
         clearTimeout(this.search_timer_id)
         this.search_timer_id = setTimeout(() => {
-            const emojis = search_by_shortname(text)
             this.setState({
-                "search_result": emojis
+                "is_searching": true
             })
+            picker.searchByShortname(query)
         }, 100)
     }
-    onPick = (shortname, category) => {
-        const { picker } = this.props
-        if (!!picker === false) {
-            return
-        }
-        picker.pick(shortname, category)
-    }
     render() {
-        const { picker, community, pinned_shortnames } = this.props
-        console.log("[EmojiPickerComponent] render")
+        const { pinned_shortnames, handle_pick } = this.props
+        console.log("[EmojiPickerBaseComponent] render()")
 
-        const categories = get_all_categories()
-        categories.unshift("history")
-        categories.unshift("pinned")
-        categories.push("custom")
-
-        const menuViews = []
-        categories.forEach(category => {
-            menuViews.push(
+        const category_name_list = EmojiPickerStore.get_all_category_names()
+        const menu_components = []
+        category_name_list.forEach(category_name => {
+            menu_components.push(
                 <button
-                    key={category}
-                    className={classnames(`${category} item user-defined-color-active user-defined-border-color-active emoji-picker-ignore-click`, { "active": category === picker.current_category })}
-                    onClick={event => this.onClickMenuItem(event, category)}>
+                    key={category_name}
+                    className={classnames(`${category_name} item user-defined-color-active user-defined-border-color-active emoji-picker-ignore-click`, {
+                        "active": category_name === this.state.current_category_name
+                    })}
+                    onClick={event => this.onClickMenuItem(event, category_name)}>
                 </button>
             )
         })
+
         return (
             <div className="emoji-picker-component scroller-container emoji-picker-ignore-click">
                 <div className="menu-area emoji-picker-ignore-click">
                     <div className="inside">
-                        {menuViews}
+                        {menu_components}
                     </div>
                 </div>
                 <div className="search-area emoji-picker-ignore-click">
@@ -257,32 +194,24 @@ export class EmojiPickerComponent extends Component {
                         EmojiPicker.hide()
                     }}>閉じる</a>
                 </div>
-                <EmojiSearchListComponent
-                    is_hidden={!picker.is_searching}
-                    handle_pick={this.onPick}
-                    community={community}
-                    emojis={this.state.search_result} />
-                <EmojiDefaultListComponent
-                    is_hidden={picker.is_searching}
-                    current_category={picker.current_category}
-                    handle_pick={this.onPick}
-                    pinned_shortnames={pinned_shortnames}
-                    custom_shortnames={picker.custom_shortnames}
-                    history_emojis={picker.getEmojiHistory()}
-                    community={community} />
+                <div className="categories scroller webkit-scrollbar" ref="categories">
+                    <CategoryScrollerComponent is_searching={this.state.is_searching} handle_pick={handle_pick} />
+                </div>
             </div>
         )
     }
 }
 
-const event_types = {
+export const event_types = {
     "show": "__event_emoji_picker_show",
     "toggle": "__event_emoji_picker_toggle",
     "hide": "__event_emoji_picker_hide",
     "window_did_update": "__event_emoji_picker_window_did_update",
+    "reset_state": "__event_emoji_picker_reset_state",
+    "focus_input": "__event_emoji_picker_focus_input",
 }
 
-const dispatch_event = (eventName, opts) => {
+export const dispatch_event = (eventName, opts) => {
     if (typeof window === "undefined") {
         return
     }
@@ -298,26 +227,36 @@ const dispatch_event = (eventName, opts) => {
 }
 
 const register_methods = target => {
-    target.show = (dom, callback_pick, callback_hide) => {
+    target.show = (dom, community, callback_pick, callback_hide) => {
+        const picker = EmojiPickerStore.shared_instance
+        if (community) {
+            picker.setCommunityId(community.id)
+        } else {
+            picker.setCommunityId(null)
+        }
         dispatch_event(event_types.show, { dom, callback_pick, callback_hide })
     }
-    target.toggle = (dom, callback_pick, callback_hide) => {
-        dispatch_event(event_types.toggle, { dom, callback_pick, callback_hide })
+    target.toggle = (dom, community, callback_pick, callback_hide) => {
+        const picker = EmojiPickerStore.shared_instance
+        if (community) {
+            picker.setCommunityId(community.id)
+        } else {
+            picker.setCommunityId(null)
+        }
+        dispatch_event(event_types.toggle, { dom, community, callback_pick, callback_hide })
     }
     target.hide = () => {
         dispatch_event(event_types.hide, {})
     }
 }
 
-@observer
 class EmojiPickerWindowComponent extends Component {
     constructor(props) {
         super(props)
-        const { picker } = props
-
         this.state = {
             "top": 0,
-            "left": 0
+            "left": 0,
+            "is_hidden": true
         }
         this.is_shift_key_down = false
         this.prev_dom = null
@@ -330,10 +269,10 @@ class EmojiPickerWindowComponent extends Component {
             window.addEventListener("scroll", this.hide)
             window.addEventListener("keyup", this.onKeyUp)
             window.addEventListener("keydown", this.onKeyDown)
-            document.body.addEventListener("click", this.onClick)
+            document.body.addEventListener("click", this.onClickDocument)
         }
     }
-    onClick = event => {
+    onClickDocument = event => {
         const { target } = event
         if (!!target === false) {
             this.hide()
@@ -346,16 +285,17 @@ class EmojiPickerWindowComponent extends Component {
     }
     onKeyUp = event => {
         if (event.keyCode == 16) {
+            console.log("shift key up")
             this.is_shift_key_down = false
         }
     }
     onKeyDown = event => {
         if (event.keyCode == 16) {
+            console.log("shift key down")
             this.is_shift_key_down = true
         }
     }
     show = payload => {
-        const { picker } = this.props
         const { detail } = payload
         const { dom, callback_pick, callback_hide } = detail
         const target_rect = dom.getBoundingClientRect()
@@ -405,46 +345,57 @@ class EmojiPickerWindowComponent extends Component {
 
         this.setState({
             "left": x - offset_left,
-            "top": y + window.pageYOffset
+            "top": y + window.pageYOffset,
+            "is_hidden": false,
+            "callback_pick": callback_pick,
+            "callback_hide": callback_hide
         })
-        picker.show((shortname, category) => {
-            callback_pick(shortname, category)
-            if (this.is_shift_key_down === false) {
-                picker.hide()
-            }
-        }, callback_hide)
+        dispatch_event(event_types.focus_input, null)
     }
     toggle = payload => {
         const { detail } = payload
         const { dom } = detail
-        const { picker } = this.props
         if (dom !== this.prev_dom) {
             this.show(payload)
         } else {
-            if (picker.is_active) {
-                this.hide()
-            } else {
+            if (this.state.is_hidden) {
                 this.show(payload)
+            } else {
+                this.hide()
             }
         }
         this.prev_dom = dom
     }
     hide = () => {
-        const { picker } = this.props
-        picker.hide()
+        this.setState({
+            "is_hidden": true
+        })
+        const { callback_hide } = this.state
+        if (callback_hide) {
+            callback_hide()
+        }
+        dispatch_event(event_types.reset_state, null)
     }
     componentDidUpdate = (prevProps, prevState, snapshot) => {
-        dispatch_event(event_types.window_did_update)
+        console.log("[EmojiPickerWindowComponent] componentDidUpdate()")
+        // dispatch_event(event_types.window_did_update)
+    }
+    onPick = shortname => {
+        const { callback_pick } = this.state
+        if (callback_pick) {
+            callback_pick(shortname)
+        }
+        const picker = EmojiPickerStore.shared_instance
+        picker.shortnameDidPick(shortname)
+        if (this.is_shift_key_down === false) {
+            EmojiPicker.hide()
+        }
     }
     render() {
-        const { picker, pinned_shortnames, community } = this.props
-        if (picker === null) {
-            return null
-        }
-        console.log("[EmojiPickerWindowComponent] render")
+        console.log("[EmojiPickerWindowComponent] render()")
         return (
             <div className={classnames("emoji-picker-window-component", {
-                "hidden": !picker.is_active
+                "invisible": this.state.is_hidden
             })}
                 style={{
                     "top": this.state.top,
@@ -452,10 +403,7 @@ class EmojiPickerWindowComponent extends Component {
                     "width": "366px",
                     "height": "320px"
                 }}>
-                <EmojiPickerComponent
-                    picker={picker}
-                    community={community}
-                    pinned_shortnames={pinned_shortnames} />
+                <EmojiPickerBaseComponent is_hidden={this.state.is_hidden} handle_pick={this.onPick} />
             </div>
         )
     }
@@ -463,22 +411,10 @@ class EmojiPickerWindowComponent extends Component {
 
 @register_methods
 class EmojiPicker extends Component {
-    constructor(props) {
-        super(props)
-        this.picker = null
-        if (typeof window !== "undefined") {
-            const { community } = props
-            this.picker = get_shared_picker_store(community)
-        }
-    }
     render() {
-        const { pinned_shortnames, community } = this.props
         return (
             <div>
-                <EmojiPickerWindowComponent
-                    pinned_shortnames={pinned_shortnames}
-                    picker={this.picker}
-                    community={community} />
+                <EmojiPickerWindowComponent />
             </div>
 
         )

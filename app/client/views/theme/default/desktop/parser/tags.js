@@ -20,10 +20,10 @@ export default (sentence, community, handlers) => {
         const { handle_click_mention } = handlers
         const name = sentence.slice(1)
         if (!!handle_click_mention === false) {
-            return <a href={`/${community.name}/@${name}`} className="status-body-mention user-defined-transparent-bg-color" data-name={name}>{name}</a>
+            return <a href={`/@${name}`} className="status-body-mention user-defined-transparent-bg-color" data-name={name}>{name}</a>
         }
         assert(is_function(handle_click_mention), "$handle_click_mention must be function")
-        return <a href={`/${community.name}/@${name}`} onClick={handle_click_mention} className="status-body-mention user-defined-transparent-bg-color" data-name={name}>{name}</a>
+        return <a href={`/@${name}`} onClick={handle_click_mention} className="status-body-mention user-defined-transparent-bg-color" data-name={name}>{name}</a>
     }
     return null
 }

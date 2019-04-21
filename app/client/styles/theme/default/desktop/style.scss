@@ -20,27 +20,18 @@
 @import "customize";
 @import "tooltip";
 @import "toggle";
+@import "welcome";
 
 @font-face {
     font-family: "Beluga";
     font-weight: 400;
     font-style: normal;
-    src: url("/asset/theme/default/beluga.otf?v=0.9.7") format("opentype");
+    src: url("/asset/theme/default/beluga.otf?v=0.9.31") format("opentype");
 }
 
-.lucida,
-.lucida:hover {
-    font-family: "lucida grande", tahoma, verdana, arial, "hiragino kaku gothic pro", meiryo, "ms pgothic", sans-serif;
-}
-
-.verdana,
-.verdana:hover {
-    font-family: "Verdana", tahoma, arial;
-}
-
-body,
-.meiryo {
-    font-family: "Hiragino Kaku Gothic Pro", Meiryo, "MS PGothic", sans-serif;
+body {
+    -webkit-font-smoothing: antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "ヒラギノ角ゴ ProN W3", Hiragino Kaku Gothic ProN, Arial, "メイリオ", Meiryo, sans-serif;
 }
 
 .app {
@@ -91,6 +82,11 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+.invisible {
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .scroller-container {

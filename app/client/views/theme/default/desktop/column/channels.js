@@ -37,7 +37,7 @@ export default class ChannelListComponent extends Component {
                     onClick={handle_click_channel}
                     data-name={channel.name}>
                     <span className="icon"></span>
-                    <span className="label meiryo" data-name={channel.name}>{channel.name}</span>
+                    <span className="label" data-name={channel.name}>{channel.name}</span>
                 </a>
             )
         })

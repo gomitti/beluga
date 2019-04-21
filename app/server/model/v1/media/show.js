@@ -9,6 +9,9 @@ storage.servers.forEach(server => {
 
 export default async (db, params) => {
     const media = await memcached.v1.media.show(db, { "id": params.id })
+    if (media === null) {
+        return null
+    }
 
     const { prefix, extension, host, directory, id, created_at, bytes } = media
     if (!!(prefix && extension && host && directory && bytes) === false) {

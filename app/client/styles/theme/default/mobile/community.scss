@@ -514,8 +514,15 @@
 .community-detail-component {
     > .inside {
         background-color: white;
+        border-radius: 6px;
         position: relative;
         z-index: 0;
+
+        > .community-header-component {
+            > .community-area {
+                border-bottom: 1px solid rgb(238, 238, 238);
+            }
+        }
 
         > .description-area {
             padding: 20px;

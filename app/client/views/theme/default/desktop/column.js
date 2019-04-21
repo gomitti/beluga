@@ -1,6 +1,4 @@
 import { Component } from "react"
-// import { observable, action } from "mobx"
-// import { observer } from "mobx-react"
 import { observable, observer, action } from "../../../../stores/theme/default/common/mobx"
 import classnames from "classnames"
 import enums from "../../../../enums"
@@ -10,7 +8,7 @@ import { ColumnStore, ColumnOptions, ColumnSettings } from "../../../../stores/t
 import StatusComponent from "./status"
 import PostboxComponent from "./postbox"
 import { TimelineComponent, StatusGroupTimelineComponent } from "./timeline"
-import HomeTimelineHeaderComponent from "./header/timeline/home"
+import MessageTimelineHeaderComponent from "./header/timeline/message"
 import ChannelTimelineHeaderComponent from "./header/timeline/channel"
 import ThreadTimelineHeaderComponent from "./header/timeline/thread"
 import CommunityTimelineHeaderComponent from "./header/timeline/community"
@@ -22,9 +20,91 @@ import UploadManager from "../../../../stores/theme/default/common/uploader"
 import StatusStore from "../../../../stores/theme/default/common/status"
 import PostboxStore from "../../../../stores/theme/default/common/postbox"
 import { get as get_desktop_settings } from "../../../../settings/desktop"
+import Toast from "../../../../views/theme/default/desktop/toast"
 import { TimelineOptions } from "../../../../stores/theme/default/desktop/timeline"
 
 const default_column_width = 650
+const status_trim_params = {
+    "trim_user": false,
+    "trim_community": false,
+    "trim_channel": false,
+    "trim_recipient": false,
+    "trim_favorited_by": false,
+    "trim_reaction_users": false,
+    "trim_commenters": false
+}
+
+const try_load_channel_by_name = async (name, community_id) => {
+    const res = await request.get("/channel/show", { "name": name, "community_id": community_id })
+    const { channel, error } = res.data
+    if (error) {
+        throw new Error(error)
+    }
+    if (!!channel === false) {
+        throw new Error("チャンネルが見つかりません")
+    }
+    return channel
+}
+
+const try_load_status_by_id = async status_id => {
+    const res = await request.get("/status/show", Object.assign({ "id": status_id }, status_trim_params))
+    const { status, error } = res.data
+    if (error) {
+        throw new Error(error)
+    }
+    if (!!status === false) {
+        throw new Error("投稿が見つかりません")
+    }
+    return status
+}
+
+const try_load_user_by_name = async name => {
+    const res = await request.get("/user/show", { name })
+    const { user, error } = res.data
+    if (error) {
+        throw new Error(error)
+    }
+    if (!!user === false) {
+        throw new Error("ユーザーが見つかりません")
+    }
+    return user
+}
+
+const try_load_channel_timeline = async channel_id => {
+    const res = await request.get("/timeline/channel", Object.assign({ channel_id }, status_trim_params))
+    const { statuses, error } = res.data
+    if (error) {
+        throw new Error(error)
+    }
+    if (is_array(statuses) !== true) {
+        throw new Error("$statuses must be of type array")
+    }
+    return statuses
+}
+
+const try_load_thread_timeline = async in_reply_to_status_id => {
+    const res = await request.get("/timeline/thread", Object.assign({ in_reply_to_status_id }, status_trim_params))
+    const { statuses, error } = res.data
+    if (error) {
+        throw new Error(error)
+    }
+    if (is_array(statuses) !== true) {
+        throw new Error("$statuses must be of type array")
+    }
+    return statuses
+}
+
+const try_load_message_timeline = async recipient_id => {
+    const res = await request.get("/timeline/message", Object.assign({ recipient_id }, status_trim_params))
+    const { statuses, error } = res.data
+    if (error) {
+        throw new Error(error)
+    }
+    if (is_array(statuses) !== true) {
+        throw new Error("$statuses must be of type array")
+    }
+    return statuses
+}
 
 @observer
 export class MultipleColumnsContainerComponent extends Component {
@@ -83,6 +163,7 @@ export class MultipleColumnsContainerComponent extends Component {
             for (let column_index = 0; column_index < columns.length; column_index++) {
                 const column = columns[column_index]
                 const { type, params, statuses } = column
+                const stored_settings = column.settings
 
                 assert(is_object(params), "$params must be of type object")
                 assert(is_array(statuses), "$statuses must be of type array")
@@ -103,12 +184,18 @@ export class MultipleColumnsContainerComponent extends Component {
                 column_options.timeline.muted_words = muted_words
 
                 const column_settings = new ColumnSettings()
+                if (is_object(stored_settings)) {
+                    Object.keys(column_settings).forEach(key => {
+                        if (key in stored_settings) {
+                            column_settings[key] = stored_settings[key]
+                        }
+                    })
+                }
 
                 this.insert(type, params,
                     column_options,
                     column_settings,
                     statuses,
-                    enums.column.target.blank,
                     -1,
                     muted_users,
                     muted_words
@@ -129,12 +216,11 @@ export class MultipleColumnsContainerComponent extends Component {
             column_options.timeline.muted_words = muted_words
 
             const column_settings = new ColumnSettings()
-            
+
             this.insert(type, params,
                 column_options,
                 column_settings,
                 statuses,
-                enums.column.target.blank,
                 -1,
                 muted_users,
                 muted_words
@@ -171,33 +257,11 @@ export class MultipleColumnsContainerComponent extends Component {
         const max_width = expanded ? window.innerWidth : default_column_width
         return Math.max(310, Math.min(max_width, column_width))
     }
-    equals = (a, b) => {
-        assert(is_object(a), "$a must be of type object")
-        assert(is_object(b), "$b must be of type object")
-        if (a.type !== b.type) {
-            return false
-        }
-        if (a.params.channel && b.params.channel) {
-            if (a.params.channel.name === b.params.channel.name) {
-                return true
-            }
-        }
-        if (a.params.user && b.params.user) {
-            if (a.params.user.id === b.params.user.id) {
-                return true
-            }
-        }
-        if (a.params.community && b.params.community) {
-            if (a.params.community.id === b.params.community.id) {
-                return true
-            }
-        }
-        return false
-    }
     serialize = () => {
-        const columns = []
-        for (const column of this.columns) {
-            const { type, params } = column
+        const store = []
+        for (let i = 0; i < this.columns.length; i++) {
+            const column = this.columns[i]
+            const { type, params, settings } = column
             const param_ids = {}
             if (type === enums.column.type.channel) {
                 const { channel } = params
@@ -208,28 +272,27 @@ export class MultipleColumnsContainerComponent extends Component {
                 param_ids.community_id = community.id
             }
             if (type === enums.column.type.message) {
-                const { community, user } = params
-                param_ids.community_id = community.id
-                param_ids.user_id = user.id
+                const { recipient } = params
+                param_ids.recipient_id = recipient.id
             }
             if (type === enums.column.type.thread) {
                 const { in_reply_to_status } = params
                 param_ids.in_reply_to_status_id = in_reply_to_status.id
             }
-            columns.push({ param_ids, type })
+            store.push({ param_ids, type, settings })
         }
         const { pathname } = location
-        const key = `columns_${pathname}`
+        const key = `client_default_columns_${pathname}`
         request
-            .post("/kvs/store", { "key": key, "value": columns })
+            .post("/kvs/store", { "key": key, "value": store })
             .then(res => {
-                const data = res.data
-                if (data.success == false) {
-                    alert(data.error)
+                const { error } = res.data
+                if (error == false) {
+                    Toast.push(error, false)
                 }
             })
             .catch(error => {
-                alert(error)
+                Toast.push(error.toString(), false)
             })
     }
     // 初期カラムを追加
@@ -238,12 +301,11 @@ export class MultipleColumnsContainerComponent extends Component {
     // @param {ColumnOptions} column_options
     // @param {ColumnSettings} column_settings
     // @param {array} initial_statuses
-    // @param {number} target
     // @param {number} insert_position この位置の左隣に追加する
     // @param {array} muted_users
     // @param {array} muted_words
     @action.bound
-    insert = (type, params, column_options, column_settings, initial_statuses, target, insert_position, muted_users, muted_words) => {
+    insert = (type, params, column_options, column_settings, initial_statuses, insert_position, muted_users, muted_words) => {
         assert(is_object(params), "$params must be of type object")
         assert(column_options instanceof ColumnOptions, "$column_options must be an instance of ColumnOptions")
         assert(column_settings instanceof ColumnSettings, "$column_settings must be an instance of ColumnSettings")
@@ -253,8 +315,7 @@ export class MultipleColumnsContainerComponent extends Component {
         assert(is_number(insert_position), "$insert_position must be of type number")
         const { logged_in_user } = this.props
         const settings = get_desktop_settings()
-        target = target || settings.new_column_target
-        const column = new ColumnStore(target, column_settings, muted_users, muted_words, logged_in_user)
+        const column = new ColumnStore(column_settings, muted_users, muted_words, logged_in_user, this.serialize)
         column.push(type, params, column_options, initial_statuses)
         if (insert_position === -1) {
             this.columns.push(column)
@@ -270,23 +331,21 @@ export class MultipleColumnsContainerComponent extends Component {
     // @param {ColumnOptions} column_options
     // @param {ColumnSettings} column_settings
     // @param {array} initial_statuses
-    // @param {number} target
     // @param {ColumnStore} source_column
     @action.bound
-    open = (type, params, column_options, column_settings, initial_statuses, target, source_column) => {
+    open = (type, params, column_options, column_settings, initial_statuses, source_column) => {
         assert(is_string(type), "$type must be of type string")
         assert(is_object(params), "$params must be of type object")
         assert(column_options instanceof ColumnOptions, "$column_options must be an instance of ColumnOptions")
         assert(column_settings instanceof ColumnSettings, "$column_settings must be an instance of ColumnSettings")
         assert(is_array(initial_statuses), "$initial_statuses must be of type array")
-        assert(is_string(target), "$target must be of type string")
         const settings = get_desktop_settings()
         if (settings.multiple_columns_enabled === false) {
             if (type === enums.column.type.message) {
-                const { community, user } = params
+                const { recipient } = params
                 // assert(is_object(community), "$community must be of type object")
-                assert(is_object(user), "$user must be of type object")
-                return location.href = `/${community.name}/@${user.name}`
+                assert(is_object(recipient), "$recipient must be of type object")
+                return location.href = `/@${recipient.name}`
             }
             if (type === enums.column.type.community) {
                 const { community } = params
@@ -314,24 +373,9 @@ export class MultipleColumnsContainerComponent extends Component {
         }
 
         const column = (() => {
-            if (target === enums.column.target.new) {
-                for (const column of this.columns) {	// 一度開いたカラムに上書き
-                    if (column.target === enums.column.target.new) {
-                        column.push(type, params, column_options, initial_statuses)
-                        return column
-                    }
-                }
-                // ない場合は2番目のカラムに上書き
-                if (this.columns.length >= 2) {
-                    const column = this.columns[1]
-                    column.push(type, params, column_options, initial_statuses)
-                    return column
-                }
-            }
-
             // 新しいカラムを作る
             const { muted_users, muted_words, logged_in_user } = this.props
-            const column = new ColumnStore(target, column_settings, muted_users, muted_words, logged_in_user)
+            const column = new ColumnStore(column_settings, muted_users, muted_words, logged_in_user, this.serialize)
             column.push(type, params, column_options, initial_statuses)
 
             if (this.columns.length === 0) {
@@ -346,7 +390,8 @@ export class MultipleColumnsContainerComponent extends Component {
             // 新しいカラムはそれが開かれたカラムの右隣に追加する
             assert(source_column instanceof ColumnStore, "$source_column must be an instance of ColumnStore")
             let insert_index = 0
-            for (const column of this.columns) {
+            for (let j = 0; j < this.columns.length; j++) {
+                const column = this.columns[j]
                 if (column.identifier === source_column.identifier) {
                     break
                 }
@@ -395,7 +440,7 @@ export class MultipleColumnsContainerComponent extends Component {
             this.callback_change()
         }
     }
-    onClickChannel = (event, source_column) => {
+    onClickChannel = async (event, source_column) => {
         const desktop_settings = get_desktop_settings()
         if (desktop_settings.multiple_columns_enabled === false) {
             return true
@@ -406,61 +451,47 @@ export class MultipleColumnsContainerComponent extends Component {
         }
 
         event.preventDefault()
-
-        const name = event.target.getAttribute("data-name")
-        assert(is_string(name), "$name must be of type string")
+        const channel_name = event.target.getAttribute("data-name")
+        assert(is_string(channel_name), "$channel_name must be of type string")
 
         for (let j = 0; j < this.columns.length; j++) {
             const column = this.columns[j]
             if (column.type !== enums.column.type.channel) {
                 continue
             }
-            if (column.params.channel.name === name) {
-                alert("すでに開いています")
-                return
+            if (column.params.channel.name === channel_name) {
+                return Toast.push("すでに開いています", false)
             }
         }
 
-        request
-            .get("/channel/show", { name, "community_id": community.id })
-            .then(res => {
-                const data = res.data
-                const { channel, success } = data
-                if (success === false) {
-                    alert(data.error)
-                    return
-                }
-                if (!!channel === false) {
-                    alert("チャンネルが見つかりません")
-                    return
-                }
+        try {
+            const channel = await try_load_channel_by_name(channel_name, community.id)
+            const initial_statuses = await try_load_channel_timeline(channel.id)
 
-                const { muted_users, muted_words } = this.props
-                const column_options = new ColumnOptions()
-                const opt = new TimelineOptions()
-                opt.muted_users = muted_users
-                opt.muted_words = muted_words
-                opt.has_newer_statuses = false
-                opt.has_older_statuses = true
-                column_options.timeline = opt
+            const { muted_users, muted_words } = this.props
+            const column_options = new ColumnOptions()
+            const opt = new TimelineOptions()
+            opt.muted_users = muted_users
+            opt.muted_words = muted_words
+            opt.has_newer_statuses = false
+            opt.has_older_statuses = true
+            column_options.timeline = opt
 
-                const column_settings = new ColumnSettings()
+            const column_settings = new ColumnSettings()
 
-                this.open(enums.column.type.channel,
-                    { channel, community },
-                    column_options,
-                    column_settings,
-                    [],
-                    desktop_settings.new_column_target,
-                    source_column)
-            })
-            .catch(error => {
-                alert(error)
-            })
+            this.open(enums.column.type.channel,
+                { channel, community },
+                column_options,
+                column_settings,
+                initial_statuses,
+                source_column)
+        } catch (error) {
+            Toast.push(error.toString(), false)
+        }
     }
-    onClickMention = (event, source_column) => {
-        const settings = get_desktop_settings()
-        if (settings.multiple_columns_enabled === false) {
+    onClickMention = async (event, source_column) => {
+        const desktop_settings = get_desktop_settings()
+        if (desktop_settings.multiple_columns_enabled === false) {
             return true
         }
         event.preventDefault()
@@ -479,44 +510,33 @@ export class MultipleColumnsContainerComponent extends Component {
             }
         }
 
-        request
-            .get("/user/show", { name })
-            .then(res => {
-                const data = res.data
-                const { user, success } = data
-                if (success == false) {
-                    alert(data.error)
-                    return
-                }
-                if (!!user === false) {
-                    alert("ユーザーが見つかりません")
-                    return
-                }
+        try {
+            const recipient = await try_load_user_by_name(name)
+            const initial_statuses = await try_load_message_timeline(recipient.id)
 
-                const { muted_users, muted_words } = this.props
-                const column_options = new ColumnOptions()
-                const opt = new TimelineOptions()
-                opt.muted_users = muted_users
-                opt.muted_words = muted_words
-                opt.has_newer_statuses = false
-                opt.has_older_statuses = true
-                column_options.timeline = opt
+            const { muted_users, muted_words } = this.props
+            const column_options = new ColumnOptions()
+            const opt = new TimelineOptions()
+            opt.muted_users = muted_users
+            opt.muted_words = muted_words
+            opt.has_newer_statuses = false
+            opt.has_older_statuses = true
+            column_options.timeline = opt
 
-                const column_settings = new ColumnSettings()
+            const column_settings = new ColumnSettings()
 
-                this.open(enums.column.type.message,
-                    { user },
-                    column_options,
-                    column_settings,
-                    [],
-                    settings.new_column_target,
-                    source_column)
-            })
-            .catch(error => {
-                alert(error)
-            })
+            this.open(enums.column.type.message,
+                { recipient },
+                column_options,
+                column_settings,
+                initial_statuses,
+                source_column)
+        } catch (error) {
+            console.log(error)
+            Toast.push(error.toString(), false)
+        }
     }
-    onClickThread = (event, source_column, in_reply_to_status_id) => {
+    onClickThread = async (event, source_column, in_reply_to_status_id) => {
         const settings = get_desktop_settings()
         if (settings.multiple_columns_enabled === false) {
             return true
@@ -534,56 +554,34 @@ export class MultipleColumnsContainerComponent extends Component {
                 continue
             }
             if (column.params.in_reply_to_status.id === in_reply_to_status_id) {
-                alert("すでに開いています")
-                throw new Error()
+                return Toast.push("すでに開いています", false)
             }
         }
 
-        request
-            .get("/status/show", {
-                "id": in_reply_to_status_id,
-                "trim_user": false,
-                "trim_community": false,
-                "trim_channel": false,
-                "trim_recipient": false,
-                "trim_favorited_by": false,
-                "trim_reaction_users": false,
-                "trim_commenters": false
-            })
-            .then(res => {
-                const data = res.data
-                const { status, success } = data
-                if (success == false) {
-                    alert(data.error)
-                    return
-                }
-                if (!!status === false) {
-                    alert("スレッドが見つかりません")
-                    return
-                }
+        try {
+            const status = await try_load_status_by_id(in_reply_to_status_id)
+            const initial_statuses = await try_load_thread_timeline(status.id)
 
-                const { muted_users, muted_words } = this.props
-                const column_options = new ColumnOptions()
-                const opt = new TimelineOptions()
-                opt.muted_users = muted_users
-                opt.muted_words = muted_words
-                opt.has_newer_statuses = false
-                opt.has_older_statuses = true
-                column_options.timeline = opt
+            const { muted_users, muted_words } = this.props
+            const column_options = new ColumnOptions()
+            const opt = new TimelineOptions()
+            opt.muted_users = muted_users
+            opt.muted_words = muted_words
+            opt.has_newer_statuses = false
+            opt.has_older_statuses = true
+            column_options.timeline = opt
 
-                const column_settings = new ColumnSettings()
+            const column_settings = new ColumnSettings()
 
-                this.open(enums.column.type.thread,
-                    { "in_reply_to_status": status },
-                    column_options,
-                    column_settings,
-                    [],
-                    settings.new_column_target,
-                    source_column)
-            })
-            .catch(error => {
-                alert(error)
-            })
+            this.open(enums.column.type.thread,
+                { "in_reply_to_status": status, "community": status.community, "channel": status.channel },
+                column_options,
+                column_settings,
+                initial_statuses,
+                source_column)
+        } catch (error) {
+            Toast.push(error.toString(), false)
+        }
     }
     componentDidUpdate = () => {
         if (this.should_adjust_column_width) {
@@ -600,7 +598,6 @@ export class MultipleColumnsContainerComponent extends Component {
                 <ColumnComponent
                     key={column.identifier}
                     column={column}
-                    community={community}
                     width={this.state.column_width}
                     logged_in_user={logged_in_user}
                     pinned_media={pinned_media}
@@ -618,28 +615,58 @@ export class MultipleColumnsContainerComponent extends Component {
             <div className={classnames("inside multiple-columns-component", {
                 "multiple-columns-enabled": desktop_settings.multiple_columns_enabled
             })}>
-                {this.state.expanded ? null :
-                    <div className="column-component channels">
-                        <JoinedChannelsListComponent
-                            channels={joined_channels}
-                            community={community}
-                            handle_click_channel={this.onClickChannel} />
-                    </div>
-                }
+                <JoinedChannelsListContainer
+                    expanded={this.state.expanded}
+                    community={community}
+                    joined_channels={joined_channels}
+                    handle_click_channel={this.onClickChannel} />
                 {columnComponents}
-                {this.state.expanded ? null :
-                    <div className="column-component community-overview">
-                        <CommunityDetailComponent
-                            community={community}
-                            logged_in_user={logged_in_user}
-                            handle_click_channel={this.onClickChannel}
-                            handle_click_mention={this.onClickMention}
-                            handle_click_thread={this.onClickThread} />
-                    </div>
-                }
+                <CommunityDetailContainer
+                    expanded={this.state.expanded}
+                    community={community}
+                    logged_in_user={logged_in_user}
+                    handle_click_channel={this.onClickChannel}
+                    handle_click_mention={this.onClickMention}
+                    handle_click_thread={this.onClickThread} />
             </div>
         )
     }
+}
+
+const JoinedChannelsListContainer = ({ joined_channels, expanded, community, handle_click_channel }) => {
+    if (expanded) {
+        return null
+    }
+    if (!!community === false) {
+        return null
+    }
+    return (
+        <div className="column-component channels">
+            <JoinedChannelsListComponent
+                channels={joined_channels}
+                community={community}
+                handle_click_channel={handle_click_channel} />
+        </div>
+    )
+}
+
+const CommunityDetailContainer = ({ expanded, community, logged_in_user, handle_click_channel, handle_click_mention, handle_click_thread }) => {
+    if (expanded) {
+        return null
+    }
+    if (!!community === false) {
+        return null
+    }
+    return (
+        <div className="column-component community-overview">
+            <CommunityDetailComponent
+                community={community}
+                logged_in_user={logged_in_user}
+                handle_click_channel={handle_click_channel}
+                handle_click_mention={handle_click_mention}
+                handle_click_thread={handle_click_thread} />
+        </div>
+    )
 }
 
 @observer
@@ -685,7 +712,7 @@ class ColumnComponent extends Component {
         timeline.more()
     }
     render() {
-        const { column, community, logged_in_user, request_query, pinned_media, recent_uploads, width } = this.props
+        const { column, logged_in_user, request_query, pinned_media, recent_uploads, width } = this.props
 
         const props = {
             "handle_click_channel": this.onClickChannel,
@@ -695,12 +722,12 @@ class ColumnComponent extends Component {
             "handle_close": this.onClose,
             "handle_back": this.onBack,
             "uploader": this.uploader,
-            column, community, logged_in_user, request_query,
+            column, logged_in_user, request_query,
             pinned_media, recent_uploads, width
         }
 
         if (column.type === enums.column.type.message) {
-            return <HomeColumnComponent {...props} />
+            return <MessageColumnComponent {...props} />
         }
         if (column.type === enums.column.type.community) {
             return <CommunityStatusesColumnComponent {...props} />
@@ -741,9 +768,8 @@ class ThreadColumnComponent extends Component {
         })
     }
     render() {
-        const { community, column, uploader, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
+        const { column, uploader, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_expand, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
-        const { in_reply_to_status } = column.params
         const is_narrow_column = width < 400
 
         return (
@@ -752,28 +778,22 @@ class ThreadColumnComponent extends Component {
             })} style={{ "width": `${width}px` }}>
                 <div className="inside round">
                     <ThreadTimelineHeaderComponent
-                        timeline={column.timeline}
-                        in_reply_to_status={in_reply_to_status}
+                        column={column}
                         handle_close={handle_close}
                         handle_expand={handle_expand}
                         handle_back={handle_back} />
                     <div className="contents">
                         <PostboxComponent
                             postbox={this.postbox}
-                            timeline={column.timeline}
+                            column={column}
                             logged_in_user={logged_in_user}
                             uploader={uploader}
                             pinned_media={pinned_media}
-                            community={community}
                             recent_uploads={recent_uploads} />
                         <TimelineComponent
-                            total_num_statuses={in_reply_to_status.comments_count}
-                            in_reply_to_status={in_reply_to_status}
+                            column={column}
                             logged_in_user={logged_in_user}
-                            timeline={column.timeline}
                             request_query={request_query}
-                            timeline_options={column.options.timeline}
-                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -785,31 +805,30 @@ class ThreadColumnComponent extends Component {
 }
 
 @observer
-class HomeColumnComponent extends Component {
+class MessageColumnComponent extends Component {
     constructor(props) {
         super(props)
         const { column } = props
-        assert(column.type === enums.column.type.message, "$column.type must be 'home'")
+        assert(column.type === enums.column.type.message, "$column.type must be 'message'")
 
-        const { recipient } = params
+        const { recipient } = column.params
         assert(is_object(recipient), "$recipient must be of type object")
         this.postbox = new PostboxStore({
             "recipient_id": recipient.id
         })
     }
     render() {
-        const { community, column, uploader, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
+        const { column, uploader, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_expand, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
-        const { user } = column.params
+        const { recipient } = column.params
         const is_narrow_column = width < 400
         return (
             <div className={classnames("column-component timeline", {
                 "narrow": is_narrow_column
             })} style={{ "width": `${width}px` }}>
                 <div className="inside round">
-                    <HomeTimelineHeaderComponent
+                    <MessageTimelineHeaderComponent
                         column={column}
-                        user={user}
                         logged_in_user={logged_in_user}
                         handle_close={handle_close}
                         handle_expand={handle_expand}
@@ -818,17 +837,14 @@ class HomeColumnComponent extends Component {
                         <PostboxComponent
                             logged_in_user={logged_in_user}
                             uploader={uploader}
+                            column={column}
                             pinned_media={pinned_media}
                             recent_uploads={recent_uploads}
-                            community={community}
-                            postbox={this.postbox}
-                            timeline={column.timeline} />
+                            postbox={this.postbox} />
                         <TimelineComponent
                             logged_in_user={logged_in_user}
-                            timeline={column.timeline}
+                            column={column}
                             request_query={request_query}
-                            timeline_options={column.options.timeline}
-                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -887,7 +903,7 @@ class ChannelColumnComponent extends Component {
         })
     }
     render() {
-        const { community, column, uploader, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
+        const { column, uploader, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_expand, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const { channel } = column.params
         const is_narrow_column = width < 400
@@ -897,9 +913,7 @@ class ChannelColumnComponent extends Component {
             })} style={{ "width": `${width}px` }}>
                 <div className="inside round">
                     <ChannelTimelineHeaderComponent
-                        timeline={column.timeline}
-                        channel={channel}
-                        community={community}
+                        column={column}
                         handle_close={handle_close}
                         handle_expand={handle_expand}
                         handle_back={handle_back} />
@@ -913,12 +927,12 @@ class ChannelColumnComponent extends Component {
                             <p className="hint">このチャンネルに参加すると投稿することができます</p>
                             <div className="submit">
                                 <button
-                                    className={classnames("button meiryo ready user-defined-bg-color", { "in-progress": this.state.pending_join })}
+                                    className={classnames("button ready user-defined-bg-color", { "in-progress": this.state.pending_join })}
                                     onClick={this.onJoin}>
                                     <span className="progress-text">参加する</span>
                                     <span className="display-text">参加する</span>
                                 </button>
-                                <button className="button meiryo neutral user-defined-bg-color" onClick={() => {
+                                <button className="button neutral user-defined-bg-color" onClick={() => {
                                     location.href = `/${channel.name}`
                                 }}>
                                     <span className="display-text">詳細を見る</span>
@@ -932,19 +946,16 @@ class ChannelColumnComponent extends Component {
                         {channel.joined === false ? null :
                             <PostboxComponent
                                 postbox={this.postbox}
-                                timeline={column.timeline}
+                                column={column}
                                 logged_in_user={logged_in_user}
                                 uploader={uploader}
                                 pinned_media={pinned_media}
-                                community={community}
                                 recent_uploads={recent_uploads} />
                         }
                         <TimelineComponent
                             logged_in_user={logged_in_user}
-                            timeline={column.timeline}
+                            column={column}
                             request_query={request_query}
-                            timeline_options={column.options.timeline}
-                            status_options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -972,7 +983,6 @@ class CommunityStatusesColumnComponent extends Component {
     render() {
         const { column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_expand, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
-        const { community } = column.params
         const is_narrow_column = width < 400
         return (
             <div className={classnames("column-component timeline", {
@@ -980,19 +990,15 @@ class CommunityStatusesColumnComponent extends Component {
             })} style={{ "width": `${width}px` }}>
                 <div className="inside round">
                     <CommunityTimelineHeaderComponent
-                        timeline={column.timeline}
-                        community={community}
+                        column={column}
                         handle_expand={handle_expand}
                         handle_close={handle_close}
                         handle_back={handle_back} />
                     <div className="contents postbox-hidden">
                         <StatusGroupTimelineComponent
                             logged_in_user={logged_in_user}
-                            timeline={column.timeline}
+                            column={column}
                             request_query={request_query}
-                            timeline_options={column.options.timeline}
-                            status_options={column.options.status}
-                            community={community}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread} />
@@ -1019,7 +1025,7 @@ class NotificationColumnComponent extends Component {
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
     }
     render() {
-        const { community, column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
+        const { column, logged_in_user, pinned_media, recent_uploads, request_query, width } = this.props
         const { handle_close, handle_expand, handle_back, handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         const is_narrow_column = width < 400
         return (
@@ -1035,10 +1041,8 @@ class NotificationColumnComponent extends Component {
                     <div className="contents postbox-hidden">
                         <StatusGroupTimelineComponent
                             logged_in_user={logged_in_user}
-                            timeline={column.timeline}
+                            column={column}
                             request_query={request_query}
-                            timeline_options={column.options.timeline}
-                            status_options={column.options.status}
                             only_merge_thread={true}
                             community={community}
                             handle_click_channel={handle_click_channel}

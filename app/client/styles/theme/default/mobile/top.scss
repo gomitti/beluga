@@ -1,0 +1,26 @@
+.top-component {
+    width: 100vw;
+    box-sizing: border-box;
+    background-color: white;
+    padding: 10px;
+    overflow: hidden;
+     
+    > p {
+        margin-bottom: 10px;
+        font-size: 15px;
+        line-height: 18px;
+    }
+
+    > .column-component {
+        margin-top: 20px;
+
+        > .inside {
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08), 0 0px 12px 0 rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+
+            .timeline-component {
+                padding-top: 10px;
+            }
+        }
+    }
+}

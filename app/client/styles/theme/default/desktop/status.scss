@@ -3,7 +3,7 @@
     z-index: 0;
 
     > .inside {
-        min-height: 65px;
+        min-height: 74px;
 
         // padding: 6px 16px 4px 16px;
         padding: 0 16px;
@@ -127,13 +127,13 @@
     margin-top: 6px;
 
     > .body {
-        font-size: 15px;
+        font-size: 14px;
         word-wrap: break-word;
         position: relative;
 
         > .sentence {
-            line-height: 20px;
-            min-height: 20px;
+            line-height: 18px;
+            min-height: 18px;
 
             a {
                 font-weight: bold;
@@ -158,7 +158,14 @@
     line-height: 26px;
 }
 
-.status-body-code {}
+.status-body-code {
+    white-space: normal;
+    color: rgb(220, 30, 90);
+    padding: 0px 3px;
+    background-color: rgb(247, 247, 247);
+    border: 1px solid rgb(225, 225, 225);
+    border-radius: 3px;
+}
 
 .status-body-emphasis {
     font-weight: bold;
@@ -190,7 +197,7 @@
     flex-direction: row;
     align-items: center;
     border: 1px solid rgb(220, 220, 220);
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 6px 10px 6px 6px;
     margin: 6px 0;
     height: 24px;
@@ -215,7 +222,7 @@
         display: flex;
         flex-direction: row;
         align-items: center;
-        font-size: 12px;
+        font-size: 13px;
         text-decoration: none;
         margin-left: 5px;
         min-width: 0;
@@ -227,6 +234,26 @@
             overflow: hidden;
             color: black;
             font-weight: normal;
+
+            > .sentence {
+                line-height: 16px;
+                min-height: 16px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .status-body-emoji {
+                width: 18px;
+                height: 18px;
+                margin-bottom: -3.5px;
+            }
+
+            > .bigger-emoji {
+                .status-body-emoji {
+                    width: 18px;
+                    height: 18px;
+                }
+            }
         }
 
         > .count {
@@ -272,7 +299,8 @@
 }
 
 .status-body-channel::before {
-    content: "#";
+    font-family: Beluga;
+    content: "\2006";
 }
 
 .status-body-mention::before {
@@ -380,7 +408,7 @@
 
 .status-details {
     > .detail-row:last-child.status-body-commenters {
-        margin-bottom: 14px;
+        margin-bottom: 9px;
     }
 }
 
@@ -439,7 +467,7 @@
         min-width: 0;
 
         > .title {
-            font-size: 15px;
+            font-size: 14px;
             line-height: 18px;
             font-weight: bold;
         }
@@ -465,7 +493,7 @@
     }
 }
 
-.column.narrow {
+.column-component.narrow {
     .status-body-website {
         > .image {
             display: none;
@@ -481,7 +509,7 @@
 .status-footer {
     height: 13px;
     line-height: 1;
-    margin: 6px 0 8px 0;
+    margin: 6px 0 6px 0;
     display: flex;
 
     > .source-link {
@@ -496,10 +524,15 @@
 
         > .icon {
             font-family: Beluga;
+            pointer-events: none;
 
             &::before {
                 content: "\2006";
             }
+        }
+
+        > .label {
+            pointer-events: none;
         }
     }
 
@@ -515,7 +548,7 @@
 
 .status:hover {
     .status-footer {
-        > .source {
+        > .source-link {
             color: black;
         }
 
@@ -541,7 +574,7 @@
             background: transparent;
             margin-right: 2px;
             font-family: Beluga;
-            font-size: 15px;
+            font-size: 14px;
             color: rgb(100, 100, 100);
             text-decoration: none;
             display: inline-block;

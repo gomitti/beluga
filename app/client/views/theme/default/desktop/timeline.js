@@ -4,9 +4,9 @@ import StatusComponent from "./status"
 import assign, { merge } from "../../../../libs/assign"
 import assert, { is_function, is_number, is_object } from "../../../../assert";
 import { get as get_desktop_settings } from "../../../../settings/desktop";
-import { TimelineOptions } from "../../../../stores/theme/default/desktop/timeline"
 import { StatusOptions } from "../../../../stores/theme/default/common/status"
 import { objectid_equals } from "../../../../libs/functions"
+import { ColumnStore } from "../../../../stores/theme/default/desktop/column";
 
 const get_status_group_footer_view = (status, link_text, click_handlers) => {
     const { handle_click_channel, handle_click_mention, handle_click_thread } = click_handlers
@@ -40,10 +40,8 @@ const get_status_group_footer_view = (status, link_text, click_handlers) => {
 class TimelineComponentBase extends Component {
     constructor(props) {
         super(props)
-        const { timeline, timeline_options, status_options,
-            handle_click_channel, handle_click_mention, handle_click_thread, request_query } = this.props
-        assert(timeline_options instanceof TimelineOptions, "$timeline_options must be an instance of TimelineOptions")
-        assert(status_options instanceof StatusOptions, "$status_options must be an instance of StatusOptions")
+        const { column, handle_click_channel, handle_click_mention, handle_click_thread, request_query } = this.props
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore")
         assert(is_function(handle_click_channel), "$handle_click_channel must be of type function")
         assert(is_function(handle_click_mention), "$handle_click_mention must be of type function")
         assert(is_function(handle_click_thread), "$handle_click_thread must be of type function")
@@ -55,7 +53,8 @@ class TimelineComponentBase extends Component {
             return true
         }
         event.preventDefault()
-        const { timeline } = this.props
+        const { column } = this.props
+        const { timeline } = column
         timeline.fetchOlder()
     }
     fetchNewer = event => {
@@ -64,11 +63,13 @@ class TimelineComponentBase extends Component {
             return true
         }
         event.preventDefault()
-        const { timeline } = this.props
+        const { column } = this.props
+        const { timeline } = column
         timeline.fetchNewer()
     }
     componentDidUpdate() {
-        const { timeline } = this.props
+        const { column } = this.props
+        const { timeline } = column
         if (timeline.pending_fetch_older) {
             this.fetching_older_statuses_started = true
         }
@@ -83,7 +84,8 @@ class TimelineComponentBase extends Component {
         }
     }
     generateFetchNewerStatusesButton = () => {
-        const { timeline, request_query } = this.props
+        const { column, request_query } = this.props
+        const { timeline } = column
         if (timeline.has_newer_statuses === false) {
             return null
         }
@@ -107,7 +109,8 @@ class TimelineComponentBase extends Component {
         )
     }
     generateFetchOlderStatusesButton = () => {
-        const { timeline, request_query } = this.props
+        const { column, request_query } = this.props
+        const { timeline } = column
         if (timeline.has_older_statuses === false) {
             return null
         }
@@ -135,8 +138,9 @@ class TimelineComponentBase extends Component {
 @observer
 export class StatusGroupTimelineComponent extends TimelineComponentBase {
     generateStatusGroupViews = () => {
-        const { timeline, status_options, handle_click_channel, handle_click_mention, handle_click_thread,
-            logged_in_user, in_reply_to_status, only_merge_thread, community } = this.props
+        const { column, handle_click_channel, handle_click_mention, handle_click_thread,
+            logged_in_user, in_reply_to_status, only_merge_thread } = this.props
+        const { timeline } = column
         const merged_statuses = []
         let prev_status = null
         timeline.filtered_statuses.forEach(status => {
@@ -163,7 +167,9 @@ export class StatusGroupTimelineComponent extends TimelineComponentBase {
                 prev_status = status
                 return
             }
-            if (!prev_status.in_reply_to_status_id && objectid_equals(prev_status.channel_id, status.channel_id)) {
+            if (!!prev_status.in_reply_to_status_id === false &&
+                !!status.in_reply_to_status_id === false &&
+                objectid_equals(prev_status.channel_id, status.channel_id)) {
                 merged_statuses[merged_statuses.length - 1].push(status)
                 prev_status = status
                 return
@@ -183,7 +189,7 @@ export class StatusGroupTimelineComponent extends TimelineComponentBase {
                     <div className="status-area">
                         <StatusComponent status={first_status}
                             key={first_status.id}
-                            options={status_options}
+                            options={column.options.status}
                             handle_click_channel={handle_click_channel}
                             handle_click_mention={handle_click_mention}
                             handle_click_thread={handle_click_thread}
@@ -216,9 +222,10 @@ export class StatusGroupTimelineComponent extends TimelineComponentBase {
 @observer
 export class TimelineComponent extends TimelineComponentBase {
     render() {
-        const { timeline, status_options,
-            handle_click_channel, handle_click_mention, handle_click_thread,
-            logged_in_user, in_reply_to_status } = this.props
+        const { column, handle_click_channel, handle_click_mention, handle_click_thread,
+            logged_in_user } = this.props
+        const { in_reply_to_status } = column.params
+        const { timeline } = column
         const fetchOlderButton = this.generateFetchOlderStatusesButton()
         const fetchNewerButton = this.generateFetchNewerStatusesButton()
 
@@ -228,8 +235,8 @@ export class TimelineComponent extends TimelineComponentBase {
                 return
             }
             const options = new StatusOptions()
-            options.trim_comments = status_options.trim_comments
-            options.show_source_link = status_options.show_source_link
+            options.trim_comments = column.options.status.trim_comments
+            options.show_source_link = column.options.status.show_source_link
             if (in_reply_to_status && objectid_equals(status.id, in_reply_to_status.id)) {
                 options.trim_comments = true
             }

@@ -23,8 +23,8 @@ const RoleComponent = ({ title, users, handle_update, map_role_number }) => {
             <div className="user">
                 <a className="label-area" href={`/user/${user.name}`}>
                     <img className="avatar" src={user.avatar_url} />
-                    <span className="display-name meiryo">{display_name}</span>
-                    <span className="name verdana">{user.name}</span>
+                    <span className="display-name">{display_name}</span>
+                    <span className="name">{user.name}</span>
                 </a>
                 <div className="menu-area">
                     <div className="dropdown-menu">
@@ -148,7 +148,7 @@ class MemberListComponent extends Component {
     render() {
         const { map_role_number } = this.props
         return (
-            <div className="settings-content-component form community-role meiryo">
+            <div className="settings-content-component form community-role">
                 <div className="head">
                     <h1>役職</h1>
                 </div>

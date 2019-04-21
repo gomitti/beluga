@@ -33,8 +33,8 @@ module.exports = (fastify, options, next) => {
             }
             const params = Object.assign({}, req.body, { "user_id": session.user_id })
             const removed_emoji = await model.v1.emoji.remove(fastify.mongo.db, params)
-            const { shortname } = removed_emoji
-            fastify.websocket_broadcast("emoji_removed", { shortname })
+            const { shortname, community_id } = removed_emoji
+            fastify.websocket_broadcast("emoji_removed", { shortname, community_id })
             res.send({ "success": true })
         } catch (error) {
             res.send({ "success": false, "error": error.toString() })
@@ -90,7 +90,7 @@ module.exports = (fastify, options, next) => {
                         "community_id": community_id,
                         "shortname": shortname
                     })
-                    fastify.websocket_broadcast("emoji_added", { shortname })
+                    fastify.websocket_broadcast("emoji_added", { shortname, community_id })
                     memcached.v1.emoji.list.flush(community_id)
                     res.send({ "success": true })
                 } catch (error) {

@@ -4,19 +4,44 @@ import { observer } from "mobx-react"
 import ws from "../../../../../../websocket"
 import assert, { is_object, is_function } from "../../../../../../assert"
 import * as notification from "../../../../../../notification"
-import CommunityTimelineStore from "../../../../../../stores/theme/default/desktop/timeline/community"
+import { ColumnStore } from "../../../../../../stores/theme/default/desktop/column"
 
 class NotificationMenuItem extends Component {
     constructor(props) {
         super(props)
-        const { timeline } = this.props
-        assert(timeline instanceof CommunityTimelineStore, "$timeline must be an instance of TimelineStore")
+        const { column } = this.props
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore")
         this.state = {
             "notification_enabled": false
         }
     }
     componentDidMount = () => {
+        const original_title = (typeof document === "undefined") ? "" : document.title
+        if (typeof document !== "undefined") {
+            ws.addEventListener("message", event => {
+                if (document.hasFocus()) {
+                    return
+                }
+                const data = JSON.parse(event.data)
+                if (data.status_updated) {
+                    const { status } = data
+                    if (status.do_not_notify) {
+                        return
+                    }
+                    const { column } = this.props
+                    if (column.timeline.statusBelongsTo(status)) {
+                        document.title = "（新着あり）" + original_title
+                    }
+                }
+            })
+            document.addEventListener("mouseover", () => {
+                document.title = original_title
+            })
+        }
         ws.addEventListener("message", event => {
+            if (document.hasFocus()) {
+                return
+            }
             if (this.state.notification_enabled === false) {
                 return
             }
@@ -26,8 +51,8 @@ class NotificationMenuItem extends Component {
                 if (status.do_not_notify) {
                     return
                 }
-                const { timeline } = this.props
-                if (timeline.statusBelongsTo(status)) {
+                const { column } = this.props
+                if (column.timeline.statusBelongsTo(status)) {
                     let text = status.text
                     if (text.length > 140) {
                         text = text.slice(0, 140)
@@ -121,7 +146,7 @@ class SearchMenuItem extends Component {
     }
 }
 
-const MoreMenuItem = (handle_close, handle_expand) => {
+const MoreMenuItem = ({ handle_close, handle_expand }) => {
     return (
         <div className="item timeline-header-dropdown-menu toggle-by-hover">
             <span className="icon more user-defined-color-hover"></span>
@@ -145,20 +170,21 @@ const MoreMenuItem = (handle_close, handle_expand) => {
 export default class HeaderComponent extends Component {
     constructor(props) {
         super(props)
-        const { community } = props
-        assert(is_object(community), "$community must be of type object")
+        const { column } = props
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore: HeaderComponent::constructor()")
     }
     render() {
-        const { community, timeline, handle_close, handle_expand, handle_back } = this.props
+        const { column, handle_close, handle_expand, handle_back } = this.props
+        const { community } = column.params
         return (
             <div className="timeline-header-component">
                 <div className="inside">
-                    <div className="label-area">
+                    <div className="label-area community-public-timeline">
                         <span className="icon community"></span>
                         <span className="label">パブリックタイムライン</span>
                     </div>
                     <div className="menu">
-                        <NotificationMenuItem timeline={timeline} />
+                        <NotificationMenuItem column={column} />
                         <SearchMenuItem community={community} />
                         <MoreMenuItem handle_close={handle_close} handle_expand={handle_expand} />
                     </div>

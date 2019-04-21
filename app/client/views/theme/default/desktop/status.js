@@ -34,7 +34,7 @@ export class StatusTimeComponent extends Component {
     render() {
         const { href, string, label } = this.props
         return (
-            <a href={href} className="time verdana"
+            <a href={href} className="time"
                 ref={dom => this.dom = dom}
                 onMouseEnter={() => Tooltip.show(this.dom, label)}
                 onMouseOver={() => Tooltip.show(this.dom, label)}
@@ -85,7 +85,7 @@ export default class StatusComponent extends Component {
     onMouseEnter = event => {
         const { footer, action } = this.refs
         if (action) {
-            action.style.top = `${footer.offsetTop - 5}px`
+            action.style.top = `${footer.offsetTop}px`
             this.prev_footer_offset_top = footer.offsetTop
         }
     }
@@ -95,7 +95,7 @@ export default class StatusComponent extends Component {
             return
         }
         if (footer.offsetTop !== this.prev_footer_offset_top) {
-            action.style.top = `${footer.offsetTop - 5}px`
+            action.style.top = `${footer.offsetTop}px`
             this.prev_footer_offset_top = footer.offsetTop
         }
     }
@@ -120,7 +120,8 @@ export default class StatusComponent extends Component {
     toggleReaction = event => {
         event.preventDefault()
         const { status } = this.props
-        EmojiPicker.toggle(event.target, shortname => {
+        const { community } = status
+        EmojiPicker.toggle(event.target, community, shortname => {
             status.reactions.toggle(shortname)
         }, null)
     }
@@ -158,7 +159,7 @@ export default class StatusComponent extends Component {
         const { handle_click_channel, handle_click_mention, handle_click_thread } = this.props
         if (in_reply_to_status_id) {
             return <a href={`/thread/${in_reply_to_status_id}`}
-                className="source-link thread meiryo"
+                className="source-link thread"
                 onClick={event => handle_click_thread(event, in_reply_to_status_id)}>スレッド</a>
         }
         if (channel) {
@@ -167,7 +168,7 @@ export default class StatusComponent extends Component {
                 return null
             }
             return <a href={`/${community.name}/${channel.name}`}
-                className="source-link channel meiryo"
+                className="source-link channel"
                 onClick={handle_click_channel}
                 data-name={channel.name}>
                 <span className="icon"></span>
@@ -178,14 +179,15 @@ export default class StatusComponent extends Component {
     }
     generateCommentersView = status => {
         const { options, handle_click_thread } = this.props
+        const { comments, community } = status
         if (options.trim_comments) {
             return null
         }
-        if (status.comments.count === 0) {
+        if (comments.count === 0) {
             return null
         }
         const commentersView = []
-        const commenters = status.comments.commenters.reverse()
+        const commenters = comments.commenters.reverse()
         commenters.forEach(user => {
             commentersView.push(
                 <img src={user.avatar_url} className="avatar" />
@@ -195,6 +197,7 @@ export default class StatusComponent extends Component {
         if (preview_text.length > 100) {
             preview_text = preview_text.substr(0, 100)
         }
+        preview_text = build_status_body_views(preview_text, community, {}, {})
         return (
             <a onClick={event => handle_click_thread(event, status.id)}
                 className="status-body-commenters detail-row"
@@ -228,8 +231,8 @@ export default class StatusComponent extends Component {
                 </div>
                 <div className="meta">
                     <span className="sep"></span>
-                    <span className="count verdana">{status.favorites.count}</span>
-                    <span className="unit meiryo">ふぁぼ</span>
+                    <span className="count">{status.favorites.count}</span>
+                    <span className="unit">ふぁぼ</span>
                 </div>
             </div>
         )
@@ -266,7 +269,7 @@ export default class StatusComponent extends Component {
                                 <a href={`/user/${user.name}`} className="link">
                                     <StatusHeaderDisplayNameComponent user={user} />
                                     <StatusHeaderUserStatusComponent user={user} />
-                                    <span className="name verdana element">@{user.name}</span>
+                                    <span className="name element">@{user.name}</span>
                                 </a>
                                 <StatusTimeComponent href={`/status/${user.name}/${status.id}`} string={this.state.elapsed_time_str} label={this.state.date_str} />
                             </div>

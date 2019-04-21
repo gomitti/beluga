@@ -14,17 +14,15 @@ export default class ReactionsStore {
         if (is_array(reactions)) {
             this.set(reactions)
         }
-        if (ws) {		// サーバーサイドではやる意味がない
-            ws.addEventListener("message", event => {
-                const data = JSON.parse(event.data)
-                if (data.reaction_added || data.reaction_removed) {
-                    const { status } = data
-                    if (status.id === this.status_id) {
-                        this.set(status.reactions)
-                    }
+        ws.addEventListener("message", event => {
+            const data = JSON.parse(event.data)
+            if (data.reaction_added || data.reaction_removed) {
+                const { status } = data
+                if (status.id === this.status_id) {
+                    this.set(status.reactions)
                 }
-            })
-        }
+            }
+        })
     }
     get count() {
         return this.list.length

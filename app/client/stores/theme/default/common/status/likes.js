@@ -7,17 +7,15 @@ export default class LikesStore {
     constructor(status) {
         this.count = parseInt(status.likes_count)
         this.status_id = status.id
-        if (ws) {		// サーバーサイドではやる意味がない
-            ws.addEventListener("message", (e) => {
-                const data = JSON.parse(e.data)
-                if (data.like_created) {
-                    const { status } = data
-                    if (status.id === this.status_id) {
-                        this.set(status.likes_count)
-                    }
+        ws.addEventListener("message", (e) => {
+            const data = JSON.parse(e.data)
+            if (data.like_created) {
+                const { status } = data
+                if (status.id === this.status_id) {
+                    this.set(status.likes_count)
                 }
-            })
-        }
+            }
+        })
     }
     @action.bound
     set(count) {

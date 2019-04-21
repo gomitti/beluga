@@ -63,9 +63,10 @@ export default class StatusComponent extends Component {
     toggleReaction = event => {
         event.preventDefault()
         const { status } = this.props
-        EmojiPicker.toggle((shortname, category) => {
+        const { community } = status
+        EmojiPicker.toggle(community, shortname => {
             status.reactions.toggle(shortname)
-        })
+        }, null)
     }
     destroy = event => {
         event.preventDefault()
@@ -102,7 +103,7 @@ export default class StatusComponent extends Component {
         if (in_reply_to_status_id) {
             return (
                 <div className="left">
-                    <a href={`/thread/${in_reply_to_status_id}`} className="source-link thread meiryo">スレッド</a>
+                    <a href={`/thread/${in_reply_to_status_id}`} className="source-link thread">スレッド</a>
                 </div>
             )
         }
@@ -113,7 +114,7 @@ export default class StatusComponent extends Component {
             }
             return (
                 <div className="left">
-                    <a href={`/${community.name}/${channel.name}`} className="source-link channel meiryo">
+                    <a href={`/${community.name}/${channel.name}`} className="source-link channel">
                         <span className="icon"></span>
                         <span className="label">{channel.name}</span>
                     </a>
@@ -123,7 +124,7 @@ export default class StatusComponent extends Component {
         if (recipient) {
             return (
                 <div className="left">
-                    <a href={`/@${recipient.name}`} className="source-link recipient meiryo">@{recipient.name}</a>
+                    <a href={`/@${recipient.name}`} className="source-link recipient">@{recipient.name}</a>
                 </div>
             )
         }
@@ -148,22 +149,23 @@ export default class StatusComponent extends Component {
                 </div>
                 <div className="meta">
                     <span className="sep"></span>
-                    <span className="count verdana">{status.favorites.count}</span>
-                    <span className="unit meiryo">ふぁぼ</span>
+                    <span className="count">{status.favorites.count}</span>
+                    <span className="unit">ふぁぼ</span>
                 </div>
             </div>
         )
     }
     generateCommentsView = status => {
         const { options } = this.props
+        const { comments, community } = status
         if (options.trim_comments === true) {
             return null
         }
-        if (status.comments.count === 0) {
+        if (comments.count === 0) {
             return null
         }
         const commentersView = []
-        const commenters = status.comments.commenters.reverse()
+        const commenters = comments.commenters.reverse()
         commenters.forEach(user => {
             commentersView.push(
                 <img src={user.avatar_url} className="avatar" />
@@ -173,6 +175,7 @@ export default class StatusComponent extends Component {
         if (preview_text.length > 100) {
             preview_text = preview_text.substr(0, 100)
         }
+        preview_text = build_status_body_views(preview_text, community, {}, {})
         return (
             <a onClick={event => handle_click_thread(event, status.id)} className="status-body-commenters detail-row" href={`/thread/${status.id}`}>
                 <div className="commenters">{commentersView}</div>
@@ -216,9 +219,9 @@ export default class StatusComponent extends Component {
                                 <a href="/user/" className="link">
                                     <StatusHeaderDisplayNameComponent user={user} />
                                     <StatusHeaderUserStatusComponent user={user} />
-                                    <span className="name verdana element">@{user.name}</span>
+                                    <span className="name element">@{user.name}</span>
                                 </a>
-                                <a href={`/status/${user.name}/${status.id}`} className="time meiryo">{this.state.elapsed_time_str}</a>
+                                <a href={`/status/${user.name}/${status.id}`} className="time">{this.state.elapsed_time_str}</a>
                             </div>
                         </div>
                         <div className="status-content">

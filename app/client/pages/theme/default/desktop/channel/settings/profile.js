@@ -65,7 +65,7 @@ export default class App extends AppComponent {
                             <SettingsMenuComponent active_page="profile" community={community} channel={channel} />
                         </div>
                         <div className="settings-contents-area">
-                            <div className="settings-content-component form profile meiryo">
+                            <div className="settings-content-component form profile">
                                 <div className="head">
                                     <h1>情報</h1>
                                 </div>

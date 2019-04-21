@@ -6,7 +6,7 @@ import Head from "../../../../../../views/theme/default/desktop/head"
 import config from "../../../../../../beluga.config"
 import { request } from "../../../../../../api"
 import assert from "../../../../../../assert";
-import { get_image_url_by_shortname_or_null, add_custom_shortnames } from "../../../../../../stores/theme/default/common/emoji";
+import * as EmojiPickerStore from "../../../../../../stores/theme/default/common/emoji"
 import AppComponent from "../../../../../../views/app"
 import { objectid_equals } from "../../../../../../libs/functions"
 import Toast from "../../../../../../views/theme/default/desktop/toast"
@@ -82,7 +82,6 @@ class FormComponent extends Component {
                         Toast.push(error, false)
                     } else {
                         Toast.push(`:${shortname}:が使用可能になりました`, true)
-                        add_custom_shortnames([shortname])
                         const { callback_add } = this.props
                         if (callback_add) {
                             callback_add()
@@ -176,7 +175,7 @@ const EmojiListComponent = ({ emoji_list, community, logged_in_user, handle_remo
     const emojiListComponent = []
     emoji_list.forEach(emoji => {
         const { shortname, user, id } = emoji
-        const src = get_image_url_by_shortname_or_null(shortname, community.id)
+        const src = EmojiPickerStore.get_image_url_for_shortname(shortname, community.id)
         if (src === null) {
             return
         }
@@ -218,7 +217,6 @@ export default class App extends AppComponent {
         custom_emoji_list.forEach(emoji => {
             shortnames.push(emoji.shortname)
         })
-        add_custom_shortnames(shortnames)
         this.state = { custom_emoji_list }
     }
     shouldComponentUpdate = (nextProps, nextState) => {

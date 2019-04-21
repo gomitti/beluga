@@ -25,7 +25,7 @@ export default class PreviewComponent extends Component {
                                 <a href="/user/" className="link">
                                     <StatusHeaderDisplayNameComponent user={user} />
                                     <StatusHeaderUserStatusComponent user={user} />
-                                    <span className="name verdana element">@{user.name}</span>
+                                    <span className="name element">@{user.name}</span>
                                 </a>
                             </div>
                         </div>

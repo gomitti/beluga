@@ -13,6 +13,9 @@ const main = async () => {
         db.collection("channel_timeline").createIndex({ "user_id": -1 })
         db.collection("channel_timeline").createIndex({ "user_id": -1, "belongs_to": -1 })
         db.collection("channel_timeline").createIndex({ "status_id": -1, "belongs_to": -1 }, { "unique": true })
+        
+        db.collection("community_timeline").createIndex({ "belongs_to": -1 })
+        db.collection("community_timeline").createIndex({ "status_id": -1, "belongs_to": -1 }, { "unique": true })
 
         db.collection("thread_timeline").createIndex({ "belongs_to": -1 })
         db.collection("thread_timeline").createIndex({ "user_id": -1 })
@@ -40,8 +43,10 @@ const main = async () => {
 
         db.collection("media").createIndex({ "is_image": -1 })
         db.collection("media").createIndex({ "is_video": -1 })
+        db.collection("media").createIndex({ "user_id": -1 })
 
         db.collection("sessions").createIndex({ "encrypted_id": -1 }, { "unique": true })
+        db.collection("users").createIndex({ "name": -1 }, { "unique": true })
         db.collection("channels").createIndex({ "community_id": -1, "name": -1 }, { "unique": true })
 
         db.collection("community_members").createIndex({ "community_id": -1 })

@@ -5,6 +5,7 @@ import assign from "../../../../libs/assign"
 import config from "../../../../beluga.config"
 import assert, { is_number, is_object } from "../../../../assert"
 import { objectid_equals } from "../../../../libs/functions"
+import { StatusOptions } from "../../../../stores/theme/default/common/status"
 
 const get_status_group_footer_view = (status, link_text) => {
     const { in_reply_to_status_id } = status
@@ -54,7 +55,8 @@ class TimelineComponentBase extends Component {
         this.more_link_clicked_more_than_once = true
     }
     generateFetchNewerStatusesButton = () => {
-        const { timeline, request_query } = this.props
+        const { column, request_query } = this.props
+        const { timeline } = column
         if (timeline.has_newer_statuses === false) {
             return null
         }
@@ -78,7 +80,8 @@ class TimelineComponentBase extends Component {
         )
     }
     generateFetchOlderStatusesButton = () => {
-        const { timeline, request_query } = this.props
+        const { column, request_query } = this.props
+        const { timeline } = column
         if (timeline.has_older_statuses === false) {
             return null
         }
@@ -106,7 +109,9 @@ class TimelineComponentBase extends Component {
 @observer
 export class StatusGroupTimelineComponent extends TimelineComponentBase {
     generateStatusGroupComponents = () => {
-        const { timeline, community, status_options, logged_in_user, in_reply_to_status, only_merge_thread } = this.props
+        const { column, logged_in_user, in_reply_to_status, only_merge_thread } = this.props
+        const { timeline } = column
+        const { community } = column.params
         const merged_statuses = []
         let prev_status = null
         timeline.filtered_statuses.forEach(status => {
@@ -133,7 +138,9 @@ export class StatusGroupTimelineComponent extends TimelineComponentBase {
                 prev_status = status
                 return
             }
-            if (objectid_equals(prev_status.channel_id, status.channel_id)) {
+            if (!!prev_status.in_reply_to_status_id === false &&
+                !!status.in_reply_to_status_id === false &&
+                objectid_equals(prev_status.channel_id, status.channel_id)) {
                 merged_statuses[merged_statuses.length - 1].push(status)
                 prev_status = status
                 return
@@ -152,7 +159,7 @@ export class StatusGroupTimelineComponent extends TimelineComponentBase {
                     <div className="status-area">
                         <StatusComponent status={first_status}
                             key={first_status.id}
-                            options={status_options}
+                            options={column.options.status}
                             community={community}
                             logged_in_user={logged_in_user} />
                     </div>
@@ -179,22 +186,25 @@ export class StatusGroupTimelineComponent extends TimelineComponentBase {
 @observer
 export class TimelineComponent extends TimelineComponentBase {
     render() {
-        const { placeholder, community, timeline, status_options, logged_in_user,
-            request_query, in_reply_to_status } = this.props
+        const { placeholder, column, logged_in_user, request_query } = this.props
+        const { in_reply_to_status, community } = column.params
+        const { timeline } = column
 
         const fetchOlderButton = this.generateFetchOlderStatusesButton()
         const fetchNewerButton = this.generateFetchNewerStatusesButton()
 
-        const original_trim_comments_option = status_options.trim_comments
+        const status_options = assign(column.options.status)
+
         const statusComponentList = []
         timeline.filtered_statuses.forEach(status => {
             if (status.deleted) {
                 return
             }
+            const options = new StatusOptions()
+            options.trim_comments = column.options.status.trim_comments
+            options.show_source_link = column.options.status.show_source_link
             if (in_reply_to_status && objectid_equals(status.id, in_reply_to_status.id)) {
-                status_options.trim_comments = true
-            } else {
-                status_options.trim_comments = original_trim_comments_option
+                options.trim_comments = true
             }
             statusComponentList.push(
                 <StatusComponent
@@ -202,7 +212,7 @@ export class TimelineComponent extends TimelineComponentBase {
                     community={community}
                     logged_in_user={logged_in_user}
                     key={status.id}
-                    options={status_options} />
+                    options={options} />
             )
         })
 

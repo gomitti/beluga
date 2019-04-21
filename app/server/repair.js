@@ -70,7 +70,7 @@ const main = async () => {
         }
 
         // メッセージタイムライン
-        if (false) {
+        if (true) {
             const docs = await db.collection("statuses")
                 .find({ "recipient_id": { "$exists": true } }).toArray()
             for (let j = 0; j < docs.length; j++) {
@@ -106,7 +106,7 @@ const main = async () => {
 
 
         // コミュニティ管理者
-        if (true) {
+        if (false) {
             const docs = await db.collection("communities").find().toArray()
             for (let j = 0; j < docs.length; j++) {
                 const doc = docs[j]

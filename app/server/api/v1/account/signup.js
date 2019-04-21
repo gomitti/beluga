@@ -57,7 +57,7 @@ export default async (db, params) => {
     }
 
     config.user.reserved_names.forEach(reserved_name => {
-        if (reserved_name === params.name) {
+        if (reserved_name === params.name.toLowerCase()) {
             throw new Error(`ユーザー名を${params.name}に設定することはできません`)
         }
     })

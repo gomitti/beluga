@@ -77,7 +77,7 @@ export default class App extends AppComponent {
                             <SettingsMenuComponent active_page="access_token" />
                         </div>
                         <div className="settings-contents-area">
-                            <div className="settings-content-component form profile meiryo">
+                            <div className="settings-content-component form profile">
                                 <div className="head">
                                     <h1>アクセストークン</h1>
                                 </div>

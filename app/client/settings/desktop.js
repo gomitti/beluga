@@ -4,7 +4,7 @@ import assert, { is_object } from "../assert"
 
 class DesktopSettings {
     constructor(settings) {
-        this.new_column_target = enums.column.target.new
+        this.new_column_target = enums.column.target.blank
         this.multiple_columns_enabled = false
         if (settings && is_object(settings)) {
             for (const key in settings) {

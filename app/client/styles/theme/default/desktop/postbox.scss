@@ -78,7 +78,7 @@
             width: 100%;
             box-sizing: border-box;
             height: 60px;
-            line-height: 1;
+            line-height: 1.2em;
             font-size: 15px;
             border-color: rgb(200, 200, 200);
         }
@@ -124,6 +124,7 @@
                 font-size: 15px;
                 padding: 0;
                 color: rgb(120, 120, 120);
+                cursor: pointer;
 
                 &:first-child {
                     border-top-left-radius: 6px;

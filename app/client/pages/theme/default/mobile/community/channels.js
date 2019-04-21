@@ -13,16 +13,16 @@ const ListComponent = ({ community, channels }) => {
             <a key={channel.id} className="item" href={`/${community.name}/${channel.name}`}>
                 <span className="left-area">
                     <span className="icon"></span>
-                    <span className="label meiryo">{channel.name}</span>
+                    <span className="label">{channel.name}</span>
                 </span>
                 <span className="right-area">
                     <span className="stats statuses">
                         <span className="icon"></span>
-                        <span className="label verdana">{channel.statuses_count}</span>
+                        <span className="label">{channel.statuses_count}</span>
                     </span>
                     <span className="stats members">
                         <span className="icon"></span>
-                        <span className="label verdana">{channel.members_count}</span>
+                        <span className="label">{channel.members_count}</span>
                     </span>
                 </span>
             </a>

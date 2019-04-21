@@ -9,17 +9,15 @@ export default class MentionsStore {
     constructor(recipient_id, params) {
         this.recipient_id = recipient_id
         this.params = params
-        if (ws) {
-            ws.addEventListener("message", event => {
-                const data = JSON.parse(event.data)
-                if (data.mention_received) {
-                    const { recipient } = data
-                    if (recipient.id === this.recipient_id) {
-                        this.update()
-                    }
+        ws.addEventListener("message", event => {
+            const data = JSON.parse(event.data)
+            if (data.mention_received) {
+                const { recipient } = data
+                if (recipient.id === this.recipient_id) {
+                    this.update()
                 }
-            })
-        }
+            }
+        })
     }
     @action.bound
     prepend(status) {
@@ -38,6 +36,9 @@ export default class MentionsStore {
             "trim_community": false,
             "trim_channel": false,
             "trim_recipient": false,
+            "trim_favorited_by": false,
+            "trim_reaction_users": false,
+            "trim_commenters": false
         }, this.params)
         if (this.statuses.length > 0) {
             params.since_id = this.statuses[0].id

@@ -12,7 +12,7 @@ import { get as get_desktop_settings } from "../../../../../../settings/desktop"
 import Tooltip from "../../../../../../views/theme/default/desktop/tooltip"
 import Component from "../../../../../../views/app"
 import { StatusGroupTimelineComponent } from "../../../../../../views/theme/default/desktop/timeline"
-import { ColumnOptions } from "../../../../../../stores/theme/default/desktop/column"
+import { ColumnOptions, ColumnStore } from "../../../../../../stores/theme/default/desktop/column"
 import { TimelineOptions } from "../../../../../../stores/theme/default/desktop/timeline"
 import { StatusOptions } from "../../../../../../stores/theme/default/common/status"
 import NotificationsTimelineStore from "../../../../../../stores/theme/default/desktop/timeline/notifications"
@@ -60,10 +60,8 @@ export default class App extends Component {
                                 <HeaderComponent user={logged_in_user} active_tab="all" />
                                 <StatusGroupTimelineComponent
                                     logged_in_user={logged_in_user}
-                                    timeline={this.timeline}
+                                    column={this.column}
                                     request_query={{}}
-                                    timeline_options={this.timeline_options}
-                                    status_options={this.status_options}
                                     only_merge_thread={true}
                                     handle_click_channel={do_nothing}
                                     handle_click_mention={do_nothing}

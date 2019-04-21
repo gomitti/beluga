@@ -13,15 +13,15 @@ import { convert_bytes_to_optimal_unit } from "../../../../libs/functions"
 import { wrap_with_tag } from "../desktop/postbox"
 import EmojiPicker from "./emoji"
 import PostboxStore from "../../../../stores/theme/default/common/postbox"
-import TimelineStore from "../../../../stores/theme/default/desktop/timeline"
+import ColumnStore from "../../../../stores/theme/default/mobile/column"
 
 @observer
 export default class PostboxComponent extends Component {
     constructor(props) {
         super(props)
-        const { postbox, timeline } = props
+        const { postbox, column } = props
         assert(postbox instanceof PostboxStore, "$postbox must be an instance of PostboxStore")
-        assert(timeline instanceof TimelineStore, "$timeline must be an instance of TimelineStore")
+        assert(column instanceof ColumnStore, "$column must be an instance of ColumnStore")
         this.state = {
             "is_post_button_active": false,
             "show_pinned_media": false,
@@ -76,8 +76,8 @@ export default class PostboxComponent extends Component {
         postbox.post(text, () => {
             this.setText("")
             this.setState({ "is_post_button_active": false })
-            const { timeline } = this.props
-            timeline.fetchLatestIfNeeded()
+            const { column } = this.props
+            column.timeline.fetchLatestIfNeeded()
         }, () => {
             this.setState({ "is_post_button_active": true })
         })
@@ -213,10 +213,12 @@ export default class PostboxComponent extends Component {
     }
     onClickActionEmoji = event => {
         event.preventDefault()
-        EmojiPicker.toggle((shortname, category) => {
+        const { column } = this.props
+        const { community } = column.params
+        EmojiPicker.toggle(community, shortname => {
             const { textarea } = this.refs
             this.setText(textarea.value + `:${shortname}:`)
-        }, () => { })
+        }, null)
     }
     onClickActionText = event => {
         event.preventDefault()

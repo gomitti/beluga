@@ -123,7 +123,7 @@ export default class App extends AppComponent {
                             <SettingsMenuComponent active_page="permissions" community={community} />
                         </div>
                         <div className="settings-contents-area">
-                            <div className="settings-content-component channel-permissions meiryo">
+                            <div className="settings-content-component channel-permissions">
                                 <div className="head">
                                     <h1>役職の権限</h1>
                                 </div>

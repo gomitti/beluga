@@ -6,6 +6,7 @@ export default {
         "app": 3000
     },
     "ip_address": "localhost", // コミュニティのIPアドレス
+    "forbidden_isps": ["M247", "Contina"],  // VPNのプロバイダを規制する
     "status": {
         "max_text_length": 5000,
         "minimum_interval": 1000,   // 最小の投稿間隔をミリ秒で指定
@@ -64,8 +65,8 @@ export default {
                 "max_size": 10000,
                 "max_filesize": 1024 * 1024 * 5
             },
-            "image_size": 300,
-            "max_description_length": 1000,
+            "image_size": 128,
+            "max_description_length": 10000,
             "max_location_length": 100,
             "max_num_tags": 100,
             "max_tag_length": 100,

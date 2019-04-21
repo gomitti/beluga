@@ -4,7 +4,7 @@ import assert, { is_object, is_array, is_string } from "../../../../assert"
 import enums from "../../../../enums"
 import assign from "../../../../libs/assign"
 import StatusStore, { StatusOptions } from "../common/status"
-import DirectMessageTimelineStore from "./timeline/message"
+import MessageTimelineStore from "./timeline/message"
 import ChannelTimelineStore from "./timeline/channel"
 import CommunityTimelineStore from "./timeline/community"
 import ThreadTimelineStore from "./timeline/thread"
@@ -14,12 +14,12 @@ import { PostboxOptions } from "../common/postbox"
 
 export const get_timeline_store = (type, params, options, logged_in_user) => {
     if (type === enums.column.type.message) {
-        const { user } = params
-        assert(is_object(user), "$user must be of type object")
+        const { recipient } = params
+        assert(is_object(recipient), "$recipient must be of type object")
         const request_query = {
-            "recipient_id": user.id,
+            "recipient_id": recipient.id,
         }
-        return new DirectMessageTimelineStore(request_query, params, options, logged_in_user)
+        return new MessageTimelineStore(request_query, params, options, logged_in_user)
     }
     if (type === enums.column.type.channel) {
         const { channel } = params
@@ -62,27 +62,19 @@ export class ColumnOptions {
     }
 }
 export class ColumnSettings {
-    @observable desktop_notification_enabled = false
-    @action.bound
-    setDesktopNotificationEnabled = on_off => {
-        this.desktop_notification_enabled = on_off
+    constructor() {
+        this.desktop_notification_enabled = false
     }
 }
 
 class ClientSideColumnStore {
     @observable.shallow timeline = null
-    @observable.shallow settings = null
     @observable type = null
-    options = null
-    params = null
-    history = []
-    is_closable = false
-    constructor(target, settings, muted_users, muted_words, logged_in_user) {
+    constructor(settings, muted_users, muted_words, logged_in_user, serialize_func) {
         assert(settings instanceof ColumnSettings, "$settings must be an instance of ColumnSettings")
         assert(is_array(muted_users), "$muted_users must be of type array")
         assert(is_array(muted_words), "$muted_words must be of type array")
         assert(is_object(logged_in_user), "$logged_in_user must be of type object")
-        this.target = target
         this.identifier = uid(8)    // Reactのkeyに使う
         this.settings = settings
         this.muted_users = muted_users
@@ -94,6 +86,12 @@ class ClientSideColumnStore {
             assert(is_string(word), "$word must be of type string")
         })
         this.logged_in_user = logged_in_user
+        this.serialize_func = serialize_func
+
+        this.options = null
+        this.params = null
+        this.history = []
+        this.is_closable = false
     }
     @action.bound
     restore = (history, settings) => {
@@ -140,9 +138,9 @@ class ClientSideColumnStore {
         assert(options instanceof ColumnOptions, "$options must be an instance of ColumnOptions")
         this.history.push({ type, params, options })
         this.set(type, params, options, initial_statuses)
-        if (this.timeline.auto_reloading_enabled) {
-            this.timeline.fetchLatest()
-        }
+        // if (this.timeline.auto_reloading_enabled) {
+        //     this.timeline.fetchLatest()
+        // }
     }
     @action.bound
     pop = () => {
@@ -157,11 +155,16 @@ class ClientSideColumnStore {
         }
         return true
     }
+    setDesktopNotificationEnabled = enabled => {
+        this.settings.desktop_notification_enabled = enabled
+        if (this.serialize_func) {
+            this.serialize_func()
+        }
+    }
 }
 
 class ServerSideColumnStore {
-    constructor(target, settings, muted_users, muted_words) {
-        this.target = target
+    constructor(settings, muted_users, muted_words) {
         this.identifier = uid(8)    // Reactのkeyに使う
         assert(settings instanceof ColumnSettings, "$settings must be an instance of ColumnSettings")
         this.settings = settings

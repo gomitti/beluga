@@ -55,10 +55,7 @@ export default class App extends Component {
                 <div className="client">
                     <CommunityPublicTimelineColumnComponent {...this.props} column={this.column} />
                 </div>
-                <EmojiPicker
-                    pinned_shortnames={pinned_emoji_shortnames}
-                    custom_shortnames={custom_emoji_shortnames}
-                    community={community} />
+                <EmojiPicker />
             </div>
         )
     }

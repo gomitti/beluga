@@ -6,7 +6,7 @@ import NavigationbarComponent from "../../../../../views/theme/default/desktop/n
 import SettingsMenuComponent from "../../../../../views/theme/default/desktop/settings/account/menu"
 import config from "../../../../../beluga.config"
 import { request } from "../../../../../api"
-import { get_category_by_shortname_or_null, get_image_url_by_shortname_or_null, EmojiPickerStore } from "../../../../../stores/theme/default/common/emoji"
+import { get_category_by_shortname_or_null, get_image_url_for_shortname, EmojiPickerStore } from "../../../../../stores/theme/default/common/emoji"
 import assert, { is_object } from "../../../../../assert"
 import EmojiPicker from "../../../../../views/theme/default/desktop/emoji"
 import AppComponent from "../../../../../views/app"
@@ -41,10 +41,9 @@ class ProfileComponent extends Component {
             description,
             location
         }
-        const { selected_emoji, text } = status.state
-        if (selected_emoji) {
-            const { shortname } = selected_emoji
-            params.status_emoji_shortname = shortname
+        const { selected_shortname, text } = status.state
+        if (selected_shortname) {
+            params.status_emoji_shortname = selected_shortname
             params.status_text = text
         }
         setTimeout(() => {
@@ -69,7 +68,7 @@ class ProfileComponent extends Component {
     render() {
         const { logged_in_user } = this.props
         return (
-            <div className="settings-content-component form profile meiryo">
+            <div className="settings-content-component form profile">
                 <div className="head">
                     <h1>プロフィール</h1>
                 </div>
@@ -344,15 +343,18 @@ class UserStatusComponent extends Component {
         super(props)
         const { logged_in_user } = this.props
         this.state = {
-            "selected_emoji": null,
+            "selected_shortname": null,
             "text": logged_in_user.status_text
         }
         const { profile } = logged_in_user
         if (profile) {
             const shortname = profile.status_emoji_shortname
             if (shortname) {
-                const category = get_category_by_shortname_or_null(shortname)
-                this.state.selected_emoji = { shortname, category }
+                this.state.selected_shortname = shortname
+            }
+            const text = profile.status_text
+            if (text) {
+                this.state.text = text
             }
         }
     }
@@ -362,9 +364,9 @@ class UserStatusComponent extends Component {
         if (target.tagName === "I") {
             target = target.parentElement
         }
-        EmojiPicker.toggle(target, (shortname, category) => {
+        EmojiPicker.toggle(target, null, shortname => {
             this.setState({
-                "selected_emoji": { shortname, category }
+                "selected_shortname": shortname
             })
             EmojiPicker.hide()
         })
@@ -375,32 +377,31 @@ class UserStatusComponent extends Component {
     onClear = event => {
         event.preventDefault()
         this.setState({
-            "selected_emoji": null,
+            "selected_shortname": null,
             "text": ""
         })
     }
     render() {
-        const { selected_emoji, text } = this.state
+        const { selected_shortname, text } = this.state
         return (
             <div className="item status">
                 <h3 className="title">ステータス</h3>
                 <div className="editor">
-                    <button className={classnames("select-button", { "not-selected": selected_emoji === null })} onClick={this.onSelectEmoji}>
+                    <button className={classnames("select-button", { "not-selected": selected_shortname === null })} onClick={this.onSelectEmoji}>
                         {(() => {
-                            if (selected_emoji) {
-                                const { shortname } = selected_emoji
-                                return <img className="image" src={get_image_url_by_shortname_or_null(shortname)} />
+                            if (selected_shortname) {
+                                return <img className="image" src={get_image_url_for_shortname(selected_shortname)} />
                             } else {
                                 return <i className="emoji-picker-ignore-click image"></i>
                             }
                         })()}
                     </button>
-                    <input className={classnames("form-input", { "user-defined-border-color-focus": selected_emoji !== null })}
+                    <input className={classnames("form-input", { "user-defined-border-color-focus": selected_shortname !== null })}
                         type="text"
-                        readOnly={selected_emoji === null ? true : null}
+                        readOnly={selected_shortname === null ? true : null}
                         value={text}
                         onChange={this.onChangeText} />
-                    {selected_emoji ? <a className="delete-button" onClick={this.onClear}>デフォルトに戻す</a> : null}
+                    {selected_shortname ? <a className="delete-button" onClick={this.onClear}>デフォルトに戻す</a> : null}
                 </div>
                 <p className="hint">テキストは絵文字が設定されている場合のみ反映されます</p>
             </div>

@@ -10,7 +10,7 @@ export default async (db, params) => {
     assert(user !== null, "ユーザーが見つかりません")
 
     if (community.created_by.equals(user.id) !== true) {
-        assert(user !== null, "権限がありませんÏ")
+        throw new Error("権限がありません")
     }
 
     await api.v1.community.permissions.update(db, params)

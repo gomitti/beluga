@@ -25,12 +25,22 @@ const TabMenuItemDirectMessage = ({ user, active_tab }) => {
     )
 }
 
+const TabMenuItemChannles = ({ active_tab }) => {
+    return (
+        <a className={classnames("item border-bottom", { "active": active_tab === "channels" })}
+            href="/beluga/channels">
+            <span className="icon channel"></span>
+            <span className="label">チャンネル</span>
+        </a>
+    )
+}
+
 const TabMenuItemExplore = ({ active_tab }) => {
     return (
         <a className={classnames("item border-bottom", { "active": active_tab === "explore" })}
-            href="/explore">
+            href="/communities">
             <span className="icon explore"></span>
-            <span className="label">探す</span>
+            <span className="label">コミュニティ</span>
         </a>
     )
 }
@@ -106,6 +116,8 @@ const LefttAreaComponent = ({ logged_in_user, active_tab }) => {
                     <a className="item logo" href="/"></a>
                     <TabMenuItemNotifications active_tab={active_tab} />
                     <TabMenuItemDirectMessage user={logged_in_user}  active_tab={active_tab} />
+                    <TabMenuItemChannles active_tab={active_tab} />
+                    <TabMenuItemExplore />
                 </div>
             </div>
         )

@@ -24,23 +24,11 @@
             align-items: center;
             overflow: hidden;
 
-            > .avatar {
-                flex: 0 0 auto;
-                width: 24px;
-                height: 24px;
-                border-radius: 24px;
-                margin-right: 6px;
-                display: flex;
-                justify-content: end;
-                align-items: center;
-                cursor: pointer;
-            }
-
             > .icon {
                 flex: 0 0 auto;
                 width: 22px;
                 height: 32px;
-                font-size: 16px;
+                font-size: 15px;
                 font-family: Beluga;
                 display: flex;
                 justify-content: end;
@@ -53,12 +41,6 @@
 
                     &::before {
                         content: "\2006";
-                    }
-                }
-
-                &.home {
-                    &::before {
-                        content: "\2001";
                     }
                 }
 
@@ -81,12 +63,7 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 overflow: hidden;
-            }
-
-            &.thread {
-                > .label {
-                    flex: 0 1 auto;
-                }
+                font-size: 15px;
             }
 
             > .divider {
@@ -99,35 +76,87 @@
                 }
             }
 
-            > .link {
-                flex: 1 1 auto;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                font-weight: normal;
-                font-size: 16px;
-                color: rgb(120, 120, 120);
+            &.channel {}
 
-                > .icon {
+            &.thread {
+                > .label {
+                    flex: 0 1 auto;
+                }
+
+                > .link {
+                    flex: 1 1 auto;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    font-weight: normal;
+                    font-size: 15px;
+                    color: rgb(120, 120, 120);
+
+                    &:hover {
+                        text-decoration: none;
+                        color: black;
+                    }
+
+                    > .icon {
+                        flex: 0 0 auto;
+                        width: 14px;
+                        font-family: Beluga;
+                        display: flex;
+                        justify-content: end;
+                        align-items: center;
+
+                        &.channel {
+                            &::before {
+                                content: "\2006";
+                            }
+                        }
+                    }
+
+                    > .label {
+                        flex: 1 1 auto;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        overflow: hidden;
+                    }
+                }
+            }
+
+            &.community-public-timeline {}
+
+            &.message {
+                > .avatar {
                     flex: 0 0 auto;
-                    width: 14px;
-                    font-family: Beluga;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 24px;
+                    margin-right: 6px;
                     display: flex;
                     justify-content: end;
                     align-items: center;
-
-                    &.channel {
-                        &::before {
-                            content: "\2006";
-                        }
-                    }
+                    cursor: pointer;
                 }
 
                 > .label {
-                    flex: 1 1 auto;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    overflow: hidden;
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+
+                    > .display-name {
+                        font-weight: bold;
+                        color: rgb(20, 20, 20);
+                        font-size: 15px;
+                        margin-right: 4px;
+                    }
+
+                    > .name {
+                        &::before {
+                            content: "@";
+                        }
+
+                        font-size: 14px;
+                        color: rgb(120, 120, 120);
+                        font-weight: normal;
+                    }
                 }
             }
         }
@@ -155,7 +184,7 @@
                     flex: 0 0 auto;
                     width: 32px;
                     height: 32px;
-                    font-size: 18px;
+                    font-size: 16px;
                     font-family: Beluga;
                     display: flex;
                     justify-content: center;
